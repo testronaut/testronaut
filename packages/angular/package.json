@@ -1,0 +1,11 @@
+{
+  "name": "@playwright-ct/angular",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^19.0.0",
+    "@angular/core": "^19.0.0",
+    "vite": "^5.0.0",
+    "@nx/vite": "20.3.0"
+  },
+  "sideEffects": false
+}
