@@ -19,18 +19,9 @@ export class Analyzer {
         ts.isIdentifier(node.expression) &&
         node.expression.text === 'runInBrowser'
       ) {
-        const firstArg = node.arguments[0];
-        if (ts.isFunctionLike(firstArg)) {
-          const code = firstArg.getText(sourceFile);
-          analysisContext.addExtractedFunction({ code });
-        } else if (ts.isStringLiteralLike(firstArg)) {
-          const name = firstArg.text;
-          const codeNode = node.arguments[1];
-          if (ts.isFunctionLike(codeNode)) {
-            const code = codeNode.getText(sourceFile);
-            analysisContext.addExtractedFunction({ code, name });
-          }
-        }
+        analysisContext.addExtractedFunction(
+          this._parseRunInBrowserArgs(sourceFile, node)
+        );
       }
 
       return ts.visitEachChild(node, visitor, undefined);
@@ -39,6 +30,19 @@ export class Analyzer {
     ts.visitEachChild(sourceFile, visitor, undefined);
 
     return analysisContext.getExtractedFunctions();
+  }
+
+  private _parseRunInBrowserArgs(
+    sourceFile: ts.SourceFile,
+    node: ts.CallExpression
+  ): ExtractedFunction {
+    const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
+    const codeArg =
+      node.arguments.length === 1 ? node.arguments[0] : node.arguments[1];
+    const name =
+      nameArg && ts.isStringLiteralLike(nameArg) ? nameArg.text : undefined;
+    const code = ts.isFunctionLike(codeArg) ? codeArg.getText(sourceFile) : '';
+    return createExtractedFunction({ code, name, importedIdentifiers: [] });
   }
 }
 
