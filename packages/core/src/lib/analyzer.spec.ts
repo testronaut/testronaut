@@ -1,5 +1,5 @@
 import { describe } from 'vitest';
-import { Analyzer } from './analyzer';
+import { Analyzer, InvalidRunInBrowserCallError } from './analyzer';
 
 describe(Analyzer.name, () => {
   it.each([
@@ -101,9 +101,7 @@ test('...', async ({runInBrowser}) => {
       },
     ],
   ])('%s', (_, { content, expectedExtractedFunctions }) => {
-    const analyzer = new Analyzer();
-
-    const extractedFunctions = analyzer.analyze({
+    const extractedFunctions = new Analyzer().analyze({
       path: 'my-component.spec.ts',
       content,
     });
@@ -176,5 +174,18 @@ runInBrowser('say bye', () => {
     throw new Error('🚧 work in progress');
   });
 
+  it('fails if `runInBrowser` is called without args', () => {
+    expect(() =>
+      new Analyzer().analyze({
+        path: 'my-component.spec.ts',
+        content: `runInBrowser();`,
+      })
+    ).toThrow(InvalidRunInBrowserCallError);
+  });
+
+  it.todo('fails if `runInBrowser` is called with too many args');
+
   it.todo('fails if `runInBrowser` name is not a string literal');
+
+  it.todo('fails if `runInBrowser` function is not an inline function');
 });

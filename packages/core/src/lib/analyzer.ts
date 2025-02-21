@@ -36,6 +36,11 @@ export class Analyzer {
     sourceFile: ts.SourceFile,
     node: ts.CallExpression
   ): ExtractedFunction {
+    if (node.arguments.length === 0) {
+      throw new InvalidRunInBrowserCallError(
+        '`runInBrowser` must have at least one argument'
+      );
+    }
     const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
     const codeArg =
       node.arguments.length === 1 ? node.arguments[0] : node.arguments[1];
@@ -44,6 +49,10 @@ export class Analyzer {
     const code = ts.isFunctionLike(codeArg) ? codeArg.getText(sourceFile) : '';
     return createExtractedFunction({ code, name, importedIdentifiers: [] });
   }
+}
+
+export class InvalidRunInBrowserCallError extends Error {
+  override name = 'InvalidRunInBrowserCallError';
 }
 
 class AnalysisContext {
