@@ -183,7 +183,14 @@ runInBrowser('say bye', () => {
     ).toThrow(InvalidRunInBrowserCallError);
   });
 
-  it.todo('fails if `runInBrowser` is called with too many args');
+  it('fails if `runInBrowser` is called with too many args', () => {
+    expect(() =>
+      new Analyzer().analyze({
+        path: 'my-component.spec.ts',
+        content: `runInBrowser('say hi', () => console.log('Say hi!'), 'superfluous');`,
+      })
+    ).toThrow(InvalidRunInBrowserCallError);
+  });
 
   it.todo('fails if `runInBrowser` name is not a string literal');
 

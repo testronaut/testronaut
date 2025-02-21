@@ -41,6 +41,13 @@ export class Analyzer {
         '`runInBrowser` must have at least one argument'
       );
     }
+
+    if (node.arguments.length > 2) {
+      throw new InvalidRunInBrowserCallError(
+        '`runInBrowser` must have at most two arguments'
+      );
+    }
+
     const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
     const codeArg =
       node.arguments.length === 1 ? node.arguments[0] : node.arguments[1];
