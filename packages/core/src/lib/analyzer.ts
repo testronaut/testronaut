@@ -49,12 +49,25 @@ export class Analyzer {
     }
 
     const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
+    if (nameArg && !ts.isStringLiteralLike(nameArg)) {
+      throw new InvalidRunInBrowserCallError(
+        '`runInBrowser` name must be a string literal'
+      );
+    }
+
     const codeArg =
       node.arguments.length === 1 ? node.arguments[0] : node.arguments[1];
-    const name =
-      nameArg && ts.isStringLiteralLike(nameArg) ? nameArg.text : undefined;
-    const code = ts.isFunctionLike(codeArg) ? codeArg.getText(sourceFile) : '';
-    return createExtractedFunction({ code, name, importedIdentifiers: [] });
+    if (!ts.isFunctionLike(codeArg)) {
+      throw new InvalidRunInBrowserCallError(
+        '`runInBrowser` function must be an inline function'
+      );
+    }
+
+    return createExtractedFunction({
+      code: codeArg.getText(sourceFile),
+      name: nameArg ? nameArg.text : undefined,
+      importedIdentifiers: [],
+    });
   }
 }
 

@@ -192,7 +192,27 @@ runInBrowser('say bye', () => {
     ).toThrow(InvalidRunInBrowserCallError);
   });
 
-  it.todo('fails if `runInBrowser` name is not a string literal');
+  it('fails if `runInBrowser` name is not a string literal', () => {
+    expect(() =>
+      new Analyzer().analyze({
+        path: 'my-component.spec.ts',
+        content: `
+const name = 'say hi';
+runInBrowser(name, () => console.log('Say hi!'));
+        `,
+      })
+    ).toThrow(InvalidRunInBrowserCallError);
+  });
 
-  it.todo('fails if `runInBrowser` function is not an inline function');
+  it('fails if `runInBrowser` function is not an inline function', () => {
+    expect(() =>
+      new Analyzer().analyze({
+        path: 'my-component.spec.ts',
+        content: `
+const fn = () => console.log('Say hi!');
+runInBrowser(fn);
+        `,
+      })
+    ).toThrow(InvalidRunInBrowserCallError);
+  });
 });
