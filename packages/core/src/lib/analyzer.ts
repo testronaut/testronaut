@@ -19,8 +19,18 @@ export class Analyzer {
         ts.isIdentifier(node.expression) &&
         node.expression.text === 'runInBrowser'
       ) {
-        const code = node.arguments[0].getText(sourceFile);
-        analysisContext.addExtractedFunction({ code });
+        const firstArg = node.arguments[0];
+        if (ts.isFunctionLike(firstArg)) {
+          const code = firstArg.getText(sourceFile);
+          analysisContext.addExtractedFunction({ code });
+        } else if (ts.isStringLiteralLike(firstArg)) {
+          const name = firstArg.text;
+          const codeNode = node.arguments[1];
+          if (ts.isFunctionLike(codeNode)) {
+            const code = codeNode.getText(sourceFile);
+            analysisContext.addExtractedFunction({ code, name });
+          }
+        }
       }
 
       return ts.visitEachChild(node, visitor, undefined);
@@ -35,9 +45,9 @@ export class Analyzer {
 class AnalysisContext {
   private _extractedFunctions: ExtractedFunction[] = [];
 
-  addExtractedFunction({ code }: { code: string }) {
+  addExtractedFunction({ code, name }: { code: string; name?: string }) {
     this._extractedFunctions.push(
-      createExtractedFunction({ code, importedIdentifiers: [] })
+      createExtractedFunction({ code, name, importedIdentifiers: [] })
     );
   }
 

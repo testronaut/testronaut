@@ -83,18 +83,6 @@ function somewhereElse() {
         ],
       },
     ],
-  ])('%s', (_, { content, expectedExtractedFunctions }) => {
-    const analyzer = new Analyzer();
-
-    const extractedFunctions = analyzer.analyze({
-      path: 'my-component.spec.ts',
-      content,
-    });
-
-    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
-  });
-
-  it.todo.each([
     [
       'extracts named `runInBrowser`',
       {
@@ -112,6 +100,18 @@ test('...', async ({runInBrowser}) => {
         ],
       },
     ],
+  ])('%s', (_, { content, expectedExtractedFunctions }) => {
+    const analyzer = new Analyzer();
+
+    const extractedFunctions = analyzer.analyze({
+      path: 'my-component.spec.ts',
+      content,
+    });
+
+    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
+  });
+
+  it.todo.each([
     [
       'extracts aliased `runInBrowser`',
       {
