@@ -2,7 +2,7 @@ import { describe } from 'vitest';
 import { Analyzer } from './analyzer';
 
 describe(Analyzer.name, () => {
-  it.todo.each([
+  it.each([
     [
       'extracts `runInBrowser` sync arrow function',
       {
@@ -83,6 +83,18 @@ function somewhereElse() {
         ],
       },
     ],
+  ])('%s', (_, { content, expectedExtractedFunctions }) => {
+    const analyzer = new Analyzer();
+
+    const extractedFunctions = analyzer.analyze({
+      path: 'my-component.spec.ts',
+      content,
+    });
+
+    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
+  });
+
+  it.todo.each([
     [
       'extracts named `runInBrowser`',
       {
@@ -101,7 +113,7 @@ test('...', async ({runInBrowser}) => {
       },
     ],
     [
-      'extracts named `runInBrowser`',
+      'extracts aliased `runInBrowser`',
       {
         content: `
 test('...', async ({runInBrowser: run}) => {
@@ -160,15 +172,8 @@ runInBrowser('say bye', () => {
         ],
       },
     ],
-  ])('%s', (_, { content, expectedExtractedFunctions }) => {
-    const analyzer = new Analyzer();
-
-    const extractedFunctions = analyzer.analyze({
-      path: 'my-component.spec.ts',
-      content,
-    });
-
-    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
+  ])('%s', () => {
+    throw new Error('🚧 work in progress');
   });
 
   it.todo('fails if `runInBrowser` name is not a string literal');
