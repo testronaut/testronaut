@@ -116,6 +116,50 @@ test('...', async ({runInBrowser: run}) => {
         ],
       },
     ],
+    [
+      'extracts imported identifiers used in `runInBrowser`',
+      {
+        content: `
+import { something, somethingElse, somethingUsedOutside } from './something';
+import { somethingFromAnotherFile } from './another-file';
+
+console.log(somethingUsedOutside);
+
+runInBrowser('say hi', () => {
+  console.log(something);
+});
+
+runInBrowser('say bye', () => {
+  console.log(something);
+  console.log(somethingFromAnotherFile);
+});
+    `,
+        expectedExtractedFunctions: [
+          expect.objectContaining({
+            name: 'say hi',
+            importedIdentifiers: [
+              {
+                name: 'something',
+                module: './something',
+              },
+            ],
+          }),
+          expect.objectContaining({
+            name: 'say bye',
+            importedIdentifiers: [
+              {
+                name: 'something',
+                module: './something',
+              },
+              {
+                name: 'somethingFromAnotherFile',
+                module: './another-file',
+              },
+            ],
+          }),
+        ],
+      },
+    ],
   ])('%s', (_, { content, expectedExtractedFunctions }) => {
     const analyzer = new Analyzer();
 
@@ -126,8 +170,6 @@ test('...', async ({runInBrowser: run}) => {
 
     expect(extractedFunctions).toEqual(expectedExtractedFunctions);
   });
-
-  it.todo('extracts imported identifiers used in `runInBrowser`');
 
   it.todo('fails if `runInBrowser` name is not a string literal');
 });
