@@ -65,7 +65,7 @@ export class Analyzer {
 
     return createExtractedFunction({
       code: codeArg.getText(sourceFile),
-      name: nameArg ? nameArg.text : undefined,
+      name: nameArg?.text,
       importedIdentifiers: [],
     });
   }
