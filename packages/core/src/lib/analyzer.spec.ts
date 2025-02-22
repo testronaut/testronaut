@@ -100,16 +100,6 @@ test('...', async ({runInBrowser}) => {
         ],
       },
     ],
-  ])('%s', (_, { content, expectedExtractedFunctions }) => {
-    const extractedFunctions = new Analyzer().analyze({
-      path: 'my-component.spec.ts',
-      content,
-    });
-
-    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
-  });
-
-  it.todo.each([
     [
       'extracts aliased `runInBrowser`',
       {
@@ -126,6 +116,16 @@ test('...', async ({runInBrowser: run}) => {
         ],
       },
     ],
+  ])('%s', (_, { content, expectedExtractedFunctions }) => {
+    const extractedFunctions = new Analyzer().analyze({
+      path: 'my-component.spec.ts',
+      content,
+    });
+
+    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
+  });
+
+  it.skip.each([
     [
       'extracts imported identifiers used in `runInBrowser`',
       {
@@ -170,8 +170,13 @@ runInBrowser('say bye', () => {
         ],
       },
     ],
-  ])('%s', () => {
-    throw new Error('🚧 work in progress');
+  ])('%s', (_, { content, expectedExtractedFunctions }) => {
+    const extractedFunctions = new Analyzer().analyze({
+      path: 'my-component.spec.ts',
+      content,
+    });
+
+    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
   });
 
   it('fails if `runInBrowser` is called without args', () => {
