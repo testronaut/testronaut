@@ -8,106 +8,102 @@ export class Analyzer {
   private static _RUN_IN_BROWSER_IDENTIFIER = 'runInBrowser';
 
   analyze({ path, content }: { content: string; path: string }) {
-    const sourceFile = ts.createSourceFile(
-      path,
-      content,
-      ts.ScriptTarget.Latest,
-      true
-    );
-    const typeChecker = this._createTypeChecker(sourceFile, path);
+    /* Create compiler and context. */
+    const { analysisContext, sourceFile, typeChecker } = prepare();
 
-    const analysisContext = new AnalysisContext();
+    /* Extract `runInBrowser` calls. */
+    ts.visitEachChild(sourceFile, visit, undefined);
 
-    const visitor: ts.Visitor<ts.Node> = (node) => {
+    /* Return extracted calls. */
+    return analysisContext.getExtractedFunctions();
+
+    function prepare() {
+      const sourceFile = ts.createSourceFile(
+        path,
+        content,
+        ts.ScriptTarget.Latest,
+        true
+      );
+      const compilerHost = ts.createCompilerHost({});
+      compilerHost.getSourceFile = () => sourceFile;
+      const typeChecker = ts
+        .createProgram([path], {}, compilerHost)
+        .getTypeChecker();
+
+      return {
+        analysisContext: new AnalysisContext(),
+        sourceFile,
+        typeChecker,
+      };
+    }
+
+    function visit(node: ts.Node): ts.Node {
+      if (ts.isCallExpression(node) && isRunInBrowserCall(node)) {
+        analysisContext.addExtractedFunction(parseRunInBrowserArgs(node));
+      }
+
+      return ts.visitEachChild(node, visit, undefined);
+    }
+
+    function isRunInBrowserCall(callExpression: ts.CallExpression): boolean {
+      /* Identifier is `runInBrowser`. */
       if (
-        ts.isCallExpression(node) &&
-        this._isRunInBrowserCall(typeChecker, node)
+        callExpression.expression.getText() ===
+        Analyzer._RUN_IN_BROWSER_IDENTIFIER
       ) {
-        analysisContext.addExtractedFunction(
-          this._parseRunInBrowserArgs(sourceFile, node)
+        return true;
+      }
+
+      const runInBrowserDeclaration = getDeclaration(callExpression.expression);
+
+      /* Identifier is an alias (e.g. `test(..., ({runInBrowser: run}) => { run(...); })`). */
+      return (
+        runInBrowserDeclaration != null &&
+        ts.isObjectBindingPattern(runInBrowserDeclaration.parent) &&
+        runInBrowserDeclaration.parent.elements
+          .at(0)
+          ?.propertyName?.getText() === Analyzer._RUN_IN_BROWSER_IDENTIFIER
+      );
+    }
+
+    function parseRunInBrowserArgs(node: ts.CallExpression): ExtractedFunction {
+      if (node.arguments.length === 0) {
+        throw new InvalidRunInBrowserCallError(
+          '`runInBrowser` must have at least one argument'
         );
       }
 
-      return ts.visitEachChild(node, visitor, undefined);
-    };
+      if (node.arguments.length > 2) {
+        throw new InvalidRunInBrowserCallError(
+          '`runInBrowser` must have at most two arguments'
+        );
+      }
 
-    ts.visitEachChild(sourceFile, visitor, undefined);
+      const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
+      if (nameArg && !ts.isStringLiteralLike(nameArg)) {
+        throw new InvalidRunInBrowserCallError(
+          '`runInBrowser` name must be a string literal'
+        );
+      }
 
-    return analysisContext.getExtractedFunctions();
-  }
+      const codeArg =
+        node.arguments.length === 1 ? node.arguments[0] : node.arguments[1];
+      if (!ts.isFunctionLike(codeArg)) {
+        throw new InvalidRunInBrowserCallError(
+          '`runInBrowser` function must be an inline function'
+        );
+      }
 
-  private _createTypeChecker(sourceFile: ts.SourceFile, path: string) {
-    const compilerHost = ts.createCompilerHost({});
-    compilerHost.getSourceFile = () => sourceFile;
-    return ts.createProgram([path], {}, compilerHost).getTypeChecker();
-  }
-
-  private _isRunInBrowserCall(
-    typeChecker: ts.TypeChecker,
-    callExpression: ts.CallExpression
-  ): boolean {
-    /* Identifier is `runInBrowser`. */
-    if (
-      callExpression.expression.getText() ===
-      Analyzer._RUN_IN_BROWSER_IDENTIFIER
-    ) {
-      return true;
+      return createExtractedFunction({
+        code: codeArg.getText(sourceFile),
+        name: nameArg?.text,
+        importedIdentifiers: [],
+      });
     }
 
-    const runInBrowserDeclaration = this._getDeclaration(
-      typeChecker,
-      callExpression.expression
-    );
-
-    /* Identifier is an alias (e.g. `test(..., ({runInBrowser: run}) => { run(...); })`). */
-    return (
-      runInBrowserDeclaration != null &&
-      ts.isObjectBindingPattern(runInBrowserDeclaration.parent) &&
-      runInBrowserDeclaration.parent.elements.at(0)?.propertyName?.getText() ===
-        Analyzer._RUN_IN_BROWSER_IDENTIFIER
-    );
-  }
-
-  private _getDeclaration(typeChecker: ts.TypeChecker, node: ts.Node) {
-    return typeChecker.getSymbolAtLocation(node)?.getDeclarations()?.at(0);
-  }
-
-  private _parseRunInBrowserArgs(
-    sourceFile: ts.SourceFile,
-    node: ts.CallExpression
-  ): ExtractedFunction {
-    if (node.arguments.length === 0) {
-      throw new InvalidRunInBrowserCallError(
-        '`runInBrowser` must have at least one argument'
-      );
+    function getDeclaration(node: ts.Node) {
+      return typeChecker.getSymbolAtLocation(node)?.getDeclarations()?.at(0);
     }
-
-    if (node.arguments.length > 2) {
-      throw new InvalidRunInBrowserCallError(
-        '`runInBrowser` must have at most two arguments'
-      );
-    }
-
-    const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
-    if (nameArg && !ts.isStringLiteralLike(nameArg)) {
-      throw new InvalidRunInBrowserCallError(
-        '`runInBrowser` name must be a string literal'
-      );
-    }
-
-    const codeArg =
-      node.arguments.length === 1 ? node.arguments[0] : node.arguments[1];
-    if (!ts.isFunctionLike(codeArg)) {
-      throw new InvalidRunInBrowserCallError(
-        '`runInBrowser` function must be an inline function'
-      );
-    }
-
-    return createExtractedFunction({
-      code: codeArg.getText(sourceFile),
-      name: nameArg?.text,
-      importedIdentifiers: [],
-    });
   }
 }
 
