@@ -1,7 +1,7 @@
 import { describe } from 'vitest';
-import { Analyzer, InvalidRunInBrowserCallError } from './analyzer';
+import { analyze, InvalidRunInBrowserCallError } from './analyze';
 
-describe(Analyzer.name, () => {
+describe(analyze.name, () => {
   it.each([
     [
       'extracts `runInBrowser` sync arrow function',
@@ -161,7 +161,7 @@ runInBrowser('say bye', () => {
       },
     ],
   ])('%s', (_, { content, expectedExtractedFunctions }) => {
-    const extractedFunctions = new Analyzer().analyze({
+    const extractedFunctions = analyze({
       path: 'my-component.spec.ts',
       content,
     });
@@ -171,7 +171,7 @@ runInBrowser('say bye', () => {
 
   it('fails if `runInBrowser` is called without args', () => {
     expect(() =>
-      new Analyzer().analyze({
+      analyze({
         path: 'my-component.spec.ts',
         content: `runInBrowser();`,
       })
@@ -180,7 +180,7 @@ runInBrowser('say bye', () => {
 
   it('fails if `runInBrowser` is called with too many args', () => {
     expect(() =>
-      new Analyzer().analyze({
+      analyze({
         path: 'my-component.spec.ts',
         content: `runInBrowser('say hi', () => console.log('Say hi!'), 'superfluous');`,
       })
@@ -189,7 +189,7 @@ runInBrowser('say bye', () => {
 
   it('fails if `runInBrowser` name is not a string literal', () => {
     expect(() =>
-      new Analyzer().analyze({
+      analyze({
         path: 'my-component.spec.ts',
         content: `
 const name = 'say hi';
@@ -201,7 +201,7 @@ runInBrowser(name, () => console.log('Say hi!'));
 
   it('fails if `runInBrowser` function is not an inline function', () => {
     expect(() =>
-      new Analyzer().analyze({
+      analyze({
         path: 'my-component.spec.ts',
         content: `
 const fn = () => console.log('Say hi!');
