@@ -1,7 +1,9 @@
 import * as ts from 'typescript';
 import {
   createExtractedFunction,
+  createImportedIdentifier,
   ExtractedFunction,
+  ImportedIdentifier,
 } from './extracted-function';
 
 export class Analyzer {
@@ -39,9 +41,26 @@ export class Analyzer {
 
     function visit(node: ts.Node): ts.Node {
       if (ts.isCallExpression(node) && isRunInBrowserCall(node)) {
-        analysisContext.addExtractedFunction(parseRunInBrowserArgs(node));
+        const { code, name } = parseRunInBrowserArgs(node);
+        analysisContext.enterRunInBrowserCall({ code, name });
+        visitChildren(node);
+        analysisContext.exitRunInBrowserCall();
+        return node;
       }
 
+      /* Collect imports used inside `runInBrowser` calls. */
+      if (analysisContext.isInRunInBrowserCall() && ts.isIdentifier(node)) {
+        const importedIdentifier = tryGetImportedIdentifier(node);
+
+        if (importedIdentifier) {
+          analysisContext.addImportedIdentifier(importedIdentifier);
+        }
+      }
+
+      return visitChildren(node);
+    }
+
+    function visitChildren(node: ts.Node): ts.Node {
       return ts.visitEachChild(node, visit, undefined);
     }
 
@@ -66,7 +85,10 @@ export class Analyzer {
       );
     }
 
-    function parseRunInBrowserArgs(node: ts.CallExpression): ExtractedFunction {
+    function parseRunInBrowserArgs(node: ts.CallExpression): {
+      code: string;
+      name?: string;
+    } {
       if (node.arguments.length === 0) {
         throw new InvalidRunInBrowserCallError(
           '`runInBrowser` must have at least one argument'
@@ -104,6 +126,37 @@ export class Analyzer {
     function getDeclaration(node: ts.Node) {
       return typeChecker.getSymbolAtLocation(node)?.getDeclarations()?.at(0);
     }
+
+    function tryGetImportedIdentifier(
+      node: ts.Node
+    ): ImportedIdentifier | undefined {
+      const declaration = getDeclaration(node);
+      const name = declaration?.getText(sourceFile);
+      const moduleSpecifier =
+        findImportDeclaration(declaration)?.moduleSpecifier;
+
+      if (
+        name != null &&
+        moduleSpecifier != null &&
+        ts.isStringLiteral(moduleSpecifier)
+      ) {
+        return createImportedIdentifier({ name, module: moduleSpecifier.text });
+      }
+
+      return undefined;
+    }
+
+    function findImportDeclaration(
+      node?: ts.Node
+    ): ts.ImportDeclaration | undefined {
+      while (node?.parent != null) {
+        node = node.parent;
+        if (ts.isImportDeclaration(node)) {
+          return node;
+        }
+      }
+      return undefined;
+    }
   }
 }
 
@@ -112,15 +165,35 @@ export class InvalidRunInBrowserCallError extends Error {
 }
 
 class AnalysisContext {
+  private _currentRunInBrowserCall: ExtractedFunction | null = null;
   private _extractedFunctions: ExtractedFunction[] = [];
 
-  addExtractedFunction({ code, name }: { code: string; name?: string }) {
-    this._extractedFunctions.push(
-      createExtractedFunction({ code, name, importedIdentifiers: [] })
-    );
+  enterRunInBrowserCall({ code, name }: { code: string; name?: string }) {
+    this._currentRunInBrowserCall = createExtractedFunction({
+      code,
+      name,
+      importedIdentifiers: [],
+    });
+  }
+
+  exitRunInBrowserCall() {
+    if (this._currentRunInBrowserCall) {
+      this._extractedFunctions.push(this._currentRunInBrowserCall);
+      this._currentRunInBrowserCall = null;
+    }
+  }
+
+  isInRunInBrowserCall() {
+    return this._currentRunInBrowserCall != null;
   }
 
   getExtractedFunctions(): ReadonlyArray<ExtractedFunction> {
     return this._extractedFunctions;
+  }
+
+  addImportedIdentifier(importedIdentifier: ImportedIdentifier) {
+    this._currentRunInBrowserCall?.importedIdentifiers.push(
+      createImportedIdentifier(importedIdentifier)
+    );
   }
 }

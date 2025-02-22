@@ -116,16 +116,6 @@ test('...', async ({runInBrowser: run}) => {
         ],
       },
     ],
-  ])('%s', (_, { content, expectedExtractedFunctions }) => {
-    const extractedFunctions = new Analyzer().analyze({
-      path: 'my-component.spec.ts',
-      content,
-    });
-
-    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
-  });
-
-  it.skip.each([
     [
       'extracts imported identifiers used in `runInBrowser`',
       {
