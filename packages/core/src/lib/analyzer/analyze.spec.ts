@@ -1,5 +1,6 @@
 import { describe } from 'vitest';
-import { analyze, InvalidRunInBrowserCallError } from './analyze';
+import { analyze } from './analyze';
+import { InvalidRunInBrowserCallError } from './visit-run-in-browser-calls';
 
 describe(analyze.name, () => {
   it.each([
