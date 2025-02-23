@@ -153,6 +153,16 @@ runInBrowser('say bye', () => {
     ]);
   });
 
+  it.todo('extracts imported identifiers with alias used in `runInBrowser`');
+
+  it.todo(
+    'extracts imported identifiers with default import used in `runInBrowser`'
+  );
+
+  it.todo(
+    'extracts imported identifiers with namespace used in `runInBrowser`'
+  );
+
   it('fails if `runInBrowser` is called without args', () => {
     expect(() => analyzeFileContent(`runInBrowser();`)).toThrow(
       InvalidRunInBrowserCallError
