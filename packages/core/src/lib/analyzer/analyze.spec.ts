@@ -1,126 +1,118 @@
 import { describe } from 'vitest';
 import { analyze } from './analyze';
 import { InvalidRunInBrowserCallError } from './visit-run-in-browser-calls';
+import { ExtractedFunction } from '../extracted-function';
 
 describe(analyze.name, () => {
-  it.each([
-    [
-      'extracts `runInBrowser` sync arrow function',
-      {
-        content: `
+  it('extracts `runInBrowser` sync arrow function', () => {
+    expect(
+      analyzeFileContent(`
 test('...', async ({runInBrowser}) => {
   await runInBrowser(() => console.log('Hello!'));
 });
-`,
-        expectedExtractedFunctions: [
-          {
-            code: `() => console.log('Hello!')`,
-            importedIdentifiers: [],
-          },
-        ],
-      },
-    ],
-    [
-      'extracts `runInBrowser` async arrow function',
+    `)
+    ).toEqual([
       {
-        content: `
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extracts `runInBrowser` async arrow function', () => {
+    expect(
+      analyzeFileContent(`
 test('...', async ({runInBrowser}) => {
   await runInBrowser(async () => console.log('Hello!'));
 });
-`,
-        expectedExtractedFunctions: [
-          {
-            code: `async () => console.log('Hello!')`,
-            importedIdentifiers: [],
-          },
-        ],
-      },
-    ],
-    [
-      'extracts `runInBrowser` function call',
+    `)
+    ).toEqual([
       {
-        content: `
+        code: `async () => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extracts `runInBrowser` function call', () => {
+    expect(
+      analyzeFileContent(`
 test('...', async ({runInBrowser}) => {
   await runInBrowser(function sayHello() { console.log('Hello!'); });
 });
-`,
-        expectedExtractedFunctions: [
-          {
-            code: `function sayHello() { console.log('Hello!'); }`,
-            importedIdentifiers: [],
-          },
-        ],
-      },
-    ],
-    [
-      'extracts `runInBrowser` outside test: in beforeEach',
+    `)
+    ).toEqual([
       {
-        content: `
+        code: `function sayHello() { console.log('Hello!'); }`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extracts `runInBrowser` outside test: in beforeEach', () => {
+    expect(
+      analyzeFileContent(`
 test.beforeEach(async ({runInBrowser}) => {
   await runInBrowser(() => console.log('Hello!'));
 });
-`,
-        expectedExtractedFunctions: [
-          {
-            code: `() => console.log('Hello!')`,
-            importedIdentifiers: [],
-          },
-        ],
-      },
-    ],
-    [
-      'extracts `runInBrowser` outside test: in a function',
+    `)
+    ).toEqual([
       {
-        content: `
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extracts `runInBrowser` outside test: in a function', () => {
+    expect(
+      analyzeFileContent(`
 function somewhereElse() {
   await runInBrowser(() => console.log('Hello!'));
-});
-`,
-        expectedExtractedFunctions: [
-          {
-            code: `() => console.log('Hello!')`,
-            importedIdentifiers: [],
-          },
-        ],
-      },
-    ],
-    [
-      'extracts named `runInBrowser`',
+}
+    `)
+    ).toEqual([
       {
-        content: `
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extracts named `runInBrowser`', () => {
+    expect(
+      analyzeFileContent(`
 test('...', async ({runInBrowser}) => {
   await runInBrowser('say hello', () => console.log('Hello!'));
 });
-    `,
-        expectedExtractedFunctions: [
-          {
-            name: 'say hello',
-            code: `() => console.log('Hello!')`,
-            importedIdentifiers: [],
-          },
-        ],
-      },
-    ],
-    [
-      'extracts aliased `runInBrowser`',
+    `)
+    ).toEqual([
       {
-        content: `
+        name: 'say hello',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extracts aliased `runInBrowser`', () => {
+    expect(
+      analyzeFileContent(`
 test('...', async ({runInBrowser: run}) => {
   await run(() => console.log('Hello!'));
 });
-    `,
-        expectedExtractedFunctions: [
-          {
-            code: `() => console.log('Hello!')`,
-            importedIdentifiers: [],
-          },
-        ],
-      },
-    ],
-    [
-      'extracts imported identifiers used in `runInBrowser`',
+    `)
+    ).toEqual([
       {
-        content: `
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extracts imported identifiers used in `runInBrowser`', () => {
+    expect(
+      analyzeFileContent(`
 import { something, somethingElse, somethingUsedOutside } from './something';
 import { somethingFromAnotherFile } from './another-file';
 
@@ -134,81 +126,69 @@ runInBrowser('say bye', () => {
   console.log(something);
   console.log(somethingFromAnotherFile);
 });
-    `,
-        expectedExtractedFunctions: [
-          expect.objectContaining({
-            name: 'say hi',
-            importedIdentifiers: [
-              {
-                name: 'something',
-                module: './something',
-              },
-            ],
-          }),
-          expect.objectContaining({
-            name: 'say bye',
-            importedIdentifiers: [
-              {
-                name: 'something',
-                module: './something',
-              },
-              {
-                name: 'somethingFromAnotherFile',
-                module: './another-file',
-              },
-            ],
-          }),
+    `)
+    ).toEqual([
+      expect.objectContaining({
+        name: 'say hi',
+        importedIdentifiers: [
+          {
+            name: 'something',
+            module: './something',
+          },
         ],
-      },
-    ],
-  ])('%s', (_, { content, expectedExtractedFunctions }) => {
-    const extractedFunctions = analyze({
-      path: 'my-component.spec.ts',
-      content,
-    });
-
-    expect(extractedFunctions).toEqual(expectedExtractedFunctions);
+      }),
+      expect.objectContaining({
+        name: 'say bye',
+        importedIdentifiers: [
+          {
+            name: 'something',
+            module: './something',
+          },
+          {
+            name: 'somethingFromAnotherFile',
+            module: './another-file',
+          },
+        ],
+      }),
+    ]);
   });
 
   it('fails if `runInBrowser` is called without args', () => {
-    expect(() =>
-      analyze({
-        path: 'my-component.spec.ts',
-        content: `runInBrowser();`,
-      })
-    ).toThrow(InvalidRunInBrowserCallError);
+    expect(() => analyzeFileContent(`runInBrowser();`)).toThrow(
+      InvalidRunInBrowserCallError
+    );
   });
 
   it('fails if `runInBrowser` is called with too many args', () => {
     expect(() =>
-      analyze({
-        path: 'my-component.spec.ts',
-        content: `runInBrowser('say hi', () => console.log('Say hi!'), 'superfluous');`,
-      })
+      analyzeFileContent(
+        `runInBrowser('say hi', () => console.log('Say hi!'), 'superfluous');`
+      )
     ).toThrow(InvalidRunInBrowserCallError);
   });
 
   it('fails if `runInBrowser` name is not a string literal', () => {
     expect(() =>
-      analyze({
-        path: 'my-component.spec.ts',
-        content: `
+      analyzeFileContent(`
 const name = 'say hi';
 runInBrowser(name, () => console.log('Say hi!'));
-        `,
-      })
+        `)
     ).toThrow(InvalidRunInBrowserCallError);
   });
 
   it('fails if `runInBrowser` function is not an inline function', () => {
     expect(() =>
-      analyze({
-        path: 'my-component.spec.ts',
-        content: `
+      analyzeFileContent(`
 const fn = () => console.log('Say hi!');
 runInBrowser(fn);
-        `,
-      })
+        `)
     ).toThrow(InvalidRunInBrowserCallError);
   });
 });
+
+function analyzeFileContent(content: string): ExtractedFunction[] {
+  return analyze({
+    path: 'my-component.spec.ts',
+    content,
+  });
+}
