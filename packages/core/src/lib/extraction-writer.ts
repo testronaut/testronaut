@@ -38,15 +38,32 @@ export class ExtractionWriter {
    * @deprecated 🚧 work in progress
    */
   async write(fileAnalysis: FileAnalysis) {
-    const path = join(
-      this.#destPath,
-      relative(this.#projectRoot, fileAnalysis.path)
+    const entrypointPath = join(this.#destPath, 'entrypoint.ts');
+    const relativePath = relative(this.#projectRoot, fileAnalysis.path);
+    const path = join(this.#destPath, relativePath);
+
+    await this.#fileSystem.writeFile(
+      entrypointPath,
+      this.#generateExtractedFunctionsImportLine({
+        hash: fileAnalysis.hash,
+        path: relativePath,
+      })
     );
 
     await this.#fileSystem.writeFile(
       path,
       this.#generateExtractedFunctionsFile(fileAnalysis.extractedFunctions)
     );
+  }
+
+  #generateExtractedFunctionsImportLine({
+    hash,
+    path,
+  }: {
+    hash: string;
+    path: string;
+  }) {
+    return `globalThis['${hash}'] = () => import('./${path}');`;
   }
 
   #generateExtractedFunctionsFile(extractedFunctions: ExtractedFunction[]) {

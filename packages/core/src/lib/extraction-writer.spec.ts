@@ -24,9 +24,8 @@ describe(ExtractionWriter.name, () => {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      // TODO
-      //       '/project-root/test-server/entrypoint.ts': `\
-      // globalThis['hash|my-component.spec.ts'] = () => import('./src/app/my-component.spec.ts');`,
+      '/my-project/test-server/entrypoint.ts': `\
+globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
       '/my-project/test-server/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
     "": () => { console.log('Hi!'); }
