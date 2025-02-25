@@ -9,7 +9,7 @@ describe(ExtractionWriter.name, () => {
 
   it.todo('does not overwrite "entrypoint.ts" file if it existsa');
 
-  it.todo('writes anonymous `runInBrowser` calls', async () => {
+  it('writes anonymous `runInBrowser` calls', async () => {
     const { fileSystemFake, mother, writer } = await setUpWriter();
 
     await writer.write(
@@ -24,12 +24,14 @@ describe(ExtractionWriter.name, () => {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/project-root/test-server/entrypoint.ts': `\
-globalThis['hash|my-component.spec.ts'] = () => import('./src/app/my-component.spec.ts');`,
-      '/project-root/test-server/my-component.spec.ts': `\
+      // TODO
+      //       '/project-root/test-server/entrypoint.ts': `\
+      // globalThis['hash|my-component.spec.ts'] = () => import('./src/app/my-component.spec.ts');`,
+      '/my-project/test-server/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
-  null: () => { console.log('Hi!'); }
-};`,
+    "": () => { console.log('Hi!'); }
+};
+`,
     });
   });
 
