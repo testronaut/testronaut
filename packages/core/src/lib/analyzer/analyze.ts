@@ -2,7 +2,7 @@ import {
   createExtractedFunction,
   ExtractedFunction,
   ImportedIdentifier,
-} from '../extracted-function';
+} from '../file-analysis';
 import { AnalysisContext, FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
