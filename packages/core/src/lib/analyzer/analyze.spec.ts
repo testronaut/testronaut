@@ -1,7 +1,7 @@
 import { describe } from 'vitest';
 import { analyze } from './analyze';
 import { InvalidRunInBrowserCallError } from './visit-run-in-browser-calls';
-import { ExtractedFunction } from '../extracted-function';
+import { ExtractedFunction } from '../file-analysis';
 
 describe(analyze.name, () => {
   it('extracts `runInBrowser` sync arrow function', () => {

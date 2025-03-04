@@ -1,7 +1,7 @@
 import { AnalysisContext } from './core';
 import * as ts from 'typescript';
 import { getDeclaration } from './utils';
-import { createExtractedFunction } from '../extracted-function';
+import { createExtractedFunction } from '../file-analysis';
 
 const _RUN_IN_BROWSER_IDENTIFIER = 'runInBrowser';
 
