@@ -83,6 +83,8 @@ export const extractedFunctionsMap = {
     });
   });
 
+  it.todo('should overwrite extraction files if they exist');
+
   it.todo('updates entrypoint.ts');
 
   it.todo('writes imports');
