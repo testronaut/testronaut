@@ -5,15 +5,24 @@ import { fileAnalysisMother } from './file-analysis.mother';
 import { FileSystemFake } from './infra/file-system.fake';
 
 describe(ExtractionWriter.name, () => {
-  it.todo('creates "entrypoint.ts" file on init');
+  it('creates "entrypoint.ts" file on init', async () => {
+    const { fileSystemFake, writer } = await setUpWriter();
+
+    await writer.init();
+
+    expect(fileSystemFake.getFiles()).toEqual({
+      '/my-project/test-server/entrypoint.ts': '',
+    });
+  });
 
   it.todo('does not overwrite "entrypoint.ts" file if it existsa');
 
   it('writes anonymous `runInBrowser` calls', async () => {
-    const { fileSystemFake, mother, writer } = await setUpWriter();
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpWriter();
 
     await writer.write(
-      mother
+      projectFileAnalysisMother
         .withBasicInfo()
         .withExtractedFunction(
           createExtractedFunction({
@@ -34,7 +43,32 @@ export const extractedFunctionsMap = {
     });
   });
 
-  it.todo('writes named `runInBrowser` calls');
+  it('writes named `runInBrowser` calls', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            name: 'sayHello',
+            code: `() => { console.log('Hi!'); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toEqual({
+      '/my-project/test-server/entrypoint.ts': `\
+globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
+      '/my-project/test-server/my-component.spec.ts': `\
+export const extractedFunctionsMap = {
+    "sayHello": () => { console.log('Hi!'); }
+};
+`,
+    });
+  });
 
   it.todo('updates entrypoint.ts');
 
@@ -59,7 +93,7 @@ async function setUpWriter() {
 
   return {
     fileSystemFake,
-    mother: fileAnalysisMother.withProjectRoot(projectRoot),
+    projectFileAnalysisMother: fileAnalysisMother.withProjectRoot(projectRoot),
     writer,
   };
 }

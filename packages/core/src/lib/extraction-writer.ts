@@ -11,6 +11,7 @@ import { FileSystemImpl } from './infra/file-system.impl';
 export class ExtractionWriter {
   readonly #projectRoot: string;
   readonly #destPath: string;
+  readonly #entryPointPath: string;
   readonly #fileSystem: FileSystem;
 
   constructor({
@@ -25,25 +26,25 @@ export class ExtractionWriter {
     this.#projectRoot = projectRoot;
     this.#destPath = destPath;
     this.#fileSystem = fileSystem;
+    this.#entryPointPath = join(destPath, 'entrypoint.ts');
   }
 
   /**
    * @deprecated 🚧 work in progress
    */
   async init() {
-    // TODO: create entrypoint.ts file if not exists
+    await this.#fileSystem.writeFile(this.#entryPointPath, '');
   }
 
   /**
    * @deprecated 🚧 work in progress
    */
   async write(fileAnalysis: FileAnalysis) {
-    const entrypointPath = join(this.#destPath, 'entrypoint.ts');
     const relativePath = relative(this.#projectRoot, fileAnalysis.path);
     const path = join(this.#destPath, relativePath);
 
     await this.#fileSystem.writeFile(
-      entrypointPath,
+      this.#entryPointPath,
       this.#generateExtractedFunctionsImportLine({
         hash: fileAnalysis.hash,
         path: relativePath,
