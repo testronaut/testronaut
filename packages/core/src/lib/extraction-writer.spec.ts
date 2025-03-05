@@ -6,9 +6,7 @@ import { FileSystemFake } from './infra/file-system.fake';
 
 describe(ExtractionWriter.name, () => {
   it('creates "entrypoint.ts" file on init', async () => {
-    const { fileSystemFake, writer } = await setUpWriter();
-
-    await writer.init();
+    const { fileSystemFake } = await setUpInitializedWriter();
 
     expect(fileSystemFake.getFiles()).toEqual({
       '/my-project/test-server/entrypoint.ts': '',
@@ -32,7 +30,7 @@ describe(ExtractionWriter.name, () => {
 
   it('writes anonymous `runInBrowser` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
-      await setUpWriter();
+      await setUpInitializedWriter();
 
     await writer.write(
       projectFileAnalysisMother
@@ -58,7 +56,7 @@ export const extractedFunctionsMap = {
 
   it('writes named `runInBrowser` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
-      await setUpWriter();
+      await setUpInitializedWriter();
 
     await writer.write(
       projectFileAnalysisMother
@@ -85,7 +83,7 @@ export const extractedFunctionsMap = {
 
   it('overwrites extracted functions if file exists', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
-      await setUpWriter();
+      await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
       '/my-project/test-server/my-component.spec.ts',
@@ -114,7 +112,7 @@ export const extractedFunctionsMap = {
 
   it.todo('updates entrypoint.ts', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
-      await setUpWriter();
+      await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
       '/my-project/test-server/entrypoint.ts',
@@ -145,6 +143,14 @@ globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts')
 
   it.todo('merges imports');
 });
+
+async function setUpInitializedWriter() {
+  const { writer, ...utils } = await setUpWriter();
+
+  await writer.init();
+
+  return { writer, ...utils };
+}
 
 async function setUpWriter() {
   const fileSystemFake = new FileSystemFake();
