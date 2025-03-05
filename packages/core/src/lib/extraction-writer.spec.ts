@@ -15,7 +15,20 @@ describe(ExtractionWriter.name, () => {
     });
   });
 
-  it.todo('does not overwrite "entrypoint.ts" file if it existsa');
+  it.todo('does not overwrite "entrypoint.ts" file if it exists', async () => {
+    const { fileSystemFake, writer } = await setUpWriter();
+
+    await fileSystemFake.writeFile(
+      '/my-project/test-server/entrypoint.ts',
+      'const INITIAL_CONTENT = 42;'
+    );
+
+    await writer.init();
+
+    expect(fileSystemFake.getFiles()).toEqual({
+      '/my-project/test-server/entrypoint.ts': 'const INITIAL_CONTENT = 42;',
+    });
+  });
 
   it('writes anonymous `runInBrowser` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
