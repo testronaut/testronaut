@@ -112,7 +112,32 @@ export const extractedFunctionsMap = {
     });
   });
 
-  it.todo('updates entrypoint.ts');
+  it.todo('updates entrypoint.ts', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpWriter();
+
+    await fileSystemFake.writeFile(
+      '/my-project/test-server/entrypoint.ts',
+      `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`
+    );
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            code: `() => { console.log('Hi!'); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/test-server/entrypoint.ts': `\
+globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');
+globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
+    });
+  });
 
   it.todo('writes imports');
 
