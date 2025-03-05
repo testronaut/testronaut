@@ -69,7 +69,7 @@ export class ExtractionWriter {
 
     await this.#upsertLine(
       this.#entryPointPath,
-      fileAnalysis.hash,
+      relativePath,
       extractedFunctionsImportLine
     );
   }

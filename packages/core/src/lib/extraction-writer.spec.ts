@@ -137,6 +137,32 @@ globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts')
     });
   });
 
+  it('updates hashes in entrypoint.ts', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await fileSystemFake.writeFile(
+      '/my-project/test-server/entrypoint.ts',
+      `globalThis['OLD_HASH'] = () => import('./my-component.spec.ts');`
+    );
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            code: `() => { console.log('Hi!'); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/test-server/entrypoint.ts': `\
+globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
+    });
+  });
+
   it('writes imports', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
       await setUpInitializedWriter();
