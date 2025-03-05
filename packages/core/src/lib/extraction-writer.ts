@@ -61,7 +61,8 @@ export class ExtractionWriter {
 
     await this.#fileSystem.writeFile(
       path,
-      this.#generateExtractedFunctionsFile(fileAnalysis.extractedFunctions)
+      this.#generateExtractedFunctionsFile(fileAnalysis.extractedFunctions),
+      { overwrite: true }
     );
   }
 

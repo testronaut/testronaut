@@ -83,7 +83,34 @@ export const extractedFunctionsMap = {
     });
   });
 
-  it.todo('should overwrite extraction files if they exist');
+  it('overwrites extracted functions if file exists', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpWriter();
+
+    await fileSystemFake.writeFile(
+      '/my-project/test-server/my-component.spec.ts',
+      'export const extractedFunctionsMap = { "": () => { console.log("Hi!"); } };'
+    );
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            code: `() => { console.log('Hello!'); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/test-server/my-component.spec.ts': `\
+export const extractedFunctionsMap = {
+    "": () => { console.log('Hello!'); }
+};
+`,
+    });
+  });
 
   it.todo('updates entrypoint.ts');
 
