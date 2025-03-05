@@ -1,8 +1,8 @@
 import { describe } from 'vitest';
 import { ExtractionWriter } from './extraction-writer';
-import { createExtractedFunction } from './file-analysis';
-import { fileAnalysisMother } from './file-analysis.mother';
-import { FileSystemFake } from './infra/file-system.fake';
+import { createExtractedFunction } from '../file-analysis';
+import { fileAnalysisMother } from '../file-analysis.mother';
+import { FileSystemFake } from '../infra/file-system.fake';
 
 describe(ExtractionWriter.name, () => {
   it('creates "entrypoint.ts" file on init', async () => {

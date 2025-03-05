@@ -1,13 +1,17 @@
 import * as ts from 'typescript';
 import { join, relative } from 'node:path/posix';
 
-import { ExtractedFunction, FileAnalysis } from './file-analysis';
+import { ExtractedFunction, FileAnalysis } from '../file-analysis';
 import {
   FileDoesNotExistError,
   FileExistsError,
   FileSystem,
-} from './infra/file-system';
-import { FileSystemImpl } from './infra/file-system.impl';
+} from '../infra/file-system';
+import { FileSystemImpl } from '../infra/file-system.impl';
+import {
+  generateExportedConstObjectLiteral,
+  generateImportDeclaration,
+} from './ast-factory';
 
 /**
  * @deprecated 🚧 work in progress
@@ -85,41 +89,11 @@ export class ExtractionWriter {
   }
 
   #generateExtractedFunctionsFile(extractedFunctions: ExtractedFunction[]) {
-    const importDeclarations =
-      this.#generateImportDeclarations(extractedFunctions);
-
-    const propertyAssignments = extractedFunctions.map((extractedFunction) =>
-      ts.factory.createPropertyAssignment(
-        ts.factory.createStringLiteral(extractedFunction.name ?? ''),
-        ts.factory.createIdentifier(extractedFunction.code)
-      )
-    );
-
-    /* {'': () => {...}} */
-    const objectLiteral = ts.factory.createObjectLiteralExpression(
-      propertyAssignments,
-      true
-    );
-
-    /* extractedFunctionsMap = {'': () => {...}} */
-    const variableDeclaration = ts.factory.createVariableDeclaration(
-      ts.factory.createIdentifier('extractedFunctionsMap'),
-      undefined,
-      undefined,
-      objectLiteral
-    );
-
-    /* export const extractedFunctionsMap = {'': () => {...}} */
-    const variableStatement = ts.factory.createVariableStatement(
-      [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-      ts.factory.createVariableDeclarationList(
-        [variableDeclaration],
-        ts.NodeFlags.Const
-      )
-    );
-
     const sourceFile = ts.factory.createSourceFile(
-      [...importDeclarations, variableStatement],
+      [
+        ...this.#generateImportDeclarations(extractedFunctions),
+        this.#generateExtractedFunctionsVariableStatement(extractedFunctions),
+      ],
       ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
       ts.NodeFlags.None
     );
@@ -129,28 +103,31 @@ export class ExtractionWriter {
       .printFile(sourceFile);
   }
 
+  #generateExtractedFunctionsVariableStatement(
+    extractedFunctions: ExtractedFunction[]
+  ) {
+    const extractedFunctionsRecord = extractedFunctions.reduce<
+      Record<string, string>
+    >((acc, extractedFunction) => {
+      acc[extractedFunction.name ?? ''] = extractedFunction.code;
+      return acc;
+    }, {});
+
+    /* export const extractedFunctionsMap = {'': () => {...}} */
+    return generateExportedConstObjectLiteral({
+      variableName: 'extractedFunctionsMap',
+      value: extractedFunctionsRecord,
+    });
+  }
+
   #generateImportDeclarations(extractedFunctions: ExtractedFunction[]) {
     const importIdentifiers = extractedFunctions
       .map((extractedFunction) => extractedFunction.importedIdentifiers)
       .flat();
 
-    return importIdentifiers.map((importIdentifier) => {
-      return ts.factory.createImportDeclaration(
-        undefined,
-        ts.factory.createImportClause(
-          false,
-          undefined,
-          ts.factory.createNamedImports([
-            ts.factory.createImportSpecifier(
-              false,
-              undefined,
-              ts.factory.createIdentifier(importIdentifier.name)
-            ),
-          ])
-        ),
-        ts.factory.createStringLiteral(importIdentifier.module)
-      );
-    });
+    return importIdentifiers.map((importIdentifier) =>
+      generateImportDeclaration(importIdentifier)
+    );
   }
 
   async #upsertLine(path: string, match: string, replacement: string) {
