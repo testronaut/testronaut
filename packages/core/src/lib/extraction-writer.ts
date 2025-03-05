@@ -2,7 +2,11 @@ import * as ts from 'typescript';
 import { join, relative } from 'node:path/posix';
 
 import { ExtractedFunction, FileAnalysis } from './file-analysis';
-import { FileExistsError, FileSystem } from './infra/file-system';
+import {
+  FileDoesNotExistError,
+  FileExistsError,
+  FileSystem,
+} from './infra/file-system';
 import { FileSystemImpl } from './infra/file-system.impl';
 
 /**
@@ -52,17 +56,21 @@ export class ExtractionWriter {
     const path = join(this.#destPath, relativePath);
 
     await this.#fileSystem.writeFile(
-      this.#entryPointPath,
-      this.#generateExtractedFunctionsImportLine({
-        hash: fileAnalysis.hash,
-        path: relativePath,
-      })
-    );
-
-    await this.#fileSystem.writeFile(
       path,
       this.#generateExtractedFunctionsFile(fileAnalysis.extractedFunctions),
       { overwrite: true }
+    );
+
+    const extractedFunctionsImportLine =
+      this.#generateExtractedFunctionsImportLine({
+        hash: fileAnalysis.hash,
+        path: relativePath,
+      });
+
+    await this.#upsertLine(
+      this.#entryPointPath,
+      fileAnalysis.hash,
+      extractedFunctionsImportLine
     );
   }
 
@@ -116,5 +124,41 @@ export class ExtractionWriter {
     return ts
       .createPrinter({ newLine: ts.NewLineKind.LineFeed })
       .printFile(sourceFile);
+  }
+
+  async #upsertLine(path: string, match: string, replacement: string) {
+    const content = await this.#tryReadFile(path);
+    const lines = content?.split('\n') ?? [];
+
+    let replaced = false;
+
+    const newLines = lines.map((line) => {
+      if (line.includes(match)) {
+        replaced = true;
+        return replacement;
+      }
+
+      return line;
+    });
+
+    if (!replaced) {
+      newLines.push(replacement);
+    }
+
+    await this.#fileSystem.writeFile(path, newLines.join('\n'), {
+      overwrite: true,
+    });
+  }
+
+  async #tryReadFile(path: string): Promise<string | null> {
+    try {
+      return await this.#fileSystem.readFile(path);
+    } catch (error) {
+      if (error instanceof FileDoesNotExistError) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 }

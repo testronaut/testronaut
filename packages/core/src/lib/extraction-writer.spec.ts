@@ -44,7 +44,7 @@ describe(ExtractionWriter.name, () => {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/entrypoint.ts': `\
+      '/my-project/test-server/entrypoint.ts': `
 globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
       '/my-project/test-server/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
@@ -71,7 +71,7 @@ export const extractedFunctionsMap = {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/entrypoint.ts': `\
+      '/my-project/test-server/entrypoint.ts': `
 globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
       '/my-project/test-server/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
@@ -110,7 +110,7 @@ export const extractedFunctionsMap = {
     });
   });
 
-  it.todo('updates entrypoint.ts', async () => {
+  it('updates entrypoint.ts', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
       await setUpInitializedWriter();
 

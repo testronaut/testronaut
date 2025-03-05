@@ -1,5 +1,10 @@
 export interface FileSystem {
   /**
+   * @throws {FileDoesNotExistError} if file does not exist at path.
+   */
+  readFile(path: string): Promise<string>;
+
+  /**
    * @throws {FileExistsError} if file already exists at path.
    * This error is never thrown if `options.overwrite` is set to `true`.
    */
@@ -12,6 +17,14 @@ export interface FileSystem {
 
 export interface WriteFileOptions {
   overwrite?: boolean;
+}
+
+export class FileDoesNotExistError extends Error {
+  override name = 'FileDoesNotExistError';
+
+  constructor(path: string) {
+    super(`File does not exist at path: ${path}`);
+  }
 }
 
 export class FileExistsError extends Error {
