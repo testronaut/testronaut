@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import { join, relative } from 'node:path/posix';
 
 import { ExtractedFunction, FileAnalysis } from './file-analysis';
-import { FileSystem } from './infra/file-system';
+import { FileExistsError, FileSystem } from './infra/file-system';
 import { FileSystemImpl } from './infra/file-system.impl';
 
 /**
@@ -33,7 +33,15 @@ export class ExtractionWriter {
    * @deprecated 🚧 work in progress
    */
   async init() {
-    await this.#fileSystem.writeFile(this.#entryPointPath, '');
+    try {
+      await this.#fileSystem.writeFile(this.#entryPointPath, '');
+    } catch (error) {
+      if (error instanceof FileExistsError) {
+        return;
+      }
+
+      throw error;
+    }
   }
 
   /**

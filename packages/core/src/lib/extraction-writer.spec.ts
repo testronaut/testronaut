@@ -15,7 +15,7 @@ describe(ExtractionWriter.name, () => {
     });
   });
 
-  it.todo('does not overwrite "entrypoint.ts" file if it exists', async () => {
+  it('does not overwrite "entrypoint.ts" file if it exists', async () => {
     const { fileSystemFake, writer } = await setUpWriter();
 
     await fileSystemFake.writeFile(
