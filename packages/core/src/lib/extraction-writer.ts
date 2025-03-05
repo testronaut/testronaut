@@ -85,6 +85,9 @@ export class ExtractionWriter {
   }
 
   #generateExtractedFunctionsFile(extractedFunctions: ExtractedFunction[]) {
+    const importDeclarations =
+      this.#generateImportDeclarations(extractedFunctions);
+
     const propertyAssignments = extractedFunctions.map((extractedFunction) =>
       ts.factory.createPropertyAssignment(
         ts.factory.createStringLiteral(extractedFunction.name ?? ''),
@@ -116,7 +119,7 @@ export class ExtractionWriter {
     );
 
     const sourceFile = ts.factory.createSourceFile(
-      [variableStatement],
+      [...importDeclarations, variableStatement],
       ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
       ts.NodeFlags.None
     );
@@ -124,6 +127,30 @@ export class ExtractionWriter {
     return ts
       .createPrinter({ newLine: ts.NewLineKind.LineFeed })
       .printFile(sourceFile);
+  }
+
+  #generateImportDeclarations(extractedFunctions: ExtractedFunction[]) {
+    const importIdentifiers = extractedFunctions
+      .map((extractedFunction) => extractedFunction.importedIdentifiers)
+      .flat();
+
+    return importIdentifiers.map((importIdentifier) => {
+      return ts.factory.createImportDeclaration(
+        undefined,
+        ts.factory.createImportClause(
+          false,
+          undefined,
+          ts.factory.createNamedImports([
+            ts.factory.createImportSpecifier(
+              false,
+              undefined,
+              ts.factory.createIdentifier(importIdentifier.name)
+            ),
+          ])
+        ),
+        ts.factory.createStringLiteral(importIdentifier.module)
+      );
+    });
   }
 
   async #upsertLine(path: string, match: string, replacement: string) {

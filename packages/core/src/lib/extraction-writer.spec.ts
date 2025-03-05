@@ -137,7 +137,38 @@ globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts')
     });
   });
 
-  it.todo('writes imports');
+  it('writes imports', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            importedIdentifiers: [
+              {
+                name: 'MyComponent',
+                module: '@my-lib/my-component',
+              },
+            ],
+            code: `() => { console.log(MyComponent); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toEqual({
+      '/my-project/test-server/entrypoint.ts': `
+globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
+      '/my-project/test-server/my-component.spec.ts': `\
+import { MyComponent } from "@my-lib/my-component";
+export const extractedFunctionsMap = {
+    "": () => { console.log(MyComponent); }
+};
+`,
+    });
+  });
 
   it.todo('relativizes imports');
 
