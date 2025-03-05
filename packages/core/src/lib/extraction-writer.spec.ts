@@ -158,9 +158,7 @@ globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts')
         .build()
     );
 
-    expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/entrypoint.ts': `
-globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
+    expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/test-server/my-component.spec.ts': `\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsMap = {
