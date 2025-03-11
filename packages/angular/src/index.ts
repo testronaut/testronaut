@@ -1,1 +1,1 @@
-export * from './lib/angular/angular.component';
+export { withCt } from './lib/define-config-with-ct';

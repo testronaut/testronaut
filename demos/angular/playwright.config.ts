@@ -49,6 +49,13 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
 
+    {
+      name: 'ct-chromium',
+      use: { ...devices['Desktop Chrome'] },
+      testDir: 'ct-tests',
+      testMatch: '**/*.ct-spec.ts',
+    },
+
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',

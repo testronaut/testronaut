@@ -1,13 +1,18 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { NxWelcomeComponent } from './nx-welcome.component';
+import { RouterLinkWithHref, RouterOutlet } from '@angular/router';
 
 @Component({
-  imports: [NxWelcomeComponent, RouterModule],
   selector: 'app-root',
-  template: `<app-nx-welcome></app-nx-welcome> <router-outlet></router-outlet>`,
-  styles: ``,
+  template: `<h1>Angular Demo for Playwright Component Testing</h1>
+    <p>
+      This application contains two components which are tested by Playwright CT
+    </p>
+    <ul>
+      <li><a routerLink="/basket">Shop Basket</a></li>
+      <li><a routerLink="/quiz">Quiz</a></li>
+    </ul>
+
+    <router-outlet /> `,
+  imports: [RouterOutlet, RouterLinkWithHref],
 })
-export class AppComponent {
-  title = 'demos-angular';
-}
+export class AppComponent {}
