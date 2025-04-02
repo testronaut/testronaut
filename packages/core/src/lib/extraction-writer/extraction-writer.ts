@@ -142,11 +142,11 @@ export class ExtractionWriter {
     importIdentifiers = importIdentifiers.map((importIdentifier) => {
       return {
         ...importIdentifier,
-        module: adjustImportPath(
-          fileAnalysis.path,
+        module: adjustImportPath({
+          srcFilePath: fileAnalysis.path,
           destFilePath,
-          importIdentifier.module
-        ),
+          importPath: importIdentifier.module,
+        }),
       };
     });
 

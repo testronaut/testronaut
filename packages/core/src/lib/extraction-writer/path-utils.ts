@@ -7,11 +7,15 @@ import { dirname, join, relative } from 'node:path/posix';
  * @param destFilePath
  * @param importPath
  */
-export function adjustImportPath(
-  srcFilePath: string,
-  destFilePath: string,
-  importPath: string
-) {
+export function adjustImportPath({
+  srcFilePath,
+  destFilePath,
+  importPath,
+}: {
+  srcFilePath: string;
+  destFilePath: string;
+  importPath: string;
+}) {
   if (importPath.startsWith('./') || importPath.startsWith('../')) {
     return relative(
       dirname(destFilePath),
