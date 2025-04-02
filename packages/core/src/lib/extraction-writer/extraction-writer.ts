@@ -68,11 +68,10 @@ export class ExtractionWriter {
       { overwrite: true }
     );
 
-    const extractedFunctionsImportLine =
-      this.#generateExtractedFunctionsImportLine({
-        hash: fileAnalysis.hash,
-        path: relativePath,
-      });
+    const extractedFunctionsImportLine = this.#generateEntrypointGlobal({
+      hash: fileAnalysis.hash,
+      path: relativePath,
+    });
 
     await this.#upsertLine(
       this.#entryPointPath,
@@ -81,13 +80,11 @@ export class ExtractionWriter {
     );
   }
 
-  #generateExtractedFunctionsImportLine({
-    hash,
-    path,
-  }: {
-    hash: string;
-    path: string;
-  }) {
+  /**
+   * Generates the global function that will be added to the entrypoint file.
+   * e.g. `globalThis['hash123'] = () => import('./src/my-component.spec.ts');`
+   */
+  #generateEntrypointGlobal({ hash, path }: { hash: string; path: string }) {
     return `globalThis['${hash}'] = () => import('./${path}');`;
   }
 
