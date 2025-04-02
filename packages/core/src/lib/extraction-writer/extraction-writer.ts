@@ -135,23 +135,17 @@ export class ExtractionWriter {
     destFilePath: string;
     fileAnalysis: FileAnalysis;
   }) {
-    let importIdentifiers = fileAnalysis.extractedFunctions
+    return fileAnalysis.extractedFunctions
       .map((extractedFunction) => extractedFunction.importedIdentifiers)
-      .flat();
-
-    importIdentifiers = importIdentifiers.map((importIdentifier) => {
-      return {
+      .flat()
+      .map((importIdentifier) => ({
         ...importIdentifier,
         module: adjustImportPath({
           srcFilePath: fileAnalysis.path,
           destFilePath,
           importPath: importIdentifier.module,
         }),
-      };
-    });
-
-    return importIdentifiers.map((importIdentifier) =>
-      generateImportDeclaration(importIdentifier)
-    );
+      }))
+      .map((importIdentifier) => generateImportDeclaration(importIdentifier));
   }
 }
