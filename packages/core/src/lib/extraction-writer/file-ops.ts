@@ -1,4 +1,8 @@
-import { FileDoesNotExistError, FileSystem } from '../infra/file-system';
+import {
+  FileDoesNotExistError,
+  FileExistsError,
+  FileSystem,
+} from '../infra/file-system';
 
 /**
  * A collection of convenient file operations wrapping the file system.
@@ -31,6 +35,17 @@ export class FileOps {
     await this.#fileSystem.writeFile(path, newLines.join('\n'), {
       overwrite: true,
     });
+  }
+
+  async createFileIfNotExists(path: string) {
+    try {
+      await this.#fileSystem.writeFile(path, '');
+    } catch (error) {
+      if (error instanceof FileExistsError) {
+        return;
+      }
+      throw error;
+    }
   }
 
   async #tryReadFile(path: string): Promise<string | null> {

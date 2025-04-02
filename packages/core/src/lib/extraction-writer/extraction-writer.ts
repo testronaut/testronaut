@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import { join, relative } from 'node:path/posix';
 
 import { ExtractedFunction, FileAnalysis } from '../file-analysis';
-import { FileExistsError, FileSystem } from '../infra/file-system';
+import { FileSystem } from '../infra/file-system';
 import { FileSystemImpl } from '../infra/file-system.impl';
 import {
   generateExportedConstObjectLiteral,
@@ -41,15 +41,7 @@ export class ExtractionWriter {
    * @deprecated 🚧 work in progress
    */
   async init() {
-    try {
-      await this.#fileSystem.writeFile(this.#entryPointPath, '');
-    } catch (error) {
-      if (error instanceof FileExistsError) {
-        return;
-      }
-
-      throw error;
-    }
+    await this.#fileOps.createFileIfNotExists(this.#entryPointPath);
   }
 
   /**
@@ -68,15 +60,13 @@ export class ExtractionWriter {
       { overwrite: true }
     );
 
-    const extractedFunctionsImportLine = this.#generateEntrypointGlobal({
-      hash: fileAnalysis.hash,
-      path: relativePath,
-    });
-
     await this.#fileOps.upsertLine(
       this.#entryPointPath,
       relativePath,
-      extractedFunctionsImportLine
+      this.#generateEntrypointGlobal({
+        hash: fileAnalysis.hash,
+        path: relativePath,
+      })
     );
   }
 
@@ -88,13 +78,25 @@ export class ExtractionWriter {
     return `globalThis['${hash}'] = () => import('./${path}');`;
   }
 
+  /**
+   * Generates the content of the extracted functions file.
+   *
+   * e.g., `
+   * import { greetings } from './greetings';
+   *
+   * export const extractedFunctionsMap = {
+   *   '': () => { console.log(greetings); }
+   *   'Bye!': () => { console.log('Bye!'); }
+   * };
+   * `
+   */
   #generateExtractedFunctionsFile({
     destFilePath,
     fileAnalysis,
   }: {
     destFilePath: string;
     fileAnalysis: FileAnalysis;
-  }) {
+  }): string {
     const sourceFile = ts.factory.createSourceFile(
       [
         ...this.#generateImportDeclarations({ destFilePath, fileAnalysis }),
@@ -111,23 +113,12 @@ export class ExtractionWriter {
       .printFile(sourceFile);
   }
 
-  #generateExtractedFunctionsVariableStatement(
-    extractedFunctions: ExtractedFunction[]
-  ) {
-    const extractedFunctionsRecord = extractedFunctions.reduce<
-      Record<string, string>
-    >((acc, extractedFunction) => {
-      acc[extractedFunction.name ?? ''] = extractedFunction.code;
-      return acc;
-    }, {});
-
-    /* export const extractedFunctionsMap = {'': () => {...}} */
-    return generateExportedConstObjectLiteral({
-      variableName: 'extractedFunctionsMap',
-      value: extractedFunctionsRecord,
-    });
-  }
-
+  /**
+   * Generates the import declarations for the extracted functions.
+   * This also adjusts the import path of relative imports.
+   *
+   * e.g., `import { greetings } from './greetings';`
+   */
   #generateImportDeclarations({
     destFilePath,
     fileAnalysis,
@@ -147,5 +138,26 @@ export class ExtractionWriter {
         }),
       }))
       .map((importIdentifier) => generateImportDeclaration(importIdentifier));
+  }
+
+  /**
+   * Generates the variable statement for the extracted functions.
+   * e.g., `export const extractedFunctionsMap = {'': () => {...}}`
+   */
+  #generateExtractedFunctionsVariableStatement(
+    extractedFunctions: ExtractedFunction[]
+  ) {
+    const extractedFunctionsRecord = extractedFunctions.reduce<
+      Record<string, string>
+    >((acc, extractedFunction) => {
+      acc[extractedFunction.name ?? ''] = extractedFunction.code;
+      return acc;
+    }, {});
+
+    /* export const extractedFunctionsMap = {'': () => {...}} */
+    return generateExportedConstObjectLiteral({
+      variableName: 'extractedFunctionsMap',
+      value: extractedFunctionsRecord,
+    });
   }
 }
