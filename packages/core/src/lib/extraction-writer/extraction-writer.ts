@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { join, relative } from 'node:path/posix';
+import { dirname, join, relative } from 'node:path/posix';
 
 import { ExtractedFunction, FileAnalysis } from '../file-analysis';
 import {
@@ -57,11 +57,14 @@ export class ExtractionWriter {
    */
   async write(fileAnalysis: FileAnalysis) {
     const relativePath = relative(this.#projectRoot, fileAnalysis.path);
-    const path = join(this.#destPath, relativePath);
+    const destFilePath = join(this.#destPath, relativePath);
 
     await this.#fileSystem.writeFile(
-      path,
-      this.#generateExtractedFunctionsFile(fileAnalysis.extractedFunctions),
+      destFilePath,
+      this.#generateExtractedFunctionsFile({
+        destFilePath,
+        fileAnalysis,
+      }),
       { overwrite: true }
     );
 
@@ -88,11 +91,19 @@ export class ExtractionWriter {
     return `globalThis['${hash}'] = () => import('./${path}');`;
   }
 
-  #generateExtractedFunctionsFile(extractedFunctions: ExtractedFunction[]) {
+  #generateExtractedFunctionsFile({
+    destFilePath,
+    fileAnalysis,
+  }: {
+    destFilePath: string;
+    fileAnalysis: FileAnalysis;
+  }) {
     const sourceFile = ts.factory.createSourceFile(
       [
-        ...this.#generateImportDeclarations(extractedFunctions),
-        this.#generateExtractedFunctionsVariableStatement(extractedFunctions),
+        ...this.#generateImportDeclarations({ destFilePath, fileAnalysis }),
+        this.#generateExtractedFunctionsVariableStatement(
+          fileAnalysis.extractedFunctions
+        ),
       ],
       ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
       ts.NodeFlags.None
@@ -120,10 +131,37 @@ export class ExtractionWriter {
     });
   }
 
-  #generateImportDeclarations(extractedFunctions: ExtractedFunction[]) {
-    const importIdentifiers = extractedFunctions
+  #generateImportDeclarations({
+    destFilePath,
+    fileAnalysis,
+  }: {
+    destFilePath: string;
+    fileAnalysis: FileAnalysis;
+  }) {
+    let importIdentifiers = fileAnalysis.extractedFunctions
       .map((extractedFunction) => extractedFunction.importedIdentifiers)
       .flat();
+
+    importIdentifiers = importIdentifiers.map((importIdentifier) => {
+      const importedModule = importIdentifier.module;
+
+      if (
+        !(importedModule.startsWith('./') || importedModule.startsWith('../'))
+      ) {
+        return importIdentifier;
+      }
+
+      const srcFilePath = fileAnalysis.path;
+      const relativePath = relative(
+        dirname(destFilePath),
+        join(dirname(srcFilePath), importIdentifier.module)
+      );
+
+      return {
+        ...importIdentifier,
+        module: relativePath,
+      };
+    });
 
     return importIdentifiers.map((importIdentifier) =>
       generateImportDeclaration(importIdentifier)

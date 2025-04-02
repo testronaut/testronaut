@@ -45,8 +45,8 @@ describe(ExtractionWriter.name, () => {
 
     expect(fileSystemFake.getFiles()).toEqual({
       '/my-project/test-server/entrypoint.ts': `
-globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
-      '/my-project/test-server/my-component.spec.ts': `\
+globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
+      '/my-project/test-server/src/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
     "": () => { console.log('Hi!'); }
 };
@@ -72,8 +72,8 @@ export const extractedFunctionsMap = {
 
     expect(fileSystemFake.getFiles()).toEqual({
       '/my-project/test-server/entrypoint.ts': `
-globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
-      '/my-project/test-server/my-component.spec.ts': `\
+globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
+      '/my-project/test-server/src/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
     "sayHello": () => { console.log('Hi!'); }
 };
@@ -86,7 +86,7 @@ export const extractedFunctionsMap = {
       await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
-      '/my-project/test-server/my-component.spec.ts',
+      '/my-project/test-server/src/my-component.spec.ts',
       'export const extractedFunctionsMap = { "": () => { console.log("Hi!"); } };'
     );
 
@@ -102,7 +102,7 @@ export const extractedFunctionsMap = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
     "": () => { console.log('Hello!'); }
 };
@@ -133,7 +133,7 @@ export const extractedFunctionsMap = {
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/test-server/entrypoint.ts': `\
 globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');
-globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
+globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
     });
   });
 
@@ -143,7 +143,7 @@ globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts')
 
     await fileSystemFake.writeFile(
       '/my-project/test-server/entrypoint.ts',
-      `globalThis['OLD_HASH'] = () => import('./my-component.spec.ts');`
+      `globalThis['OLD_HASH'] = () => import('./src/my-component.spec.ts');`
     );
 
     await writer.write(
@@ -159,7 +159,7 @@ globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts')
 
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/test-server/entrypoint.ts': `\
-globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts');`,
+globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
     });
   });
 
@@ -185,7 +185,7 @@ globalThis['hash|my-component.spec.ts'] = () => import('./my-component.spec.ts')
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts': `\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsMap = {
     "": () => { console.log(MyComponent); }
@@ -194,7 +194,36 @@ export const extractedFunctionsMap = {
     });
   });
 
-  it.todo('relativizes imports');
+  it('relativizes imports', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            importedIdentifiers: [
+              {
+                name: 'MyComponent',
+                module: './my-component',
+              },
+            ],
+            code: `() => { console.log(MyComponent); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/test-server/src/my-component.spec.ts': `\
+import { MyComponent } from "../../src/my-component";
+export const extractedFunctionsMap = {
+    "": () => { console.log(MyComponent); }
+};
+`,
+    });
+  });
 
   it.todo('merges imports');
 });

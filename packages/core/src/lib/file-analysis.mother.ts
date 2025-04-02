@@ -9,7 +9,7 @@ export const fileAnalysisMother = {
   withProjectRoot(projectRoot: string) {
     return {
       withBasicInfo() {
-        const name = 'my-component.spec.ts';
+        const name = 'src/my-component.spec.ts';
         const path = join(projectRoot, name);
         const hash = `hash|${name}`;
         const fileAnalysis = createFileAnalysis({
