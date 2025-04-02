@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { dirname, join, relative } from 'node:path/posix';
+import { join, relative } from 'node:path/posix';
 
 import { ExtractedFunction, FileAnalysis } from '../file-analysis';
 import { FileExistsError, FileSystem } from '../infra/file-system';
@@ -9,6 +9,7 @@ import {
   generateImportDeclaration,
 } from './ast-factory';
 import { FileOps } from './file-ops';
+import { adjustImportPath } from './path-utils';
 
 /**
  * @deprecated 🚧 work in progress
@@ -139,23 +140,13 @@ export class ExtractionWriter {
       .flat();
 
     importIdentifiers = importIdentifiers.map((importIdentifier) => {
-      const importedModule = importIdentifier.module;
-
-      if (
-        !(importedModule.startsWith('./') || importedModule.startsWith('../'))
-      ) {
-        return importIdentifier;
-      }
-
-      const srcFilePath = fileAnalysis.path;
-      const relativePath = relative(
-        dirname(destFilePath),
-        join(dirname(srcFilePath), importIdentifier.module)
-      );
-
       return {
         ...importIdentifier,
-        module: relativePath,
+        module: adjustImportPath(
+          fileAnalysis.path,
+          destFilePath,
+          importIdentifier.module
+        ),
       };
     });
 
