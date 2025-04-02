@@ -225,7 +225,57 @@ export const extractedFunctionsMap = {
     });
   });
 
-  it.todo('merges imports');
+  it('merges imports', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            importedIdentifiers: [
+              {
+                name: 'MyComponent',
+                module: '@my-lib/my-component',
+              },
+            ],
+            code: `() => { console.log(MyComponent); }`,
+          })
+        )
+        .build()
+    );
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            importedIdentifiers: [
+              {
+                name: 'MyService',
+                module: '@my-lib/my-service',
+              },
+              {
+                name: 'MyServiceError',
+                module: '@my-lib/my-service',
+              },
+            ],
+            code: `() => { console.log(MyService, MyServiceError); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/test-server/src/my-component.spec.ts': `\
+import { MyService, MyServiceError } from "@my-lib/my-service";
+export const extractedFunctionsMap = {
+    "": () => { console.log(MyService, MyServiceError); }
+};
+`,
+    });
+  });
 });
 
 async function setUpInitializedWriter() {

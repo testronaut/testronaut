@@ -1,26 +1,36 @@
 import * as ts from 'typescript';
-import { ImportedIdentifier } from '../file-analysis';
 
-export function generateImportDeclaration(
-  importIdentifier: ImportedIdentifier
-): ts.ImportDeclaration {
+export function generateImportDeclaration({
+  module,
+  identifiers,
+}: {
+  module: string;
+  identifiers: string[];
+}): ts.ImportDeclaration {
   return ts.factory.createImportDeclaration(
     undefined,
     ts.factory.createImportClause(
       false,
       undefined,
-      ts.factory.createNamedImports([
-        ts.factory.createImportSpecifier(
-          false,
-          undefined,
-          ts.factory.createIdentifier(importIdentifier.name)
-        ),
-      ])
+      ts.factory.createNamedImports(
+        identifiers.map((identifier) =>
+          ts.factory.createImportSpecifier(
+            false,
+            undefined,
+            ts.factory.createIdentifier(identifier)
+          )
+        )
+      )
     ),
-    ts.factory.createStringLiteral(importIdentifier.module)
+    ts.factory.createStringLiteral(module)
   );
 }
 
+/**
+ * Generates a variable statement for the extracted functions.
+ *
+ * e.g., `export const extractedFunctionsMap = {'': () => {...}}`
+ */
 export function generateExportedConstObjectLiteral({
   variableName,
   value,

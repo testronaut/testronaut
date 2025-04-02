@@ -126,7 +126,7 @@ export class ExtractionWriter {
     destFilePath: string;
     fileAnalysis: FileAnalysis;
   }) {
-    return fileAnalysis.extractedFunctions
+    const importIdentifiers = fileAnalysis.extractedFunctions
       .map((extractedFunction) => extractedFunction.importedIdentifiers)
       .flat()
       .map((importIdentifier) => ({
@@ -136,8 +136,18 @@ export class ExtractionWriter {
           destFilePath,
           importPath: importIdentifier.module,
         }),
-      }))
-      .map((importIdentifier) => generateImportDeclaration(importIdentifier));
+      }));
+
+    const moduleImports = Object.entries(
+      Object.groupBy(importIdentifiers, (item) => item.module)
+    );
+
+    return moduleImports.map(([module, importIdentifiers = []]) =>
+      generateImportDeclaration({
+        module,
+        identifiers: importIdentifiers.map((ident) => ident.name),
+      })
+    );
   }
 
   /**
