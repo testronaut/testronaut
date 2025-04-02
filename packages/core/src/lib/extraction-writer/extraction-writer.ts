@@ -2,16 +2,13 @@ import * as ts from 'typescript';
 import { dirname, join, relative } from 'node:path/posix';
 
 import { ExtractedFunction, FileAnalysis } from '../file-analysis';
-import {
-  FileDoesNotExistError,
-  FileExistsError,
-  FileSystem,
-} from '../infra/file-system';
+import { FileExistsError, FileSystem } from '../infra/file-system';
 import { FileSystemImpl } from '../infra/file-system.impl';
 import {
   generateExportedConstObjectLiteral,
   generateImportDeclaration,
 } from './ast-factory';
+import { FileOps } from './file-ops';
 
 /**
  * @deprecated 🚧 work in progress
@@ -20,6 +17,7 @@ export class ExtractionWriter {
   readonly #projectRoot: string;
   readonly #destPath: string;
   readonly #entryPointPath: string;
+  readonly #fileOps: FileOps;
   readonly #fileSystem: FileSystem;
 
   constructor({
@@ -33,6 +31,7 @@ export class ExtractionWriter {
   }) {
     this.#projectRoot = projectRoot;
     this.#destPath = destPath;
+    this.#fileOps = new FileOps({ fileSystem: fileSystem });
     this.#fileSystem = fileSystem;
     this.#entryPointPath = join(destPath, 'entrypoint.ts');
   }
@@ -73,7 +72,7 @@ export class ExtractionWriter {
       path: relativePath,
     });
 
-    await this.#upsertLine(
+    await this.#fileOps.upsertLine(
       this.#entryPointPath,
       relativePath,
       extractedFunctionsImportLine
@@ -163,41 +162,5 @@ export class ExtractionWriter {
     return importIdentifiers.map((importIdentifier) =>
       generateImportDeclaration(importIdentifier)
     );
-  }
-
-  async #upsertLine(path: string, match: string, replacement: string) {
-    const content = await this.#tryReadFile(path);
-    const lines = content?.split('\n') ?? [];
-
-    let replaced = false;
-
-    const newLines = lines.map((line) => {
-      if (line.includes(match)) {
-        replaced = true;
-        return replacement;
-      }
-
-      return line;
-    });
-
-    if (!replaced) {
-      newLines.push(replacement);
-    }
-
-    await this.#fileSystem.writeFile(path, newLines.join('\n'), {
-      overwrite: true,
-    });
-  }
-
-  async #tryReadFile(path: string): Promise<string | null> {
-    try {
-      return await this.#fileSystem.readFile(path);
-    } catch (error) {
-      if (error instanceof FileDoesNotExistError) {
-        return null;
-      }
-
-      throw error;
-    }
   }
 }
