@@ -14,7 +14,22 @@ export class FileOps {
     this.#fileSystem = fileSystem;
   }
 
-  async upsertLine(path: string, match: string, replacement: string) {
+  /**
+   * Replace any line containing `match` with `replacement` in the file at `path`.
+   *
+   * @param path The path to the file to modify.
+   * @param match The string to match in the file.
+   * @param replacement The string to replace the matched line with.
+   */
+  async upsertLine({
+    path,
+    match,
+    replacement,
+  }: {
+    path: string;
+    match: string;
+    replacement: string;
+  }) {
     const content = await this.#tryReadFile(path);
     const lines = content?.split('\n') ?? [];
 

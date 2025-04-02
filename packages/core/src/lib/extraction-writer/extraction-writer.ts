@@ -60,14 +60,14 @@ export class ExtractionWriter {
       { overwrite: true }
     );
 
-    await this.#fileOps.upsertLine(
-      this.#entryPointPath,
-      relativePath,
-      this.#generateEntrypointGlobal({
+    await this.#fileOps.upsertLine({
+      path: this.#entryPointPath,
+      match: relativePath,
+      replacement: this.#generateEntrypointGlobal({
         hash: fileAnalysis.hash,
         path: relativePath,
-      })
-    );
+      }),
+    });
   }
 
   /**
@@ -154,7 +154,6 @@ export class ExtractionWriter {
       return acc;
     }, {});
 
-    /* export const extractedFunctionsMap = {'': () => {...}} */
     return generateExportedConstObjectLiteral({
       variableName: 'extractedFunctionsMap',
       value: extractedFunctionsRecord,
