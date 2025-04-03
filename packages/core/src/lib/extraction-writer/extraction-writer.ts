@@ -11,9 +11,6 @@ import {
 import { FileOps } from './file-ops';
 import { adjustImportPath } from './path-utils';
 
-/**
- * @deprecated 🚧 work in progress
- */
 export class ExtractionWriter {
   readonly #projectRoot: string;
   readonly #destPath: string;
@@ -37,16 +34,10 @@ export class ExtractionWriter {
     this.#entryPointPath = join(destPath, 'entrypoint.ts');
   }
 
-  /**
-   * @deprecated 🚧 work in progress
-   */
   async init() {
     await this.#fileOps.createFileIfNotExists(this.#entryPointPath);
   }
 
-  /**
-   * @deprecated 🚧 work in progress
-   */
   async write(fileAnalysis: FileAnalysis) {
     const relativePath = relative(this.#projectRoot, fileAnalysis.path);
     const destFilePath = join(this.#destPath, relativePath);
