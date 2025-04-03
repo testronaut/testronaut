@@ -12,16 +12,13 @@ export function applyFileSystemContract(
     expect(await fileSystem.readFile(path)).toBe('entrypoint content');
   });
 
-  it.todo(
-    'writes file and creates parent directories recursively',
-    async () => {
-      const { fileSystem, testingRootPath } = await setUp();
-      const path = `${testingRootPath}/src/some-feature/my-component.ts`;
+  it('writes file and creates parent directories recursively', async () => {
+    const { fileSystem, testingRootPath } = await setUp();
+    const path = `${testingRootPath}/src/some-feature/my-component.ts`;
 
-      await fileSystem.writeFile(path, 'my component');
-      expect(await fileSystem.readFile(path)).toBe('my component');
-    }
-  );
+    await fileSystem.writeFile(path, 'my component');
+    expect(await fileSystem.readFile(path)).toBe('my component');
+  });
 
   it.todo('throws if file exists', async () => {
     const { fileSystem, testingRootPath } = await setUp();
