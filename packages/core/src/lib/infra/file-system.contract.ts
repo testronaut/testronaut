@@ -31,7 +31,7 @@ export function applyFileSystemContract(
     ).rejects.toThrowError(FileExistsError);
   });
 
-  it.todo('overwrites if file exists and overwrite is true', async () => {
+  it('overwrites if file exists and overwrite is true', async () => {
     const { fileSystem, testingRootPath } = await setUp();
     const path = `${testingRootPath}/src/some-feature/my-component.ts`;
 

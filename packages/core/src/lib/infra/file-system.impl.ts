@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { FileExistsError, FileSystem } from './file-system';
+import { FileExistsError, FileSystem, WriteFileOptions } from './file-system';
 import { dirname } from 'node:path/posix';
 
 export class FileSystemImpl implements FileSystem {
@@ -13,11 +13,18 @@ export class FileSystemImpl implements FileSystem {
   /**
    * @deprecated 🚧 work in progress
    */
-  async writeFile(path: string, content: string): Promise<void> {
+  async writeFile(
+    path: string,
+    content: string,
+    { overwrite }: WriteFileOptions = {}
+  ): Promise<void> {
     const folderPath = dirname(path);
     await mkdir(folderPath, { recursive: true });
     try {
-      await writeFile(path, content, { encoding: 'utf-8', flag: 'wx' });
+      await writeFile(path, content, {
+        encoding: 'utf-8',
+        flag: overwrite ? 'w' : 'wx',
+      });
     } catch (error) {
       if (
         error instanceof Error &&
