@@ -4,7 +4,7 @@ import { FileExistsError, FileSystem } from './file-system';
 export function applyFileSystemContract(
   setUp: () => Promise<{ fileSystem: FileSystem; testingRootPath: string }>
 ) {
-  it.todo('writes file', async () => {
+  it('writes file', async () => {
     const { fileSystem, testingRootPath } = await setUp();
     const path = `${testingRootPath}/entrypoint.ts`;
 
