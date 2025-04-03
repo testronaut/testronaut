@@ -45,6 +45,13 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true
+        },
+        "ct": {
+          "tsConfig": "demos/angular/ct-tests/tsconfig.json",
+          "browser": "demos/angular/ct-tests/vanilla-main.ts",
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
         }
       },
       "defaultConfiguration": "production"
@@ -57,6 +64,9 @@
         },
         "development": {
           "buildTarget": "demos-angular:build:development"
+        },
+        "ct": {
+          "buildTarget": "demos-angular:build:ct"
         }
       },
       "defaultConfiguration": "development"

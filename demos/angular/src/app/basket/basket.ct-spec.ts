@@ -1,5 +1,18 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright-ct/core';
 
 test('test it', async ({ page }) => {
-  expect(true).toBe(true);
+  await page.goto('/');
+
+  await page.waitForFunction(() => {
+    // @ts-expect-error property does not exist
+    return globalThis['dzvDWHTi'];
+  });
+
+  await page.evaluate(async () => {
+    // @ts-expect-error property does not exist
+    const { extractedFunctionsMap } = await globalThis['dzvDWHTi']();
+    await extractedFunctionsMap['']();
+  });
+
+  await expect(page.getByText('Hello World!')).toBeVisible();
 });
