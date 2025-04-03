@@ -2,7 +2,7 @@ import {
   PlaywrightTestConfig as BasePlaywrightTestConfig,
   defineConfig as baseDefineConfig,
 } from '@playwright/test';
-export { devices, test } from '@playwright/test';
+export { devices, expect, test } from '@playwright/test';
 
 export interface PlaywrightCtOptions {
   /**
@@ -10,9 +10,9 @@ export interface PlaywrightCtOptions {
    */
   testServer: {
     /**
-     * The directory where the test server app is located.
+     * The directory where the extracted code will be generated.
      */
-    appDir: string;
+    generatedDir: string;
 
     /**
      * The command to start the test server.
@@ -58,6 +58,10 @@ export function defineConfig<T extends Options, W>(
       ...config,
       testDir: 'src',
       testMatch: '**/*.ct-spec.ts',
+      webServer: {
+        command: config.use.ct.testServer.command.replace('{port}', '4300'),
+        port: 4300,
+      },
     },
     ...configs
   ) as PlaywrightTestConfig<T, W>;

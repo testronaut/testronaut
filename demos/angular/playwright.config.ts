@@ -19,7 +19,7 @@ export default defineConfig({
   use: {
     ct: {
       testServer: {
-        appDir: 'playwright-ct-tests',
+        generatedDir: 'ct-tests/generated',
         command: 'nx serve demos-angular --configuration playwright-ct',
       },
     },
