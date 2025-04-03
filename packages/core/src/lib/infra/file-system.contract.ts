@@ -20,7 +20,7 @@ export function applyFileSystemContract(
     expect(await fileSystem.readFile(path)).toBe('my component');
   });
 
-  it.todo('throws if file exists', async () => {
+  it('throws if file exists', async () => {
     const { fileSystem, testingRootPath } = await setUp();
     const path = `${testingRootPath}/src/some-feature/my-component.ts`;
 
