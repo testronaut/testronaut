@@ -2,7 +2,8 @@
   "name": "@playwright-ct/core",
   "version": "0.0.1",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "typescript": "~5.6.2"
   },
   "type": "commonjs",
   "main": "./src/index.js",
