@@ -53,14 +53,18 @@ export function defineConfig<T extends Options, W>(
   config: PlaywrightTestConfig<T, W>,
   ...configs: PlaywrightTestConfig<T, W>[]
 ): PlaywrightTestConfig<T, W> {
+  const port = 7357;
   return baseDefineConfig(
     {
       ...config,
       testDir: 'src',
       testMatch: '**/*.ct-spec.ts',
       webServer: {
-        command: config.use.ct.testServer.command.replace('{port}', '4300'),
-        port: 4300,
+        command: config.use.ct.testServer.command.replace(
+          '{port}',
+          port.toString()
+        ),
+        port,
       },
     },
     ...configs
