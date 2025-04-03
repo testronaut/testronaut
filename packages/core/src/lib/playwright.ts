@@ -4,34 +4,6 @@ import {
 } from '@playwright/test';
 export { devices, expect, test } from '@playwright/test';
 
-export interface PlaywrightCtOptions {
-  /**
-   * Options to configure and run the test server.
-   */
-  testServer: {
-    /**
-     * The directory where the extracted code will be generated.
-     */
-    generatedDir: string;
-
-    /**
-     * The command to start the test server.
-     */
-    command: string;
-  };
-}
-
-export interface Options {
-  ct: PlaywrightCtOptions;
-}
-
-export type PlaywrightTestConfig<
-  T extends Options = Options,
-  W = Record<string, unknown>
-> = Omit<BasePlaywrightTestConfig<T, W>, 'use'> & {
-  use: Options & BasePlaywrightTestConfig<T, W>['use'];
-};
-
 export function defineConfig(
   config: PlaywrightTestConfig<Options>
 ): PlaywrightTestConfig<Options>;
@@ -69,4 +41,32 @@ export function defineConfig<T extends Options, W>(
     },
     ...configs
   ) as PlaywrightTestConfig<T, W>;
+}
+
+export type PlaywrightTestConfig<
+  T extends Options = Options,
+  W = Record<string, unknown>
+> = Omit<BasePlaywrightTestConfig<T, W>, 'use'> & {
+  use: Options & BasePlaywrightTestConfig<T, W>['use'];
+};
+
+export interface Options {
+  ct: PlaywrightCtOptions;
+}
+
+export interface PlaywrightCtOptions {
+  /**
+   * Options to configure and run the test server.
+   */
+  testServer: {
+    /**
+     * The directory where the extracted code will be generated.
+     */
+    generatedDir: string;
+
+    /**
+     * The command to start the test server.
+     */
+    command: string;
+  };
 }
