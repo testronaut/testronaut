@@ -1,9 +1,5 @@
 {
   "name": "@playwright-ct/angular",
   "version": "0.0.1",
-  "peerDependencies": {
-    "vite": "^5.0.0",
-    "@nx/vite": "20.3.0"
-  },
   "sideEffects": false
 }
