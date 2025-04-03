@@ -17,6 +17,9 @@
     },
     {
       "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.pw.json"
     }
   ],
   "extends": "../../tsconfig.base.json",

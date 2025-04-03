@@ -1,1 +1,1 @@
-export { withCt } from './lib/define-config-with-ct';
+export { addCtProjects } from './lib/define-config-with-ct';
