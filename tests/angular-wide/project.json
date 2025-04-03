@@ -45,6 +45,14 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true
+        },
+        "ct": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "browser": "tests/angular-wide/ct-tests/main.ts",
+          "index": "tests/angular-wide/src/index.html",
+          "tsConfig": "tests/angular-wide/ct-tests/tsconfig.json"
         }
       },
       "defaultConfiguration": "production"
@@ -57,6 +65,9 @@
         },
         "development": {
           "buildTarget": "angular-wide:build:development"
+        },
+        "ct": {
+          "buildTarget": "angular-wide:build:ct"
         }
       },
       "defaultConfiguration": "development"
@@ -69,13 +80,6 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
-    },
-    "test": {
-      "executor": "@nx/vite:test",
-      "outputs": ["{options.reportsDirectory}"],
-      "options": {
-        "reportsDirectory": "../../coverage/tests/angular-wide"
-      }
     },
     "serve-static": {
       "executor": "@nx/web:file-server",

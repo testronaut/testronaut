@@ -20,6 +20,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./tsconfig.pw.json"
+    },
+    {
+      "path": "./ct-tests/tsconfig.json"
     }
   ],
   "extends": "../../tsconfig.base.json",
