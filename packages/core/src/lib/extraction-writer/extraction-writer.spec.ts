@@ -292,7 +292,7 @@ async function setUpWriter() {
 
   const writer = new ExtractionWriter({
     projectRoot,
-    destPath: '/my-project/test-server',
+    extractionDir: 'test-server',
     fileSystem: fileSystemFake,
   });
 

@@ -8,30 +8,33 @@ import {
   generateExportedConstObjectLiteral,
   generateImportDeclaration,
 } from './ast-factory';
+import { ExtractionConfig } from './extraction-config';
 import { FileOps } from './file-ops';
 import { adjustImportPath } from './path-utils';
 
 export class ExtractionWriter {
-  readonly #projectRoot: string;
-  readonly #destPath: string;
+  readonly #config: ExtractionConfig;
+  /* Absolute path to extraction dir. */
+  readonly #extractionPath: string;
   readonly #entryPointPath: string;
   readonly #fileOps: FileOps;
   readonly #fileSystem: FileSystem;
 
   constructor({
-    projectRoot,
-    destPath,
     fileSystem = new FileSystemImpl(),
-  }: {
-    projectRoot: string;
-    destPath: string;
+    ...config
+  }: ExtractionConfig & {
     fileSystem?: FileSystem;
   }) {
-    this.#projectRoot = projectRoot;
-    this.#destPath = destPath;
     this.#fileOps = new FileOps({ fileSystem: fileSystem });
     this.#fileSystem = fileSystem;
-    this.#entryPointPath = join(destPath, 'entrypoint.ts');
+
+    this.#config = config;
+    this.#extractionPath = join(
+      this.#config.projectRoot,
+      this.#config.extractionDir
+    );
+    this.#entryPointPath = join(this.#extractionPath, 'entrypoint.ts');
   }
 
   async init() {
@@ -39,8 +42,8 @@ export class ExtractionWriter {
   }
 
   async write(fileAnalysis: FileAnalysis) {
-    const relativePath = relative(this.#projectRoot, fileAnalysis.path);
-    const destFilePath = join(this.#destPath, relativePath);
+    const relativePath = relative(this.#config.projectRoot, fileAnalysis.path);
+    const destFilePath = join(this.#extractionPath, relativePath);
 
     await this.#fileSystem.writeFile(
       destFilePath,
