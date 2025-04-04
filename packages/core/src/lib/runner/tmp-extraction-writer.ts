@@ -22,11 +22,14 @@ export class TmpExtractionWriter {
     );
 
     await mkdir(dirname(destPath), { recursive: true });
+
     await writeFile(
       destPath,
       `
 export const extractedFunctionsMap = {
-  '': ${analysis.extractedFunctions[0].code},
+  ${analysis.extractedFunctions
+    .map((fn) => `'${fn.name ?? ''}': ${fn.code},`)
+    .join('\n')}
 };
     `,
       'utf-8'

@@ -36,10 +36,13 @@ export const test: TestType<
 
     const { hash } = await runner.extract(testInfo.file);
 
-    const runInBrowserImpl: RunInBrowser = async () => {
+    const runInBrowserImpl: RunInBrowser = async (nameOrFunction) => {
+      const functionName =
+        typeof nameOrFunction === 'string' ? nameOrFunction : '';
+
       await runner.runInBrowser({
         hash,
-        functionName: '',
+        functionName,
       });
     };
 

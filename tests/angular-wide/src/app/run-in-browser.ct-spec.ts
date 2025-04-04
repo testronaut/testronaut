@@ -1,9 +1,17 @@
 import { test, expect } from '@playwright-ct/core';
 
-test('runInBrowser', async ({ page, runInBrowser }) => {
+test('anonymous runInBrowser', async ({ page, runInBrowser }) => {
   await runInBrowser(() => {
-    document.body.textContent = 'It works!';
+    document.body.textContent = 'Hi!';
   });
 
-  await expect(page.getByText('It works!')).toBeVisible();
+  await expect(page.getByText('Hi!')).toBeVisible();
+});
+
+test('named runInBrowser', async ({ page, runInBrowser }) => {
+  await runInBrowser('bye', () => {
+    document.body.textContent = 'Bye!';
+  });
+
+  await expect(page.getByText('Bye!')).toBeVisible();
 });
