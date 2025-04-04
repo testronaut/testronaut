@@ -1,4 +1,4 @@
-import { ExtractionPipeline } from '../extraction/extraction-pipeline';
+import { ExtractionPipeline } from './extraction-pipeline';
 import { RunnerConfig } from './runner-config';
 
 export class Runner {
@@ -12,11 +12,8 @@ export class Runner {
     this.#extractionPipeline.init();
   }
 
-  /**
-   * @deprecated 🚧 work in progress
-   */
   async extract(filePath: string) {
-    throw new Error('🚧 work in progress');
+    return this.#extractionPipeline.extract(filePath);
   }
 
   /**

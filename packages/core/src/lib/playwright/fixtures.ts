@@ -1,44 +1,41 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
-import { expect, test as base } from '@playwright/test';
-import { createHash } from 'node:crypto';
+import {
+  expect,
+  PlaywrightTestArgs,
+  PlaywrightTestOptions,
+  PlaywrightWorkerArgs,
+  PlaywrightWorkerOptions,
+  test as base,
+  TestType,
+} from '@playwright/test';
+import { PlaywrightCtOptions } from './define-config';
+import { Runner } from '../runner/runner';
 
-export const test = base.extend<{ runInBrowser: RunInBrowser }>({
+export const test: TestType<
+  PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
+  PlaywrightWorkerArgs & PlaywrightWorkerOptions
+> = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
+  ct: [null, { option: true }],
+
   page: async ({ page }, use) => {
     await page.goto('/');
 
     await use(page);
   },
 
-  runInBrowser: async ({ page }, use, testInfo) => {
-    const hash = await computeHash(testInfo.file);
-    const destPath = testInfo.file.replace('src/app', 'ct-tests/generated/app');
-    const dir = dirname(destPath);
-    await mkdir(dir, { recursive: true });
-
-    const runInBrowserImpl: RunInBrowser = async (fn) => {
-      await writeFile(
-        destPath,
-        `
-export const extractedFunctionsMap = {
-  '': ${fn.toString()},
-};
-    `,
-        'utf-8'
+  runInBrowser: async ({ ct, page }, use, testInfo) => {
+    if (!ct) {
+      throw new Error(
+        'Playwright CT config is not set up. Please use `defineConfig({ use: { ct: { ... } } })` to set it up.'
       );
+    }
+    const runner = new Runner({
+      projectRoot: ct.projectRoot,
+      extractionDir: ct.testServer.extractionDir,
+    });
 
-      await writeFile(
-        'ct-tests/generated/index.ts',
-        `
-// This file is auto-generated. Do not edit it directly.
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
+    const { hash } = await runner.extract(testInfo.file);
 
-globalThis['${hash}'] = () => import('./app/run-in-browser.ct-spec');
-      `,
-        'utf-8'
-      );
-
+    const runInBrowserImpl: RunInBrowser = async () => {
       await expect(async () => {
         try {
           await page.waitForFunction(
@@ -70,6 +67,10 @@ globalThis['${hash}'] = () => import('./app/run-in-browser.ct-spec');
   },
 });
 
+export interface Fixtures {
+  runInBrowser: RunInBrowser;
+}
+
 export interface RunInBrowser {
   <RETURN_TYPE>(fn: () => RETURN_TYPE | Promise<RETURN_TYPE>): Promise<void>;
 
@@ -77,9 +78,4 @@ export interface RunInBrowser {
     name: string,
     fn: () => RETURN_TYPE | Promise<RETURN_TYPE>
   ): Promise<void>;
-}
-
-async function computeHash(path: string) {
-  const content = await readFile(path, 'utf8');
-  return createHash('sha256').update(content).digest('base64').slice(0, 8);
 }

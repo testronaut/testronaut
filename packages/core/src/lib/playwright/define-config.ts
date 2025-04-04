@@ -27,21 +27,20 @@ export function defineConfig<T extends Options, W>(
 ): PlaywrightTestConfig<T, W> {
   const port = 7357;
 
-  const defaultTestDir = 'src';
-
   /* We have to make sure that `generated/index.ts` is present even if empty
    * before starting the web server, otherwise it would crash.
    * `globalSetup` sounds like the right place, but it runs after the web servers starts
    * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
-  new Runner({
+  const runner = new Runner({
     extractionDir: config.use.ct.testServer.extractionDir,
-    projectRoot: config.testDir ?? defaultTestDir,
-  }).init();
+    projectRoot: config.use.ct.projectRoot,
+  });
+  runner.init();
 
   return baseDefineConfig(
     {
       ...config,
-      testDir: defaultTestDir,
+      testDir: 'src',
       testMatch: '**/*.ct-spec.ts',
       webServer: {
         command: config.use.ct.testServer.command.replace(
@@ -67,6 +66,14 @@ export interface Options {
 }
 
 export interface PlaywrightCtOptions {
+  /**
+   * This is generally the folder containing the `playwright.config.ts` file.
+   * It is used:
+   * - to compute the relative paths of the generated files,
+   * - as the base directory used to compute the absolute paths for various configurations, such as `extractionDir`.
+   */
+  projectRoot: string;
+
   /**
    * Options to configure and run the test server.
    */

@@ -1,5 +1,5 @@
 import { ExtractionConfig } from './extraction-config';
-import { join } from 'node:path';
+import { join } from 'node:path/posix';
 import { TmpFileOps } from './tmp-file-ops';
 
 export class ExtractionWriter {
@@ -11,7 +11,7 @@ export class ExtractionWriter {
 
   init() {
     this.#fileOps.createFileIfNotExistsSync(
-      join(this.#config.extractionDir, 'index.ts')
+      join(this.#config.projectRoot, this.#config.extractionDir, 'index.ts')
     );
   }
 }
