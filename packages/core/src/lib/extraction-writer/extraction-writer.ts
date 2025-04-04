@@ -41,7 +41,7 @@ export class ExtractionWriter {
     this.#fileOps.createFileIfNotExistsSync(
       this.#entryPointPath,
       /* This fixes "TS7053: Element implicitly has an any type" error on `globalThis['some-hash']` . */
-      '// @ts-no-check'
+      '// @ts-nocheck'
     );
   }
 

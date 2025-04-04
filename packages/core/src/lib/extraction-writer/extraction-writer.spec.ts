@@ -9,7 +9,7 @@ describe(ExtractionWriter.name, () => {
     const { fileSystemFake } = await setUpInitializedWriter();
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/index.ts': '// @ts-no-check',
+      '/my-project/test-server/index.ts': '// @ts-nocheck',
     });
   });
 
