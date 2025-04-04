@@ -2,7 +2,8 @@ import {
   PlaywrightTestConfig as BasePlaywrightTestConfig,
   defineConfig as baseDefineConfig,
 } from '@playwright/test';
-export { devices, expect, test } from '@playwright/test';
+export { devices, expect } from '@playwright/test';
+export * from './playwright-fixtures';
 
 export function defineConfig(
   config: PlaywrightTestConfig<Options>
