@@ -16,10 +16,6 @@ export class Runner {
     this.#pageAdapter = pageAdapter;
   }
 
-  init() {
-    this.#extractionPipeline.init();
-  }
-
   async extract(filePath: string) {
     return this.#extractionPipeline.extract(filePath);
   }
