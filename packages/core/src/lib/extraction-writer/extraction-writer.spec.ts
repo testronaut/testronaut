@@ -5,26 +5,26 @@ import { fileAnalysisMother } from '../file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
 
 describe(ExtractionWriter.name, () => {
-  it('creates "entrypoint.ts" file on init', async () => {
+  it('creates "index.ts" file on init', async () => {
     const { fileSystemFake } = await setUpInitializedWriter();
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/entrypoint.ts': '',
+      '/my-project/test-server/index.ts': '',
     });
   });
 
-  it('does not overwrite "entrypoint.ts" file if it exists', async () => {
+  it('does not overwrite "index.ts" file if it exists', async () => {
     const { fileSystemFake, writer } = await setUpWriter();
 
     await fileSystemFake.writeFile(
-      '/my-project/test-server/entrypoint.ts',
+      '/my-project/test-server/index.ts',
       'const INITIAL_CONTENT = 42;'
     );
 
     await writer.init();
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/entrypoint.ts': 'const INITIAL_CONTENT = 42;',
+      '/my-project/test-server/index.ts': 'const INITIAL_CONTENT = 42;',
     });
   });
 
@@ -44,7 +44,7 @@ describe(ExtractionWriter.name, () => {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/entrypoint.ts': `
+      '/my-project/test-server/index.ts': `
 globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
       '/my-project/test-server/src/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
@@ -71,7 +71,7 @@ export const extractedFunctionsMap = {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/entrypoint.ts': `
+      '/my-project/test-server/index.ts': `
 globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
       '/my-project/test-server/src/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
@@ -110,12 +110,12 @@ export const extractedFunctionsMap = {
     });
   });
 
-  it('updates entrypoint.ts', async () => {
+  it('updates index.ts', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
       await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
-      '/my-project/test-server/entrypoint.ts',
+      '/my-project/test-server/index.ts',
       `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`
     );
 
@@ -131,18 +131,18 @@ export const extractedFunctionsMap = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/entrypoint.ts': `\
+      '/my-project/test-server/index.ts': `\
 globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');
 globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
     });
   });
 
-  it('updates hashes in entrypoint.ts', async () => {
+  it('updates hashes in index.ts', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
       await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
-      '/my-project/test-server/entrypoint.ts',
+      '/my-project/test-server/index.ts',
       `globalThis['OLD_HASH'] = () => import('./src/my-component.spec.ts');`
     );
 
@@ -158,7 +158,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/entrypoint.ts': `\
+      '/my-project/test-server/index.ts': `\
 globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
     });
   });

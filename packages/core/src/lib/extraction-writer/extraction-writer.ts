@@ -34,7 +34,7 @@ export class ExtractionWriter {
       this.#config.projectRoot,
       this.#config.extractionDir
     );
-    this.#entryPointPath = join(this.#extractionPath, 'entrypoint.ts');
+    this.#entryPointPath = join(this.#extractionPath, 'index.ts');
   }
 
   async init() {
