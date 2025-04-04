@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { test as base } from '@playwright/test';
+import { expect, test as base } from '@playwright/test';
 import { createHash } from 'node:crypto';
 
 export const test = base.extend<{ runInBrowser: RunInBrowser }>({
@@ -39,8 +39,23 @@ globalThis['${hash}'] = () => import('./app/run-in-browser.ct-spec');
         'utf-8'
       );
 
-      // @ts-expect-error no index signature
-      await page.waitForFunction(({ hash }) => globalThis[hash], { hash });
+      await expect(async () => {
+        try {
+          await page.waitForFunction(
+            // @ts-expect-error no index signature
+            ({ hash }) => globalThis[hash],
+            { hash },
+            {
+              timeout: 1_000,
+            }
+          );
+        } catch (error) {
+          /* Reload if extractions can't be found. */
+          await page.reload();
+          throw error;
+        }
+      }).toPass();
+
       await page.evaluate(
         async ({ hash }) => {
           // @ts-expect-error no index signature
