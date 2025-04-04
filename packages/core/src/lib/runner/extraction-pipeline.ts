@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { analyze } from '../analyzer/analyze';
-import { ExtractionConfig } from '../extraction/extraction-config';
-import { ExtractionWriter } from '../extraction/extraction-writer';
+import { ExtractionConfig } from '../extraction-writer/extraction-config';
+import { ExtractionWriter } from '../extraction-writer/extraction-writer';
 import { createFileInfo, FileInfo } from './file-info';
 import { TmpExtractionWriter } from './tmp-extraction-writer';
 

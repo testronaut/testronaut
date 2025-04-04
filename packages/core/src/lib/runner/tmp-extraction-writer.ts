@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path/posix';
 import { ExtractedFunction } from '../extracted-function';
-import { ExtractionConfig } from '../extraction/extraction-config';
+import { ExtractionConfig } from '../extraction-writer/extraction-config';
 
 /**
  * TODO: replace this with `ExtractionWriter` from https://github.com/playwright-ct/playwright-ct/pull/4

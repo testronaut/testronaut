@@ -1,3 +1,3 @@
-import { ExtractionConfig } from '../extraction/extraction-config';
+import { ExtractionConfig } from '../extraction-writer/extraction-config';
 
 export type RunnerConfig = ExtractionConfig;
