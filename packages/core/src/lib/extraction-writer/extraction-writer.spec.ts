@@ -9,7 +9,7 @@ describe(ExtractionWriter.name, () => {
     const { fileSystemFake } = await setUpInitializedWriter();
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/index.ts': '',
+      '/my-project/test-server/index.ts': '// @ts-no-check',
     });
   });
 
@@ -44,8 +44,9 @@ describe(ExtractionWriter.name, () => {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/index.ts': `
-globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
+      '/my-project/test-server/index.ts': expect.stringContaining(
+        `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
+      ),
       '/my-project/test-server/src/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
     "": () => { console.log('Hi!'); }
@@ -71,8 +72,9 @@ export const extractedFunctionsMap = {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/index.ts': `
-globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
+      '/my-project/test-server/index.ts': expect.stringContaining(
+        `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
+      ),
       '/my-project/test-server/src/my-component.spec.ts': `\
 export const extractedFunctionsMap = {
     "sayHello": () => { console.log('Hi!'); }
@@ -116,7 +118,8 @@ export const extractedFunctionsMap = {
 
     await fileSystemFake.writeFile(
       '/my-project/test-server/index.ts',
-      `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`
+      `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`,
+      { overwrite: true }
     );
 
     await writer.write(
@@ -143,7 +146,8 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
 
     await fileSystemFake.writeFile(
       '/my-project/test-server/index.ts',
-      `globalThis['OLD_HASH'] = () => import('./src/my-component.spec.ts');`
+      `globalThis['OLD_HASH'] = () => import('./src/my-component.spec.ts');`,
+      { overwrite: true }
     );
 
     await writer.write(
@@ -295,8 +299,6 @@ async function setUpWriter() {
     extractionDir: 'test-server',
     fileSystem: fileSystemFake,
   });
-
-  await writer.init();
 
   return {
     fileSystemFake,

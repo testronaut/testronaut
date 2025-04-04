@@ -38,7 +38,11 @@ export class ExtractionWriter {
   }
 
   async init() {
-    await this.#fileOps.createFileIfNotExists(this.#entryPointPath);
+    await this.#fileOps.createFileIfNotExists(
+      this.#entryPointPath,
+      /* This fixes "TS7053: Element implicitly has an any type" error on `globalThis['some-hash']` . */
+      '// @ts-no-check'
+    );
   }
 
   async write(fileAnalysis: FileAnalysis) {
