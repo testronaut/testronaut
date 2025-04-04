@@ -1,13 +1,16 @@
+import { createHash } from 'node:crypto';
 import {
   createExtractedFunction,
+  createFileAnalysis,
   ExtractedFunction,
+  FileAnalysis,
   ImportedIdentifier,
-} from '../extracted-function';
+} from '../file-analysis';
 import { AnalysisContext, FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
 
-export function analyze(fileData: FileData) {
+export function analyze(fileData: FileData): FileAnalysis {
   /* Create compiler context. */
   const ctx = new AnalysisContext(fileData);
 
@@ -31,5 +34,13 @@ export function analyze(fileData: FileData) {
   });
 
   /* Return extracted calls. */
-  return extractedFunctions;
+  return createFileAnalysis({
+    path: fileData.path,
+    hash: generateHash(fileData.content),
+    extractedFunctions,
+  });
+}
+
+function generateHash(content: string) {
+  return createHash('sha256').update(content).digest('base64').slice(0, 8);
 }
