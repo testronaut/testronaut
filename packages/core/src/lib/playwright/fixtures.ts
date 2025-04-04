@@ -7,8 +7,8 @@ import {
   test as base,
   TestType,
 } from '@playwright/test';
-import { PlaywrightCtOptions } from './define-config';
 import { Runner } from '../runner/runner';
+import { PlaywrightCtOptions } from './options';
 
 export const test: TestType<
   PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,

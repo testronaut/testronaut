@@ -1,3 +1,5 @@
-export { devices, expect } from '@playwright/test';
-export * from './define-config';
+export { defineConfig, devices, expect } from '@playwright/test';
 export * from './fixtures';
+export * from './with-ct';
+export { PlaywrightCtOptions } from './options';
+export { Options } from './options';
