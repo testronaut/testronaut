@@ -37,15 +37,15 @@ export function withCt(
   const projectRoot = dirname(configPath);
   const port = 7357;
 
-  /* We have to make sure that `generated/index.ts` is present even if empty
-   * before starting the web server, otherwise it would crash.
-   * `globalSetup` sounds like the right place, but it runs after the web servers starts
-   * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
   const extractionPipeline = new ExtractionPipeline({
     extractionDir: args.testServer.extractionDir,
     projectRoot,
   });
 
+  /* We have to make sure that `generated/index.ts` is present even if empty
+   * before starting the web server, otherwise it would crash.
+   * `globalSetup` sounds like the right place, but it runs after the web servers starts
+   * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
   extractionPipeline.init();
 
   return {
