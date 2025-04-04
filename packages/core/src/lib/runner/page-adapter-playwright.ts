@@ -12,18 +12,23 @@ export class PageAdapterPlaywright implements PageAdapter {
     pageFunction: (args: { hash: string }) => void,
     args: { hash: string }
   ): Promise<void> {
+    let timeout = 100;
     await expect(async () => {
       try {
-        await this.#page.waitForFunction(pageFunction, args);
+        await this.#page.waitForFunction(pageFunction, args, {
+          timeout,
+        });
       } catch (error) {
         /* Reload on failure. */
         await this.#page.reload();
+
+        /* Exponential backoff.
+         * We don't want to retry too fast as maybe the page is too slow to load. */
+        timeout *= 2;
+
         throw error;
       }
-    }).toPass({
-      intervals: [100, 500, 1_000, 2_000],
-      timeout: 5_000,
-    });
+    }).toPass({ timeout: 5_000 });
   }
 
   async evaluate<R, Arg>(pageFunction: (args: Arg) => R, arg: Arg): Promise<R> {
