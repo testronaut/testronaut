@@ -1,9 +1,8 @@
-import { join } from 'node:path';
 import {
   defineConfig as baseDefineConfig,
   PlaywrightTestConfig as BasePlaywrightTestConfig,
 } from '@playwright/test';
-import { generateFileIfNotExists } from './utils';
+import { Runner } from '../runner/runner';
 
 export function defineConfig(
   config: PlaywrightTestConfig
@@ -28,18 +27,21 @@ export function defineConfig<T extends Options, W>(
 ): PlaywrightTestConfig<T, W> {
   const port = 7357;
 
+  const defaultTestDir = 'src';
+
   /* We have to make sure that `generated/index.ts` is present even if empty
    * before starting the web server, otherwise it would crash.
    * `globalSetup` sounds like the right place, but it runs after the web servers starts
    * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
-  generateFileIfNotExists(
-    join(config.use.ct.testServer.generatedDir, 'index.ts')
-  );
+  new Runner({
+    extractionDir: config.use.ct.testServer.extractionDir,
+    projectRoot: config.testDir ?? defaultTestDir,
+  }).init();
 
   return baseDefineConfig(
     {
       ...config,
-      testDir: 'src',
+      testDir: defaultTestDir,
       testMatch: '**/*.ct-spec.ts',
       webServer: {
         command: config.use.ct.testServer.command.replace(
@@ -72,7 +74,7 @@ export interface PlaywrightCtOptions {
     /**
      * The directory where the extracted code will be generated.
      */
-    generatedDir: string;
+    extractionDir: string;
 
     /**
      * The command to start the test server.

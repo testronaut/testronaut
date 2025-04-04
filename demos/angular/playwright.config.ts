@@ -19,7 +19,7 @@ export default defineConfig({
   use: {
     ct: {
       testServer: {
-        generatedDir: 'ct-tests/generated',
+        extractionDir: 'ct-tests/generated',
         command:
           'nx serve demos-angular --configuration ct --port {port} --live-reload false',
       },
