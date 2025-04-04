@@ -52,9 +52,9 @@ export class FileOps {
     });
   }
 
-  async createFileIfNotExists(path: string, content: string) {
+  createFileIfNotExistsSync(path: string, content: string) {
     try {
-      await this.#fileSystem.writeFile(path, content);
+      this.#fileSystem.writeFileSync(path, content);
     } catch (error) {
       if (error instanceof FileExistsError) {
         return;

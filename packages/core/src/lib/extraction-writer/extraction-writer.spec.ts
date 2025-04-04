@@ -21,7 +21,7 @@ describe(ExtractionWriter.name, () => {
       'const INITIAL_CONTENT = 42;'
     );
 
-    await writer.init();
+    writer.init();
 
     expect(fileSystemFake.getFiles()).toEqual({
       '/my-project/test-server/index.ts': 'const INITIAL_CONTENT = 42;',
@@ -285,7 +285,7 @@ export const extractedFunctionsMap = {
 async function setUpInitializedWriter() {
   const { writer, ...utils } = await setUpWriter();
 
-  await writer.init();
+  writer.init();
 
   return { writer, ...utils };
 }

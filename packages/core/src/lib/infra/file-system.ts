@@ -13,6 +13,16 @@ export interface FileSystem {
     content: string,
     options?: WriteFileOptions
   ): Promise<void>;
+
+  /**
+   * @throws {FileExistsError} if file already exists at path.
+   * This error is never thrown if `options.overwrite` is set to `true`.
+   */
+  writeFileSync(
+    path: string,
+    content: string,
+    options?: WriteFileOptions
+  ): void;
 }
 
 export interface WriteFileOptions {

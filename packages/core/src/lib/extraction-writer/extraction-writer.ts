@@ -37,8 +37,8 @@ export class ExtractionWriter {
     this.#entryPointPath = join(this.#extractionPath, 'index.ts');
   }
 
-  async init() {
-    await this.#fileOps.createFileIfNotExists(
+  init() {
+    this.#fileOps.createFileIfNotExistsSync(
       this.#entryPointPath,
       /* This fixes "TS7053: Element implicitly has an any type" error on `globalThis['some-hash']` . */
       '// @ts-no-check'

@@ -21,8 +21,16 @@ export class FileSystemFake implements FileSystem {
   async writeFile(
     path: string,
     content: string,
-    { overwrite = false }: WriteFileOptions = {}
+    options: WriteFileOptions = {}
   ): Promise<void> {
+    this.writeFileSync(path, content, options);
+  }
+
+  writeFileSync(
+    path: string,
+    content: string,
+    { overwrite }: WriteFileOptions = {}
+  ): void {
     if (this.#files[path] && !overwrite) {
       throw new FileExistsError(path);
     }
