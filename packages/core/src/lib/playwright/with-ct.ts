@@ -1,6 +1,6 @@
 import { PlaywrightTestConfig } from '@playwright/test';
 import { dirname } from 'node:path/posix';
-import { Runner } from '../runner/runner';
+import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Options, PlaywrightCtOptions } from './options';
 
 export function withCt(
@@ -14,12 +14,12 @@ export function withCt(
    * before starting the web server, otherwise it would crash.
    * `globalSetup` sounds like the right place, but it runs after the web servers starts
    * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
-  const runner = new Runner({
+  const extractionPipeline = new ExtractionPipeline({
     extractionDir: args.testServer.extractionDir,
     projectRoot,
   });
 
-  runner.init();
+  extractionPipeline.init();
 
   return {
     testDir: 'src',
