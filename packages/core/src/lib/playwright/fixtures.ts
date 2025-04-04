@@ -1,5 +1,4 @@
 import {
-  expect,
   PlaywrightTestArgs,
   PlaywrightTestOptions,
   PlaywrightWorkerArgs,
@@ -9,6 +8,7 @@ import {
 } from '@playwright/test';
 import { Runner } from '../runner/runner';
 import { PlaywrightCtOptions } from './options';
+import { PageAdapterPlaywright } from '../runner/page-adapter-playwright';
 
 export const test: TestType<
   PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
@@ -29,6 +29,7 @@ export const test: TestType<
       );
     }
     const runner = new Runner({
+      pageAdapter: new PageAdapterPlaywright(page),
       projectRoot: ct.projectRoot,
       extractionDir: ct.testServer.extractionDir,
     });
@@ -36,31 +37,10 @@ export const test: TestType<
     const { hash } = await runner.extract(testInfo.file);
 
     const runInBrowserImpl: RunInBrowser = async () => {
-      await expect(async () => {
-        try {
-          await page.waitForFunction(
-            // @ts-expect-error no index signature
-            ({ hash }) => globalThis[hash],
-            { hash },
-            {
-              timeout: 1_000,
-            }
-          );
-        } catch (error) {
-          /* Reload if extractions can't be found. */
-          await page.reload();
-          throw error;
-        }
-      }).toPass();
-
-      await page.evaluate(
-        async ({ hash }) => {
-          // @ts-expect-error no index signature
-          const module = await globalThis[hash]();
-          return module.extractedFunctionsMap['']();
-        },
-        { hash }
-      );
+      await runner.runInBrowser({
+        hash,
+        functionName: '',
+      });
     };
 
     await use(runInBrowserImpl);
