@@ -25,6 +25,26 @@
         "scripts": []
       },
       "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        },
         "ct": {
           "optimization": false,
           "extractLicenses": false,
@@ -34,16 +54,22 @@
           "tsConfig": "tests/angular-wide/ct-tests/tsconfig.json"
         }
       },
-      "defaultConfiguration": "ct"
+      "defaultConfiguration": "production"
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
+        "production": {
+          "buildTarget": "angular-wide:build:production"
+        },
+        "development": {
+          "buildTarget": "angular-wide:build:development"
+        },
         "ct": {
           "buildTarget": "angular-wide:build:ct"
         }
       },
-      "defaultConfiguration": "ct"
+      "defaultConfiguration": "development"
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
