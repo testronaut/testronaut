@@ -1,13 +1,11 @@
 import {
-  PlaywrightTestConfig as BasePlaywrightTestConfig,
   defineConfig as baseDefineConfig,
+  PlaywrightTestConfig as BasePlaywrightTestConfig,
 } from '@playwright/test';
-export { devices, expect } from '@playwright/test';
-export * from './playwright-fixtures';
 
 export function defineConfig(
-  config: PlaywrightTestConfig<Options>
-): PlaywrightTestConfig<Options>;
+  config: PlaywrightTestConfig
+): PlaywrightTestConfig;
 export function defineConfig<T extends Options>(
   config: PlaywrightTestConfig<T>
 ): PlaywrightTestConfig<T>;
@@ -15,9 +13,9 @@ export function defineConfig<T extends Options, W>(
   config: PlaywrightTestConfig<T, W>
 ): PlaywrightTestConfig<T, W>;
 export function defineConfig(
-  config: PlaywrightTestConfig<Options>,
-  ...configs: PlaywrightTestConfig<Options>[]
-): PlaywrightTestConfig<Options>;
+  config: PlaywrightTestConfig,
+  ...configs: PlaywrightTestConfig[]
+): PlaywrightTestConfig;
 export function defineConfig<T extends Options>(
   config: PlaywrightTestConfig<T>,
   ...configs: PlaywrightTestConfig<T>[]
@@ -27,6 +25,7 @@ export function defineConfig<T extends Options, W>(
   ...configs: PlaywrightTestConfig<T, W>[]
 ): PlaywrightTestConfig<T, W> {
   const port = 7357;
+
   return baseDefineConfig(
     {
       ...config,
