@@ -3,6 +3,33 @@ import { dirname } from 'node:path/posix';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Options, PlaywrightCtOptions } from './options';
 
+/**
+ * This function is used to configure Playwright for component testing.
+ *
+ * It will:
+ * - Initialize the `index.ts` in the `extractionDir` directory where the extracted code will be written.
+ * - Set up the web server that serves the extracted code.
+ * - Set up Playwright to match '*.ct-spec.ts' files in `src` folder by default.
+ *
+ * @example
+ * ```ts
+ * import { defineConfig, withCt } from '@playwright-ct/core';
+ *
+ * export default defineConfig(
+ *  withCt({
+ *   configPath: __filename,
+ *   testServer: {
+ *    command: 'npm run start -- --port {port}',
+ *    extractionDir: 'generated',
+ *   },
+ *  }),
+ *  {
+ *     ... // other Playwright config options
+ *  }
+ * );
+ * ```
+ *
+ */
 export function withCt(
   args: WithCtArgs
 ): PlaywrightTestConfig & { use: Options } {
