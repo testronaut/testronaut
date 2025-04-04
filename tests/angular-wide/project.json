@@ -1,28 +1,27 @@
 {
-  "name": "demos-angular",
+  "name": "angular-wide",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "demos/angular/src",
+  "sourceRoot": "tests/angular-wide/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/demos/angular",
-        "index": "demos/angular/src/index.html",
-        "browser": "demos/angular/src/main.ts",
+        "outputPath": "dist/tests/angular-wide",
+        "index": "tests/angular-wide/src/index.html",
+        "browser": "tests/angular-wide/src/main.ts",
         "polyfills": ["zone.js"],
-        "tsConfig": "demos/angular/tsconfig.app.json",
+        "tsConfig": "tests/angular-wide/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
-            "input": "demos/angular/public"
+            "input": "tests/angular-wide/public"
           }
         ],
-        "styles": ["demos/angular/src/styles.scss"],
         "scripts": []
       },
       "configurations": {
@@ -50,9 +49,9 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
-          "browser": "demos/angular/ct-tests/vanilla-main.ts",
-          "index": "demos/angular/ct-tests/index.html",
-          "tsConfig": "demos/angular/ct-tests/tsconfig.json"
+          "browser": "tests/angular-wide/ct-tests/main.ts",
+          "index": "tests/angular-wide/ct-tests/index.html",
+          "tsConfig": "tests/angular-wide/ct-tests/tsconfig.json"
         }
       },
       "defaultConfiguration": "production"
@@ -61,13 +60,13 @@
       "executor": "@angular-devkit/build-angular:dev-server",
       "configurations": {
         "production": {
-          "buildTarget": "demos-angular:build:production"
+          "buildTarget": "angular-wide:build:production"
         },
         "development": {
-          "buildTarget": "demos-angular:build:development"
+          "buildTarget": "angular-wide:build:development"
         },
         "ct": {
-          "buildTarget": "demos-angular:build:ct"
+          "buildTarget": "angular-wide:build:ct"
         }
       },
       "defaultConfiguration": "development"
@@ -75,7 +74,7 @@
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
-        "buildTarget": "demos-angular:build"
+        "buildTarget": "angular-wide:build"
       }
     },
     "lint": {
@@ -84,8 +83,9 @@
     "serve-static": {
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "demos-angular:build",
-        "staticFilePath": "dist/demos/angular/browser",
+        "buildTarget": "angular-wide:build",
+        "port": 4200,
+        "staticFilePath": "dist/tests/angular-wide/browser",
         "spa": true
       }
     }
