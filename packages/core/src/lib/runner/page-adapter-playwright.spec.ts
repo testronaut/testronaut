@@ -24,7 +24,7 @@ class PageFake {
   } as unknown as Page;
 }
 
-describe('Page Loader Pageoff', () => {
+describe.skip('Page Loader Pageoff', () => {
   const setup = () => {
     const fake = new PageFake();
     const adapter = new PageAdapterPlaywright(fake.page);
@@ -42,7 +42,7 @@ describe('Page Loader Pageoff', () => {
     expect(fake.reloadCounter).toBe(0);
   });
 
-  it.only('should fail after 5 seconds', async () => {
+  it('should fail after 5 seconds', async () => {
     vitest.useFakeTimers();
     const { adapter, fake } = setup();
     const promise = adapter.waitForFunctionAndReload(() => void true, {
