@@ -1,5 +1,5 @@
-import { defineConfig, devices, withCt } from '@playwright-ct/core';
 import { nxE2EPreset } from '@nx/playwright/preset';
+import { defineConfig, devices, withCt } from '@playwright-ct/core';
 
 /**
  * Read environment variables from file.
@@ -19,7 +19,7 @@ export default defineConfig(
     testServer: {
       extractionDir: 'ct-tests/generated',
       command:
-        'nx serve demos-angular --configuration ct --port {port} --live-reload false',
+        'pnpm exec nx serve demos-angular --configuration ct --port {port} --live-reload false',
     },
   }),
   {
