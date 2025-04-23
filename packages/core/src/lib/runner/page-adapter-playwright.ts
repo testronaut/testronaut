@@ -8,22 +8,22 @@ export class PageAdapterPlaywright implements PageAdapter {
     this.#page = page;
   }
 
-  async waitForFunctionAndReload<R, Arg>(
-    pageFunction: (args: Arg) => R,
-    arg: Arg
+  async waitForFunctionAndReload(
+    pageFunction: (args: { hash: string }) => void,
+    args: { hash: string }
   ): Promise<void> {
     await expect(async () => {
       try {
-        // @eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await this.#page.waitForFunction(pageFunction as any, arg, {
-          timeout: 1_000,
-        });
+        await this.#page.waitForFunction(pageFunction, args);
       } catch (error) {
         /* Reload on failure. */
         await this.#page.reload();
         throw error;
       }
-    }).toPass();
+    }).toPass({
+      intervals: [100, 500, 1_000, 2_000],
+      timeout: 5_000,
+    });
   }
 
   async evaluate<R, Arg>(pageFunction: (args: Arg) => R, arg: Arg): Promise<R> {

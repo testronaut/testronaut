@@ -1,39 +1,30 @@
 import {
+  test as base,
   PlaywrightTestArgs,
   PlaywrightTestOptions,
   PlaywrightWorkerArgs,
   PlaywrightWorkerOptions,
-  test as base,
   TestType,
 } from '@playwright/test';
+import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
-import { PlaywrightCtOptions } from './options';
-import { PageAdapterPlaywright } from '../runner/page-adapter-playwright';
+import { CtConfig } from './playwright-ct-config';
 
 export const test: TestType<
   PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
   PlaywrightWorkerArgs & PlaywrightWorkerOptions
-> = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
+> = base.extend<Fixtures & { ct: CtConfig | null }>({
   ct: [null, { option: true }],
-
-  page: async ({ page }, use) => {
-    await page.goto('/');
-
-    await use(page);
-  },
 
   runInBrowser: async ({ ct, page }, use, testInfo) => {
     if (!ct) {
+      // TODO: Setup a link with detailed instructions
       throw new Error(
-        'Playwright CT config is not set up. Please use `defineConfig({ use: { ct: { ... } } })` to set it up.'
+        'No config for Playwright CT. Use `withCt` in `defineConfig` (playwright.config.ts) to set it up.'
       );
     }
-    const runner = new Runner({
-      pageAdapter: new PageAdapterPlaywright(page),
-      projectRoot: ct.projectRoot,
-      extractionDir: ct.testServer.extractionDir,
-    });
 
+    const runner = new Runner(new ExtractionPipeline(ct), page);
     const { hash } = await runner.extract(testInfo.file);
 
     const runInBrowserImpl: RunInBrowser = async (nameOrFunction) => {

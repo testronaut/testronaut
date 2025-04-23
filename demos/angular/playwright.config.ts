@@ -1,5 +1,6 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { defineConfig, devices, withCt } from '@playwright-ct/core';
+import { withCt } from '@playwright-ct/core';
+import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Read environment variables from file.
@@ -16,10 +17,8 @@ export default defineConfig(
   nxE2EPreset(__filename),
   withCt({
     configPath: __filename,
-    testServer: {
-      extractionDir: 'ct-tests/generated',
-      command:
-        'pnpm exec nx serve demos-angular --configuration ct --port {port} --live-reload false',
+    use: {
+      baseURL: 'http://localhost:7357',
     },
   }),
   {
@@ -35,5 +34,10 @@ export default defineConfig(
       { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
       { name: 'webkit', use: { ...devices['Desktop Safari'] } },
     ],
+    webServer: {
+      command:
+        'pnpm exec nx serve demos-angular --configuration ct --port 7357 --live-reload false',
+      reuseExistingServer: !process.env['CI'],
+    },
   }
 );

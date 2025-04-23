@@ -1,17 +1,23 @@
-import { test, expect } from '@playwright-ct/core';
+import { expect, test } from '@playwright-ct/core';
 
-test('anonymous runInBrowser', async ({ page, runInBrowser }) => {
-  await runInBrowser(() => {
-    document.body.textContent = 'Hi!';
+test.describe('runInBrowser', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
   });
 
-  await expect(page.getByText('Hi!')).toBeVisible();
-});
+  test('anonymous runInBrowser', async ({ page, runInBrowser }) => {
+    await runInBrowser(() => {
+      document.body.textContent = 'Hi!';
+    });
 
-test('named runInBrowser', async ({ page, runInBrowser }) => {
-  await runInBrowser('bye', () => {
-    document.body.textContent = 'Bye!';
+    await expect(page.getByText('Hi!')).toBeVisible();
   });
 
-  await expect(page.getByText('Bye!')).toBeVisible();
+  test('named runInBrowser', async ({ page, runInBrowser }) => {
+    await runInBrowser('bye', () => {
+      document.body.textContent = 'Bye!';
+    });
+
+    await expect(page.getByText('Bye!')).toBeVisible();
+  });
 });

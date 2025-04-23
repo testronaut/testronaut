@@ -1,23 +1,14 @@
+import { expect, Page } from '@playwright/test';
 import { ExtractionPipeline } from './extraction-pipeline';
-import { PageAdapter } from './page-adapter';
-import { RunnerConfig } from './runner-config';
 
 export class Runner {
-  readonly #extractionPipeline: ExtractionPipeline;
-  readonly #pageAdapter: PageAdapter;
-
-  constructor({
-    pageAdapter,
-    ...config
-  }: RunnerConfig & {
-    pageAdapter: PageAdapter;
-  }) {
-    this.#extractionPipeline = new ExtractionPipeline(config);
-    this.#pageAdapter = pageAdapter;
-  }
+  constructor(
+    private extractionPipeline: ExtractionPipeline,
+    private page: Page
+  ) {}
 
   async extract(filePath: string) {
-    return this.#extractionPipeline.extract(filePath);
+    return this.extractionPipeline.extract(filePath);
   }
 
   async runInBrowser({
@@ -27,19 +18,38 @@ export class Runner {
     hash: string;
     functionName: string;
   }) {
-    await this.#pageAdapter.waitForFunctionAndReload(
-      // @ts-expect-error no index signature
-      ({ hash }) => globalThis[hash],
-      { hash }
-    );
+    await this.waitUntilHashIsAvailable(hash);
 
-    await this.#pageAdapter.evaluate(
+    // execute the function in the browser context
+    await this.page.evaluate(
       async ({ functionName, hash }) => {
-        // @ts-expect-error no index signature
-        const module = await globalThis[hash]();
+        const module = await (globalThis as unknown as ExtractionUnitRecord)[
+          hash
+        ]();
         return module.extractedFunctionsMap[functionName]();
       },
       { functionName, hash }
     );
   }
+
+  private waitUntilHashIsAvailable(hash: string) {
+    return expect(() => {
+      this.page
+        .waitForFunction(({ hash }) => hash in globalThis, {
+          hash,
+        })
+        .catch(async (error) => {
+          await this.page.reload();
+          throw error;
+        });
+    }).toPass({
+      intervals: [100, 500, 1_000, 2_000, 3_000],
+      timeout: 5_000,
+    });
+  }
 }
+
+type ExtractionUnitRecord = Record<
+  string,
+  () => Promise<{ extractedFunctionsMap: Record<string, () => void> }>
+>;
