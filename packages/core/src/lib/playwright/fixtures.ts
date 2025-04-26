@@ -1,19 +1,10 @@
-import {
-  test as base,
-  PlaywrightTestArgs,
-  PlaywrightTestOptions,
-  PlaywrightWorkerArgs,
-  PlaywrightWorkerOptions,
-  TestType,
-} from '@playwright/test';
+import { test as base } from '@playwright/test';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
-import { CtConfig } from './playwright-ct-config';
 
-export const test: TestType<
-  PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
-  PlaywrightWorkerArgs & PlaywrightWorkerOptions
-> = base.extend<Fixtures & { ct: CtConfig | null }>({
+import { PlaywrightCtOptions } from './options';
+
+const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
   ct: [null, { option: true }],
 
   runInBrowser: async ({ ct, page }, use, testInfo) => {
@@ -41,6 +32,7 @@ export const test: TestType<
   },
 });
 
+export const test = ctTest as Omit<typeof ctTest, 'ct'>;
 export interface Fixtures {
   runInBrowser: RunInBrowser;
 }
