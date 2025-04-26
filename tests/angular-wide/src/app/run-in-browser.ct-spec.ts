@@ -1,10 +1,6 @@
 import { expect, test } from '@playwright-ct/core';
 
 test.describe('runInBrowser', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-  });
-
   test('anonymous runInBrowser', async ({ page, runInBrowser }) => {
     await runInBrowser(() => {
       document.body.textContent = 'Hi!';

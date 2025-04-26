@@ -7,6 +7,20 @@ import { PlaywrightCtOptions } from './options';
 const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
   ct: [null, { option: true }],
 
+  /**
+   * Users should not care how to navigate a "page". CT takes
+   * care of that, as it also manages the test server.
+   */
+  page: async ({ page }, use) => {
+    await page.goto('/');
+    page.goto = () => {
+      throw new Error(
+        'page.goto() is not available. Navigation is managed by CT.'
+      );
+    };
+    await use(page);
+  },
+
   runInBrowser: async ({ ct, page }, use, testInfo) => {
     if (!ct) {
       // TODO: Setup a link with detailed instructions
