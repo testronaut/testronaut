@@ -1,43 +1,27 @@
 import { PlaywrightTestConfig } from '@playwright/test';
 import { dirname } from 'node:path/posix';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
-import { PlaywrightCtConfig } from './playwright-ct-config';
-
-export interface WithCtArgs {
-  /**
-   * The path to the Playwright config file.
-   */
-  // INTERNAL: This is needed because Playwright doesn't provide the config path
-  // outside fixtures or the global setup, but we init the extraction pipeline
-  // as soon as `withCt` is called.
-  configPath: string;
-
-  /**
-   * The directory where the extracted code will be generated.
-   * By default the value is `ct-tests/generated`.
-   */
-  extractionDir?: string;
-
-  use: PlaywrightTestConfig['use'];
-}
+import { Options, PlaywrightCtOptions } from './options';
 
 /**
  * This function is used to configure Playwright for component testing.
  *
  * It will:
  * - Initialize the `index.ts` in the `extractionDir` directory where the extracted code will be written.
+ * - Set up the web server that serves the extracted code.
  * - Set up Playwright to match '*.ct-spec.ts' files in `src` folder by default.
  *
  * @example
  * ```ts
- * import { defineConfig } from '@playwright/test';
- * import { withCt } from '@playwright-ct/core';
+ * import { defineConfig, withCt } from '@playwright-ct/core';
  *
  * export default defineConfig(
  *  withCt({
  *   configPath: __filename,
- *   use: { // 👈 IMPORTANT: `use` parameters go here
- *   }
+ *   testServer: {
+ *    command: 'npm run start -- --port {port}',
+ *    extractionDir: 'generated',
+ *   },
  *  }),
  *  {
  *     ... // other Playwright config options
@@ -48,12 +32,13 @@ export interface WithCtArgs {
  */
 export function withCt(
   args: WithCtArgs
-): PlaywrightTestConfig & PlaywrightCtConfig {
-  const { configPath } = args;
+): PlaywrightTestConfig & { use: Options } {
+  const { configPath, ...rest } = args;
   const projectRoot = dirname(configPath);
-  const extractionDir = args.extractionDir ?? 'ct-tests/generated';
+  const port = 7357;
+
   const extractionPipeline = new ExtractionPipeline({
-    extractionDir,
+    extractionDir: args.testServer.extractionDir,
     projectRoot,
   });
 
@@ -67,11 +52,25 @@ export function withCt(
     testDir: 'src',
     testMatch: '**/*.ct-spec.ts',
     use: {
-      ...args.use,
+      baseURL: `http://localhost:${port}`,
       ct: {
-        extractionDir,
         projectRoot,
+        ...rest,
       },
     },
+    webServer: {
+      command: args.testServer.command.replace('{port}', port.toString()),
+      port,
+    },
   };
+}
+
+export interface WithCtArgs extends Omit<PlaywrightCtOptions, 'projectRoot'> {
+  /**
+   * The path to the Playwright config file.
+   */
+  // INTERNAL: This is needed because Playwright doesn't provide the config path
+  // outside fixtures or the global setup, but we init the extraction pipeline
+  // as soon as `withCt` is called.
+  configPath: string;
 }

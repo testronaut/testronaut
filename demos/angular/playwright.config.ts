@@ -17,8 +17,10 @@ export default defineConfig(
   nxE2EPreset(__filename),
   withCt({
     configPath: __filename,
-    use: {
-      baseURL: 'http://localhost:7357',
+    testServer: {
+      extractionDir: 'ct-tests/generated',
+      command:
+        'pnpm exec nx serve angular-wide --configuration ct --port {port} --live-reload false',
     },
   }),
   {

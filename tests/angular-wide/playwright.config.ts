@@ -17,10 +17,17 @@ export default defineConfig(
   nxE2EPreset(__filename),
   withCt({
     configPath: __filename,
-    use: {
-      baseURL: 'http://localhost:4201',
+    testServer: {
+      extractionDir: 'ct-tests/generated',
+      command:
+        'pnpm exec nx serve angular-wide --configuration ct --port {port} --live-reload false',
     },
   }),
+  {
+    use: {
+      trace: 'on-first-retry',
+    },
+  },
   {
     /* Configure projects for major browsers */
     projects: [
@@ -28,11 +35,5 @@ export default defineConfig(
       { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
       { name: 'webkit', use: { ...devices['Desktop Safari'] } },
     ],
-
-    webServer: {
-      command:
-        'pnpm exec nx serve angular-wide --configuration ct --port 4201 --live-reload false',
-      reuseExistingServer: true,
-    },
   }
 );
