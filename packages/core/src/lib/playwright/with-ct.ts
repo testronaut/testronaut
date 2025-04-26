@@ -7,6 +7,9 @@ export interface WithCtArgs {
   /**
    * The path to the Playwright config file.
    */
+  // INTERNAL: This is needed because Playwright doesn't provide the config path
+  // outside fixtures or the global setup, but we init the extraction pipeline
+  // as soon as `withCt` is called.
   configPath: string;
 
   /**
