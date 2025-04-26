@@ -7,19 +7,17 @@ import { ExtractionConfig } from '../extraction-writer/extraction-config';
  * TODO: replace this with `ExtractionWriter` from https://github.com/playwright-ct/playwright-ct/pull/4
  */
 export class TmpExtractionWriter {
-  #config: ExtractionConfig;
+  readonly #extractionDir: string;
+  readonly #projectRoot: string;
 
   constructor(config: ExtractionConfig) {
-    this.#config = config;
+    this.#projectRoot = config.projectRoot;
+    this.#extractionDir = config.extractionDir ?? 'generated';
   }
 
   async write(analysis: FileAnalysis) {
-    const relativePath = relative(this.#config.projectRoot, analysis.path);
-    const destPath = join(
-      this.#config.projectRoot,
-      this.#config.extractionDir,
-      relativePath
-    );
+    const relativePath = relative(this.#projectRoot, analysis.path);
+    const destPath = join(this.#projectRoot, this.#extractionDir, relativePath);
 
     await mkdir(dirname(destPath), { recursive: true });
 
@@ -36,7 +34,7 @@ export const extractedFunctionsMap = {
     );
 
     await writeFile(
-      join(this.#config.projectRoot, this.#config.extractionDir, 'index.ts'),
+      join(this.#projectRoot, this.#extractionDir, 'index.ts'),
       `
 // This file is auto-generated. Do not edit it directly.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
