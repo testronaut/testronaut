@@ -33,19 +33,25 @@ export class Runner {
   }
 
   private waitUntilHashIsAvailable(hash: string) {
-    return expect(() => {
-      this.page
-        .waitForFunction(({ hash }) => hash in globalThis, {
-          hash,
-        })
-        .catch(async (error) => {
-          await this.page.reload();
-          throw error;
-        });
-    }).toPass({
-      intervals: [100, 500, 1_000, 2_000, 3_000],
-      timeout: 5_000,
-    });
+    let timeout = 100;
+    return expect(async () => {
+      try {
+        await this.page.waitForFunction(
+          ({ hash }) => hash in globalThis,
+          { hash },
+          { timeout }
+        );
+      } catch (error) {
+        /* Exponential backoff.
+         * We don't want to retry too fast as maybe the page is too slow to load. */
+        timeout *= 2;
+
+        /* Reload on failure. */
+        await this.page.reload();
+
+        throw error;
+      }
+    }).toPass({ timeout: 5_000 });
   }
 }
 

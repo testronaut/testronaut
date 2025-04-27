@@ -29,7 +29,13 @@ const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
       );
     }
 
-    const runner = new Runner(new ExtractionPipeline(ct), page);
+    const runner = new Runner(
+      new ExtractionPipeline({
+        projectRoot: ct.projectRoot,
+        extractionDir: ct.testServer.extractionDir,
+      }),
+      page
+    );
     const { hash } = await runner.extract(testInfo.file);
 
     const runInBrowserImpl: RunInBrowser = async (nameOrFunction) => {
