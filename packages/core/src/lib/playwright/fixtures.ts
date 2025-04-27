@@ -32,7 +32,7 @@ const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
     const runner = new Runner(
       new ExtractionPipeline({
         projectRoot: ct.projectRoot,
-        extractionDir: ct.testServer.extractionDir,
+        extractionDir: ct.extractionDir,
       }),
       page
     );

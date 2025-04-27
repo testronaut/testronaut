@@ -12,14 +12,14 @@ export interface PlaywrightCtOptions {
   projectRoot: string;
 
   /**
+   * The directory where the extracted code will be generated.
+   */
+  extractionDir: string;
+
+  /**
    * Options to configure and run the test server.
    */
   testServer: {
-    /**
-     * The directory where the extracted code will be generated.
-     */
-    extractionDir: string;
-
     /**
      * The command to start the test server.
      */

@@ -38,7 +38,7 @@ export function withCt(
   const port = 7357;
 
   const extractionPipeline = new ExtractionPipeline({
-    extractionDir: args.testServer.extractionDir,
+    extractionDir: args.extractionDir,
     projectRoot,
   });
 
