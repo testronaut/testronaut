@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 import { Transform } from '@playwright-ct/core';
 import { AnalysisContext } from '@playwright-ct/core/devkit';
 import * as ts from 'typescript';
+import { createImportedIdentifier } from '@playwright-ct/core/devkit';
+import { FileData } from 'packages/core/src/lib/analyzer/core';
+import { mount } from './mount';
 
 export interface CtAngularConfig {
   configPath: string;
@@ -53,49 +56,51 @@ function detectTestServerConfig(configPath: string): CtConfig['testServer'] {
 }
 
 function angularMountTransform(): Transform {
-  return (content: string, path: string): string => {
-    const ctx = new AnalysisContext({ path, content });
-
-    const transformer = <T extends ts.Node>(
-      context: ts.TransformationContext
-    ) => {
-      const visitor = (node: ts.Node): ts.Node => {
-        if (
-          ts.isCallExpression(node) &&
-          node.expression.getText() === 'mount'
-        ) {
-          return ts.factory.updateCallExpression(
-            node,
-            ts.factory.createIdentifier('runInBrowser'),
-            undefined,
-            [
-              ts.factory.createArrowFunction(
-                undefined,
-                undefined,
-                [],
-                undefined,
-                ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                ts.factory.createCallExpression(
-                  ts.factory.createIdentifier('pwAngularMount'),
-                  undefined,
-                  node.arguments
-                )
-              ),
-            ]
-          );
-        }
-        return ts.visitEachChild(node, visitor, context);
-      };
-      return (node: T) => ts.visitNode(node, visitor);
-    };
+  return (fileData: FileData) => {
+    const ctx = new AnalysisContext(fileData);
 
     const result = ts.transform(ctx.sourceFile, [transformer]);
     const printer = ts.createPrinter();
-    const code = printer.printNode(
-      ts.EmitHint.Unspecified,
-      result.transformed[0],
-      ctx.sourceFile
-    );
-    return code;
+    return {
+      content: printer.printNode(
+        ts.EmitHint.Unspecified,
+        result.transformed[0],
+        ctx.sourceFile
+      ),
+      importedIdentifiers: [
+        createImportedIdentifier({
+          name: 'mount',
+          module: '@playwright-ct/angular/browser',
+        }),
+      ],
+    };
   };
+}
+
+function transformer<T extends ts.Node>(context: ts.TransformationContext) {
+  const visitor = (node: ts.Node): ts.Node => {
+    if (ts.isCallExpression(node) && node.expression.getText() === 'mount') {
+      return ts.factory.updateCallExpression(
+        node,
+        ts.factory.createIdentifier('runInBrowser'),
+        undefined,
+        [
+          ts.factory.createArrowFunction(
+            undefined,
+            undefined,
+            [],
+            undefined,
+            ts.factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            ts.factory.createCallExpression(
+              ts.factory.createIdentifier('mount'),
+              undefined,
+              node.arguments
+            )
+          ),
+        ]
+      );
+    }
+    return ts.visitEachChild(node, visitor, context);
+  };
+  return (node: T) => ts.visitNode(node, visitor);
 }

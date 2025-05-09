@@ -1,8 +1,5 @@
 import { test, expect } from '@playwright-ct/angular';
 import { Hello } from './hello.ng';
-// SPIKE: this should be produced by the plugin
-// but only in the extracted file.
-import { pwAngularMount } from '@playwright-ct/angular/browser';
 
 test('anonymous mount', async ({ page, mount }) => {
   await mount(Hello);

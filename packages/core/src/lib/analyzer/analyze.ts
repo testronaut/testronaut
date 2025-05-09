@@ -10,18 +10,28 @@ import { AnalysisContext, createFileData, FileData } from './core';
 import { Transform } from './transform';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
+import { fdatasync } from 'node:fs';
 
 export function analyze(
   fileData: FileData,
   { transforms }: { transforms?: Transform[] } = {}
 ): FileAnalysis {
+  let importedIdentifiers: ImportedIdentifier[] = [];
   if (transforms) {
     for (const transform of transforms) {
-      const content = transform(fileData.content, fileData.path);
-      fileData = createFileData({
-        ...fileData,
-        content,
-      });
+      const result = transform(fileData);
+
+      fileData = createFileData(
+        createFileData({
+          ...fileData,
+          content: result.content,
+        })
+      );
+
+      importedIdentifiers = [
+        ...importedIdentifiers,
+        ...result.importedIdentifiers,
+      ];
     }
   }
 
@@ -52,6 +62,7 @@ export function analyze(
     path: fileData.path,
     hash: generateHash(fileData.content),
     extractedFunctions,
+    importedIdentifiers,
   });
 }
 

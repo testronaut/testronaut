@@ -124,7 +124,7 @@ export class ExtractionWriter {
     destFilePath: string;
     fileAnalysis: FileAnalysis;
   }) {
-    const importIdentifiers = fileAnalysis.extractedFunctions
+    let importIdentifiers = fileAnalysis.extractedFunctions
       .map((extractedFunction) => extractedFunction.importedIdentifiers)
       .flat()
       .map((importIdentifier) => ({
@@ -135,6 +135,22 @@ export class ExtractionWriter {
           importPath: importIdentifier.module,
         }),
       }));
+
+    importIdentifiers = [
+      ...(fileAnalysis.importedIdentifiers ?? []),
+      ...importIdentifiers,
+    ];
+
+    // dedupe import identifiers
+    importIdentifiers = importIdentifiers.filter(
+      (importIdentifier, index, self) =>
+        index ===
+        self.findIndex(
+          (i) =>
+            i.module === importIdentifier.module &&
+            i.name === importIdentifier.name
+        )
+    );
 
     const moduleImports = Object.entries(
       Object.groupBy(importIdentifiers, (item) => item.module)

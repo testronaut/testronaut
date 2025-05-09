@@ -5,7 +5,7 @@ import {
   platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 
-export async function pwAngularMount(cmp: Type<unknown>) {
+export async function mount(cmp: Type<unknown>) {
   TestBed.initTestEnvironment(
     BrowserDynamicTestingModule,
     platformBrowserDynamicTesting()

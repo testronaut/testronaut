@@ -4,6 +4,7 @@ export interface FileAnalysis {
   path: string;
   hash: string;
   extractedFunctions: ExtractedFunction[];
+  importedIdentifiers?: ImportedIdentifier[];
 }
 
 export function createFileAnalysis(

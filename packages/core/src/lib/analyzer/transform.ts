@@ -1,3 +1,9 @@
+import { FileData } from './core';
+import { ImportedIdentifier } from '../file-analysis';
+
 export interface Transform {
-  (code: string, id: string): string;
+  (fileInfo: FileData): {
+    content: string;
+    importedIdentifiers: ImportedIdentifier[];
+  };
 }
