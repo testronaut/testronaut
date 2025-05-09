@@ -1,3 +1,3 @@
 export interface Transform {
-  (code: string): string;
+  (code: string, id: string): string;
 }

@@ -5,6 +5,10 @@ export interface FileData {
   content: string;
 }
 
+export function createFileData(fileData: FileData): FileData {
+  return fileData;
+}
+
 export class AnalysisContext {
   readonly sourceFile: ts.SourceFile;
   readonly typeChecker: ts.TypeChecker;

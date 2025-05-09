@@ -1,11 +1,13 @@
-import { test, expect } from '@playwright-ct/core';
+import { test, expect } from '@playwright-ct/angular';
+import { Hello } from './hello.ng';
+// SPIKE: this should be produced by the plugin
+// but only in the extracted file.
+import { pwAngularMount } from '@playwright-ct/angular/browser';
 
-test('anonymous runInBrowser', async ({ page, runInBrowser }) => {
-  await runInBrowser(() => {
-    document.body.textContent = 'Hi!';
-  });
+test('anonymous mount', async ({ page, mount }) => {
+  await mount(Hello);
 
-  await expect(page.getByText('Hi!')).toBeVisible();
+  await expect(page.getByText('Welcome to Playwright CT')).toBeVisible();
 });
 
 test('named runInBrowser', async ({ page, runInBrowser }) => {

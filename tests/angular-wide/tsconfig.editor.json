@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../../packages/angular/src/lib/fixtures.ts"],
   "compilerOptions": {},
   "exclude": [
     "jest.config.ts",

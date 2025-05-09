@@ -16,7 +16,9 @@
     "baseUrl": ".",
     "paths": {
       "@playwright-ct/angular": ["packages/angular/src/index.ts"],
-      "@playwright-ct/core": ["packages/core/src/index.ts"]
+      "@playwright-ct/angular/browser": ["packages/angular/src/browser.ts"],
+      "@playwright-ct/core": ["packages/core/src/index.ts"],
+      "@playwright-ct/core/devkit": ["packages/core/src/devkit.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

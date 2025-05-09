@@ -6,7 +6,7 @@ import {
   FileAnalysis,
   ImportedIdentifier,
 } from '../file-analysis';
-import { AnalysisContext, FileData } from './core';
+import { AnalysisContext, createFileData, FileData } from './core';
 import { Transform } from './transform';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
@@ -15,10 +15,13 @@ export function analyze(
   fileData: FileData,
   { transforms }: { transforms?: Transform[] } = {}
 ): FileAnalysis {
-  let content = fileData.content;
   if (transforms) {
     for (const transform of transforms) {
-      content = transform(content, fileData.path);
+      const content = transform(fileData.content, fileData.path);
+      fileData = createFileData({
+        ...fileData,
+        content,
+      });
     }
   }
 
