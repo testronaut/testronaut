@@ -1,1 +1,1 @@
-export { addCtProjects } from './lib/define-config-with-ct';
+export { withAngularCt } from './lib/with-angular-ct';

@@ -4,7 +4,7 @@ import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Options, PlaywrightCtOptions } from './options';
 
 export function withCt(
-  args: WithCtArgs
+  args: CtConfig
 ): PlaywrightTestConfig & { use: Options } {
   const { configPath, ...rest } = args;
   const projectRoot = dirname(configPath);
@@ -38,7 +38,7 @@ export function withCt(
   };
 }
 
-export interface WithCtArgs extends Omit<PlaywrightCtOptions, 'projectRoot'> {
+export interface CtConfig extends Omit<PlaywrightCtOptions, 'projectRoot'> {
   /**
    * The path to the Playwright config file.
    */

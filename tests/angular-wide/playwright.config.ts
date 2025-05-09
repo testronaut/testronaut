@@ -1,5 +1,6 @@
-import { defineConfig, devices, withCt } from '@playwright-ct/core';
 import { nxE2EPreset } from '@nx/playwright/preset';
+import { withAngularCt } from '@playwright-ct/angular';
+import { defineConfig, devices } from '@playwright-ct/core';
 
 /**
  * Read environment variables from file.
@@ -14,14 +15,7 @@ import { nxE2EPreset } from '@nx/playwright/preset';
  */
 export default defineConfig(
   nxE2EPreset(__filename),
-  withCt({
-    configPath: __filename,
-    testServer: {
-      extractionDir: 'ct-tests/generated',
-      command:
-        'nx serve angular-wide --configuration ct --port {port} --live-reload false',
-    },
-  }),
+  withAngularCt({ configPath: __filename }),
   {
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
