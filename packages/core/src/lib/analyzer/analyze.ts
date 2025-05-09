@@ -7,10 +7,21 @@ import {
   ImportedIdentifier,
 } from '../file-analysis';
 import { AnalysisContext, FileData } from './core';
+import { Transform } from './transform';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
 
-export function analyze(fileData: FileData): FileAnalysis {
+export function analyze(
+  fileData: FileData,
+  { transforms }: { transforms?: Transform[] } = {}
+): FileAnalysis {
+  let content = fileData.content;
+  if (transforms) {
+    for (const transform of transforms) {
+      content = transform(content, fileData.path);
+    }
+  }
+
   /* Create compiler context. */
   const ctx = new AnalysisContext(fileData);
 

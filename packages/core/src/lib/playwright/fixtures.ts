@@ -32,6 +32,7 @@ export const test: TestType<
       pageAdapter: new PageAdapterPlaywright(page),
       projectRoot: ct.projectRoot,
       extractionDir: ct.testServer.extractionDir,
+      transforms: ct.transforms,
     });
 
     const { hash } = await runner.extract(testInfo.file);

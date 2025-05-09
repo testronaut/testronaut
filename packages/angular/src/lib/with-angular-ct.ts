@@ -1,6 +1,7 @@
 import { dirname, join } from 'node:path/posix';
 import { CtConfig, withCt } from '@playwright-ct/core';
 import { readFileSync } from 'node:fs';
+import { Transform } from '@playwright-ct/core';
 
 export interface CtAngularConfig {
   configPath: string;
@@ -31,6 +32,7 @@ export function withAngularCt({ configPath }: CtAngularConfig) {
   return withCt({
     configPath,
     testServer,
+    transforms: [angularMountTransform()],
   });
 }
 
@@ -45,5 +47,11 @@ function detectTestServerConfig(configPath: string): CtConfig['testServer'] {
   return {
     extractionDir: 'ct-tests/generated',
     command: `nx serve ${nxProjectName} --configuration ct --port {port} --live-reload false`,
+  };
+}
+
+function angularMountTransform(): Transform {
+  return (code: string): string => {
+    return code;
   };
 }

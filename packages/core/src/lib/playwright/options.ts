@@ -1,3 +1,5 @@
+import { Transform } from '../analyzer/transform';
+
 export interface Options {
   ct: PlaywrightCtOptions;
 }
@@ -25,4 +27,6 @@ export interface PlaywrightCtOptions {
      */
     command: string;
   };
+
+  transforms?: Transform[];
 }
