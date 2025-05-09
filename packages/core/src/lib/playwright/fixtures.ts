@@ -52,7 +52,7 @@ const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
   },
 });
 
-export const test = ctTest as Omit<typeof ctTest, 'ct'>;
+export const test: Omit<typeof ctTest, 'ct'> = ctTest;
 export interface Fixtures {
   runInBrowser: RunInBrowser;
 }
