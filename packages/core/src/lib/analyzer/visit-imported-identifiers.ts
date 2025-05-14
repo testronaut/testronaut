@@ -1,9 +1,6 @@
 import { AnalysisContext } from './core';
 import * as ts from 'typescript';
-import {
-  createImportedIdentifier,
-  ImportedIdentifier,
-} from '../extracted-function';
+import { createImportedIdentifier, ImportedIdentifier } from '../file-analysis';
 import { findImportDeclaration, getDeclaration } from './utils';
 
 export function visitImportedIdentifiers(
