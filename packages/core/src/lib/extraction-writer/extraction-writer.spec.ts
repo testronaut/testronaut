@@ -48,7 +48,7 @@ describe(ExtractionWriter.name, () => {
         `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
       ),
       '/my-project/test-server/src/my-component.spec.ts': `\
-export const extractedFunctionsMap = {
+export const extractedFunctionsRecord = {
     "": () => { console.log('Hi!'); }
 };
 `,
@@ -76,7 +76,7 @@ export const extractedFunctionsMap = {
         `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
       ),
       '/my-project/test-server/src/my-component.spec.ts': `\
-export const extractedFunctionsMap = {
+export const extractedFunctionsRecord = {
     "sayHello": () => { console.log('Hi!'); }
 };
 `,
@@ -89,7 +89,7 @@ export const extractedFunctionsMap = {
 
     await fileSystemFake.writeFile(
       '/my-project/test-server/src/my-component.spec.ts',
-      'export const extractedFunctionsMap = { "": () => { console.log("Hi!"); } };'
+      'export const extractedFunctionsRecord = { "": () => { console.log("Hi!"); } };'
     );
 
     await writer.write(
@@ -105,7 +105,7 @@ export const extractedFunctionsMap = {
 
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/test-server/src/my-component.spec.ts': `\
-export const extractedFunctionsMap = {
+export const extractedFunctionsRecord = {
     "": () => { console.log('Hello!'); }
 };
 `,
@@ -191,7 +191,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/test-server/src/my-component.spec.ts': `\
 import { MyComponent } from "@my-lib/my-component";
-export const extractedFunctionsMap = {
+export const extractedFunctionsRecord = {
     "": () => { console.log(MyComponent); }
 };
 `,
@@ -222,7 +222,7 @@ export const extractedFunctionsMap = {
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/test-server/src/my-component.spec.ts': `\
 import { MyComponent } from "../../src/my-component";
-export const extractedFunctionsMap = {
+export const extractedFunctionsRecord = {
     "": () => { console.log(MyComponent); }
 };
 `,
@@ -274,7 +274,7 @@ export const extractedFunctionsMap = {
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/test-server/src/my-component.spec.ts': `\
 import { MyService, MyServiceError } from "@my-lib/my-service";
-export const extractedFunctionsMap = {
+export const extractedFunctionsRecord = {
     "": () => { console.log(MyService, MyServiceError); }
 };
 `,

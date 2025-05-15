@@ -26,7 +26,7 @@ export class Runner {
         const module = await (globalThis as unknown as ExtractionUnitRecord)[
           hash
         ]();
-        return module.extractedFunctionsMap[functionName]();
+        return module.extractedFunctionsRecord[functionName]();
       },
       { functionName, hash }
     );
@@ -57,5 +57,5 @@ export class Runner {
 
 type ExtractionUnitRecord = Record<
   string,
-  () => Promise<{ extractedFunctionsMap: Record<string, () => void> }>
+  () => Promise<{ extractedFunctionsRecord: Record<string, () => void> }>
 >;

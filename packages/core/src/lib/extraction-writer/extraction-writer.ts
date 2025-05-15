@@ -82,7 +82,7 @@ export class ExtractionWriter {
    * e.g., `
    * import { greetings } from './greetings';
    *
-   * export const extractedFunctionsMap = {
+   * export const extractedFunctionsRecord = {
    *   '': () => { console.log(greetings); }
    *   'Bye!': () => { console.log('Bye!'); }
    * };
@@ -150,7 +150,7 @@ export class ExtractionWriter {
 
   /**
    * Generates the variable statement for the extracted functions.
-   * e.g., `export const extractedFunctionsMap = {'': () => {...}}`
+   * e.g., `export const extractedFunctionsRecord = {'': () => {...}}`
    */
   #generateExtractedFunctionsVariableStatement(
     extractedFunctions: ExtractedFunction[]
@@ -163,7 +163,7 @@ export class ExtractionWriter {
     }, {});
 
     return generateExportedConstObjectLiteral({
-      variableName: 'extractedFunctionsMap',
+      variableName: 'extractedFunctionsRecord',
       value: extractedFunctionsRecord,
     });
   }
