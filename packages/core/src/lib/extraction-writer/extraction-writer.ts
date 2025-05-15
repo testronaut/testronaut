@@ -1,5 +1,5 @@
-import * as ts from 'typescript';
 import { join, relative } from 'node:path/posix';
+import * as ts from 'typescript';
 
 import { ExtractedFunction, FileAnalysis } from '../file-analysis';
 import { FileSystem } from '../infra/file-system';

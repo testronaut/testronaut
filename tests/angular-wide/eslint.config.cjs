@@ -3,23 +3,6 @@ const baseConfig = require('../../eslint.config.cjs');
 
 module.exports = [
   ...baseConfig,
-  {
-    files: ['**/*.json'],
-    rules: {
-      '@nx/dependency-checks': [
-        'error',
-        {
-          ignoredFiles: [
-            '{projectRoot}/eslint.config.{js,cjs,mjs}',
-            '{projectRoot}/vite.config.{js,ts,mjs,mts}',
-          ],
-        },
-      ],
-    },
-    languageOptions: {
-      parser: require('jsonc-eslint-parser'),
-    },
-  },
   ...nx.configs['flat/angular'],
   ...nx.configs['flat/angular-template'],
   {
@@ -29,7 +12,7 @@ module.exports = [
         'error',
         {
           type: 'attribute',
-          prefix: 'lib',
+          prefix: 'app',
           style: 'camelCase',
         },
       ],
@@ -37,7 +20,7 @@ module.exports = [
         'error',
         {
           type: 'element',
-          prefix: 'lib',
+          prefix: 'app',
           style: 'kebab-case',
         },
       ],
