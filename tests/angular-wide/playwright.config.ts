@@ -24,6 +24,7 @@ export default defineConfig(
     },
   }),
   {
+    workers: 1,
     use: {
       trace: 'on-first-retry',
     },

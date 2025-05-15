@@ -4,15 +4,12 @@ import { analyze } from '../analyzer/analyze';
 import { ExtractionConfig } from '../extraction-writer/extraction-config';
 import { ExtractionWriter } from '../extraction-writer/extraction-writer';
 import { createFileInfo, FileInfo } from './file-info';
-import { TmpExtractionWriter } from './tmp-extraction-writer';
 
 export class ExtractionPipeline {
   readonly #extractionWriter: ExtractionWriter;
-  readonly #tmpExtractionWriter: TmpExtractionWriter;
 
   constructor(config: ExtractionConfig) {
     this.#extractionWriter = new ExtractionWriter(config);
-    this.#tmpExtractionWriter = new TmpExtractionWriter(config);
   }
 
   init() {
@@ -22,17 +19,14 @@ export class ExtractionPipeline {
   async extract(path: string): Promise<FileInfo> {
     const content = await readFile(path, 'utf-8');
 
-    const extractedFunctions = analyze({
+    const fileAnalysis = analyze({
       path,
       content,
     });
 
     const fileInfo = createFileInfo({ hash: this.#computeHash(content), path });
 
-    await this.#tmpExtractionWriter.write({
-      ...fileInfo,
-      extractedFunctions,
-    });
+    await this.#extractionWriter.write(fileAnalysis);
 
     return fileInfo;
   }

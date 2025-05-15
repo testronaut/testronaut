@@ -8,5 +8,5 @@ export interface ExtractionConfig {
   /**
    * The path to the directory where the extracted files will be saved.
    */
-  extractionDir?: string;
+  extractionDir: string;
 }
