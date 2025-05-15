@@ -6,7 +6,6 @@ import { AnalysisContext } from '@playwright-ct/core/devkit';
 import * as ts from 'typescript';
 import { createImportedIdentifier } from '@playwright-ct/core/devkit';
 import { FileData } from 'packages/core/src/lib/analyzer/core';
-import { mount } from './mount';
 
 export interface CtAngularConfig {
   configPath: string;

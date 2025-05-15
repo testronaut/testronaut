@@ -2,6 +2,7 @@
   "name": "@playwright-ct/source",
   "version": "0.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "prepare": "husky"
   },
