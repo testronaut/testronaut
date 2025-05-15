@@ -40,8 +40,15 @@ export class ExtractionWriter {
   init() {
     this.#fileOps.createFileIfNotExistsSync(
       this.#entryPointPath,
-      /* This fixes "TS7053: Element implicitly has an any type" error on `globalThis['some-hash']` . */
-      '// @ts-nocheck'
+      /* - prettier-ignore prevents users from moving the import line to a different line than the global variable
+       * as it would break our simple pattern matching replacement.
+       * - @ts-nocheck fixes "TS7053: Element implicitly has an any type" error on `globalThis['some-hash']`.
+       * - eslint-disable-next-line allows @ts-nocheck. */
+      `\
+// prettier-ignore
+// eslint-disable-next-line
+// @ts-nocheck
+`
     );
   }
 

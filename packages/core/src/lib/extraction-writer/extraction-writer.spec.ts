@@ -9,7 +9,11 @@ describe(ExtractionWriter.name, () => {
     const { fileSystemFake } = await setUpInitializedWriter();
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/index.ts': '// @ts-nocheck',
+      '/my-project/test-server/index.ts': `\
+// prettier-ignore
+// eslint-disable-next-line
+// @ts-nocheck
+`,
     });
   });
 
