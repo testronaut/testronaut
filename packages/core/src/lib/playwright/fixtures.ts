@@ -1,10 +1,30 @@
-import { test as base } from '@playwright/test';
+import {
+  PlaywrightTestArgs,
+  PlaywrightTestOptions,
+  PlaywrightWorkerOptions,
+  TestType,
+  test as base,
+  PlaywrightWorkerArgs,
+} from '@playwright/test';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
 
 import { PlaywrightCtOptions } from './options';
 
-const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
+/**
+ * This is the type inferred from `base.extend()` but without the `ct` options.
+ * This is needed because we do not want to expose our internal options to the user.
+ * Also, `Omit<typeof test, 'ct'>` does not work because `test` is a function
+ * and `Omit` also removes the function signature as a side effect.
+ */
+type PlaywrightCtTestType = TestType<
+  PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
+  PlaywrightWorkerArgs & PlaywrightWorkerOptions
+>;
+
+export const test: PlaywrightCtTestType = base.extend<
+  Fixtures & { ct: PlaywrightCtOptions | null }
+>({
   ct: [null, { option: true }],
 
   /**
@@ -52,7 +72,6 @@ const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
   },
 });
 
-export const test: Omit<typeof ctTest, 'ct'> = ctTest;
 export interface Fixtures {
   runInBrowser: RunInBrowser;
 }
