@@ -88,6 +88,15 @@
         "staticFilePath": "dist/tests/angular-wide/browser",
         "spa": true
       }
+    },
+    "typecheck": {
+      "dependsOn": ["typecheck:pw", "typecheck:spec"]
+    },
+    "typecheck:pw": {
+      "command": "tsc --noEmit -p tests/angular-wide/tsconfig.pw.json"
+    },
+    "typecheck:spec": {
+      "command": "tsc --noEmit -p tests/angular-wide/tsconfig.spec.json"
     }
   }
 }
