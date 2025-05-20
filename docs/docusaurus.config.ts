@@ -6,7 +6,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 
 const config: Config = {
   title: 'Testronaut',
-  tagline: 'Component testing for the front-end frontier',
+  tagline: 'Reaching New Frontiers in Frontend Testing',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
