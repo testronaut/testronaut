@@ -51,6 +51,10 @@ export function withCt(
   return {
     testDir: 'src',
     testMatch: '**/*.ct-spec.ts',
+    /* Forcing a single worker as a temporary workaround
+     * meanwhile we implement a proper solution to avoid race conditions
+     * on generated extractions. */
+    workers: 1,
     use: {
       baseURL: `http://localhost:${port}`,
       ct: {

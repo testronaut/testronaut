@@ -97,6 +97,21 @@
     },
     "typecheck:spec": {
       "command": "tsc --noEmit -p tests/angular-wide/tsconfig.spec.json"
+    },
+    "e2e": {
+      "command": "nx e2e:default --project=angular-wide && nx e2e:failing-multi-worker --project=angular-wide"
+    },
+    "e2e:default": {
+      "command": "playwright test",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
+    },
+    "e2e:failing-multi-worker": {
+      "command": "playwright test --config=playwright.failing-multi-worker.config.ts",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     }
   }
 }
