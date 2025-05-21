@@ -1,21 +1,15 @@
-import { expect, test } from '@playwright-ct/core';
+import { test } from '@playwright-ct/core';
 
-test.fixme('anonymous runInBrowser', async ({ runInBrowser }) => {
-  await expect(() =>
-    runInBrowser(() => {
-      document.body.textContent = 'Hi!';
-    })
-  ).rejects.toThrow(
-    'There can only be one anonymous function to extract per file.'
-  );
+/* TODO: once we make `runInBrowser` throw instead,
+ * we can `expect(() => runInBrowser(...)).rejects.toThrow()` instead. */
+test.fail('anonymous runInBrowser', async ({ runInBrowser }) => {
+  await runInBrowser(() => {
+    document.body.textContent = 'Hi!';
+  });
 });
 
-test.fixme('another anonymous runInBrowser', async ({ runInBrowser }) => {
-  await expect(() =>
-    runInBrowser(() => {
-      document.body.textContent = 'Bye!';
-    })
-  ).rejects.toThrow(
-    'There can only be one anonymous function to extract per file.'
-  );
+test.fail('another anonymous runInBrowser', async ({ runInBrowser }) => {
+  await runInBrowser(() => {
+    document.body.textContent = 'Bye!';
+  });
 });
