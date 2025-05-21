@@ -17,7 +17,7 @@ describe(ExtractionWriter.name, () => {
     });
   });
 
-  it('does not overwrite "index.ts" file if it exists', async () => {
+  it('does overwrite "index.ts" file if it exists', async () => {
     const { fileSystemFake, writer } = await setUpWriter();
 
     await fileSystemFake.writeFile(
@@ -28,7 +28,8 @@ describe(ExtractionWriter.name, () => {
     writer.init();
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/test-server/index.ts': 'const INITIAL_CONTENT = 42;',
+      '/my-project/test-server/index.ts':
+        expect.not.stringContaining('INITIAL_CONTENT'),
     });
   });
 

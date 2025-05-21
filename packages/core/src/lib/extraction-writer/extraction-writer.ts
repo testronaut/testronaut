@@ -37,8 +37,15 @@ export class ExtractionWriter {
     this.#entryPointPath = join(this.#extractionPath, 'index.ts');
   }
 
+  /**
+   * Overwrites the entrypoint file.
+   *
+   * It is common to have remaining entrypoints from previous runs.
+   * Sometimes these previous runs can import files that do not exist anymore —
+   * e.g. a run from another branch importing a component that was removed.
+   */
   init() {
-    this.#fileOps.createFileIfNotExistsSync(
+    this.#fileSystem.writeFileSync(
       this.#entryPointPath,
       /* - prettier-ignore prevents users from moving the import line to a different line than the global variable
        * as it would break our simple pattern matching replacement.
@@ -48,7 +55,10 @@ export class ExtractionWriter {
 // prettier-ignore
 // eslint-disable-next-line
 // @ts-nocheck
-`
+`,
+      {
+        overwrite: true,
+      }
     );
   }
 
