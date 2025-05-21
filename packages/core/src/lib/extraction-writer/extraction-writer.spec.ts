@@ -1,7 +1,7 @@
 import { describe } from 'vitest';
 import { ExtractionWriter } from './extraction-writer';
-import { createExtractedFunction } from '../file-analysis';
-import { fileAnalysisMother } from '../file-analysis.mother';
+import { createExtractedFunction } from '../core/file-analysis';
+import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
 
 describe(ExtractionWriter.name, () => {

@@ -1,5 +1,5 @@
 import { describe } from 'vitest';
-import { FileAnalysis } from '../file-analysis';
+import { FileAnalysis } from '../core/file-analysis';
 import { analyze } from './analyze';
 import { InvalidRunInBrowserCallError } from './visit-run-in-browser-calls';
 

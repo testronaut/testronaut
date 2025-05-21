@@ -1,7 +1,7 @@
 import { join, relative } from 'node:path/posix';
 import * as ts from 'typescript';
 
-import { ExtractedFunction, FileAnalysis } from '../file-analysis';
+import { ExtractedFunction, FileAnalysis } from '../core/file-analysis';
 import { FileSystem } from '../infra/file-system';
 import { FileSystemImpl } from '../infra/file-system.impl';
 import {

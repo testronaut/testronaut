@@ -5,7 +5,7 @@ import {
   ExtractedFunction,
   FileAnalysis,
   ImportedIdentifier,
-} from '../file-analysis';
+} from '../core/file-analysis';
 import { AnalysisContext, FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
