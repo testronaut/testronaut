@@ -25,7 +25,7 @@ describe(ExtractionWriter.name, () => {
       'const INITIAL_CONTENT = 42;'
     );
 
-    writer.init();
+    writer.resetEntrypoint();
 
     expect(fileSystemFake.getFiles()).toEqual({
       '/my-project/test-server/index.ts':
@@ -290,7 +290,7 @@ export const extractedFunctionsRecord = {
 async function setUpInitializedWriter() {
   const { writer, ...utils } = await setUpWriter();
 
-  writer.init();
+  writer.resetEntrypoint();
 
   return { writer, ...utils };
 }

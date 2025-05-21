@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// prettier-ignore
+// eslint-disable-next-line
 // @ts-nocheck
-
-globalThis['dzvDWHTi'] = () => import('./app/basket.ct-spec');

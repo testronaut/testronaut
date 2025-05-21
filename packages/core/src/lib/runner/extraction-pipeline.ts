@@ -12,10 +12,6 @@ export class ExtractionPipeline {
     this.#extractionWriter = new ExtractionWriter(config);
   }
 
-  init() {
-    this.#extractionWriter.init();
-  }
-
   async extract(path: string): Promise<FileInfo> {
     const content = await readFile(path, 'utf-8');
 

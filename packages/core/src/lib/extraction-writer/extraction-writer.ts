@@ -40,11 +40,11 @@ export class ExtractionWriter {
   /**
    * Overwrites the entrypoint file.
    *
-   * It is common to have remaining entrypoints from previous runs.
+   * It is common to have remaining entrypoint from previous runs.
    * Sometimes these previous runs can import files that do not exist anymore —
    * e.g. a run from another branch importing a component that was removed.
    */
-  init() {
+  resetEntrypoint() {
     this.#fileSystem.writeFileSync(
       this.#entryPointPath,
       /* - prettier-ignore prevents users from moving the import line to a different line than the global variable
