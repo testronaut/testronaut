@@ -36,10 +36,18 @@ export class ExtractionWriter {
     this.#entryPointPath = join(this.#extractionPath, 'index.ts');
   }
 
-  init() {
-    this.#fileOps.createFileIfNotExistsSync(
+  /**
+   * Overwrites the entrypoint file.
+   *
+   * It is common to have remaining entrypoint from previous runs.
+   * Sometimes these previous runs can import files that do not exist anymore —
+   * e.g. a run from another branch importing a component that was removed.
+   */
+  resetEntrypoint() {
+    this.#fileSystem.writeFileSync(
       this.#entryPointPath,
-      DISABLE_CHECKS_MAGIC_STRING
+      DISABLE_CHECKS_MAGIC_STRING,
+      { overwrite: true }
     );
   }
 
