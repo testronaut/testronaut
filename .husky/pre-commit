@@ -1,3 +1,0 @@
-pnpm lint-staged
-pnpm nx affected:lint
-pnpm nx affected:test

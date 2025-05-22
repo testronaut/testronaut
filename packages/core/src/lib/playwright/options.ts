@@ -1,3 +1,5 @@
+import type { Transform } from '../analyzer/transform';
+
 export interface Options {
   ct: PlaywrightCtOptions;
 }
@@ -25,4 +27,11 @@ export interface PlaywrightCtOptions {
      */
     command: string;
   };
+
+  /**
+   * List of transforms to apply to files before extraction.
+   * This is used by framework plugins to transform fixtures
+   * such as `mount()` to `runInBrowser()`.
+   */
+  transforms?: Transform[];
 }

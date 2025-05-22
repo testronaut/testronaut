@@ -2,15 +2,38 @@ import { createHash } from 'node:crypto';
 import {
   createExtractedFunction,
   createFileAnalysis,
-  ExtractedFunction,
-  FileAnalysis,
-  ImportedIdentifier,
-} from '../file-analysis';
-import { AnalysisContext, FileData } from './core';
+  type ExtractedFunction,
+  type FileAnalysis,
+  type ImportedIdentifier,
+} from '../core/file-analysis';
+import { AnalysisContext, createFileData, type FileData } from './core';
+import type { Transform } from './transform';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
 
-export function analyze(fileData: FileData): FileAnalysis {
+export function analyze({
+  fileData,
+  transforms = [],
+}: {
+  fileData: FileData;
+  transforms?: Transform[];
+}): FileAnalysis {
+  let additionalImportedIdentifiers: ImportedIdentifier[] = [];
+
+  /* It is important to compute the hash here before the file is transformed. */
+  const hash = generateHash(fileData.content);
+
+  /* Apply transforms to the file data. */
+  for (const transform of transforms) {
+    const result = transform.apply(fileData);
+    fileData = createFileData({ ...fileData, content: result.content });
+
+    additionalImportedIdentifiers = [
+      ...additionalImportedIdentifiers,
+      ...result.importedIdentifiers,
+    ];
+  }
+
   /* Create compiler context. */
   const ctx = new AnalysisContext(fileData);
 
@@ -36,8 +59,9 @@ export function analyze(fileData: FileData): FileAnalysis {
   /* Return extracted calls. */
   return createFileAnalysis({
     path: fileData.path,
-    hash: generateHash(fileData.content),
+    hash,
     extractedFunctions,
+    importedIdentifiers: additionalImportedIdentifiers,
   });
 }
 

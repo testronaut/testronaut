@@ -4,5 +4,9 @@
     "outDir": "../../dist/out-tsc",
     "types": ["node"]
   },
-  "files": ["playwright.config.ts"]
+  "files": [
+    "playwright.config.ts",
+    "playwright.failing-multi-worker.config.ts"
+  ],
+  "include": ["src/**/*.ct-spec.ts"]
 }

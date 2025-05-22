@@ -1,5 +1,9 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { FileExistsError, FileSystem, WriteFileOptions } from './file-system';
+import {
+  FileExistsError,
+  type FileSystem,
+  type WriteFileOptions,
+} from './file-system';
 import { dirname } from 'node:path/posix';
 import { mkdirSync, writeFileSync } from 'node:fs';
 

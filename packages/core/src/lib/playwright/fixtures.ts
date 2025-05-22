@@ -1,10 +1,30 @@
+import type {
+  PlaywrightTestArgs,
+  PlaywrightTestOptions,
+  PlaywrightWorkerArgs,
+  PlaywrightWorkerOptions,
+  TestType,
+} from '@playwright/test';
 import { test as base } from '@playwright/test';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
 
-import { PlaywrightCtOptions } from './options';
+import type { PlaywrightCtOptions } from './options';
 
-const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
+/**
+ * This is the type inferred from `base.extend()` but without the `ct` options.
+ * This is needed because we do not want to expose our internal options to the user.
+ * Also, `Omit<typeof test, 'ct'>` does not work because `test` is a function
+ * and `Omit` also removes the function signature as a side effect.
+ */
+type PlaywrightCtTestType = TestType<
+  PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
+  PlaywrightWorkerArgs & PlaywrightWorkerOptions
+>;
+
+export const test: PlaywrightCtTestType = base.extend<
+  Fixtures & { ct: PlaywrightCtOptions | null }
+>({
   ct: [null, { option: true }],
 
   /**
@@ -33,18 +53,34 @@ const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
       new ExtractionPipeline({
         projectRoot: ct.projectRoot,
         extractionDir: ct.extractionDir,
+        transforms: ct.transforms,
       }),
       page
     );
     const { hash } = await runner.extract(testInfo.file);
 
-    const runInBrowserImpl: RunInBrowser = async (nameOrFunction) => {
-      const functionName =
-        typeof nameOrFunction === 'string' ? nameOrFunction : '';
+    const runInBrowserImpl: RunInBrowser = async (...args: unknown[]) => {
+      if (testInfo.parallelIndex !== 0) {
+        throw new Error(
+          '`runInBrowser` does not support multiple workers yet. Please run your tests in a single worker.'
+        );
+      }
+
+      let functionName = '';
+      if (typeof args[0] === 'string') {
+        functionName = args[0];
+        args.shift();
+      }
+
+      let data: Record<string, unknown> = {};
+      if (typeof args[0] === 'object') {
+        data = args[0] as Record<string, unknown>;
+      }
 
       await runner.runInBrowser({
         hash,
         functionName,
+        data,
       });
     };
 
@@ -52,16 +88,23 @@ const ctTest = base.extend<Fixtures & { ct: PlaywrightCtOptions | null }>({
   },
 });
 
-export const test: Omit<typeof ctTest, 'ct'> = ctTest;
 export interface Fixtures {
   runInBrowser: RunInBrowser;
 }
 
 export interface RunInBrowser {
-  <RETURN_TYPE>(fn: () => RETURN_TYPE | Promise<RETURN_TYPE>): Promise<void>;
+  <RETURN>(fn: () => RETURN | Promise<RETURN>): Promise<void>;
 
-  <RETURN_TYPE>(
+  <RETURN>(name: string, fn: () => RETURN | Promise<RETURN>): Promise<void>;
+
+  <DATA extends Record<string, unknown>, RETURN>(
+    data: DATA,
+    fn: (data: DATA) => RETURN | Promise<RETURN>
+  ): Promise<void>;
+
+  <DATA extends Record<string, unknown>, RETURN>(
     name: string,
-    fn: () => RETURN_TYPE | Promise<RETURN_TYPE>
+    data: DATA,
+    fn: (data: DATA) => RETURN | Promise<RETURN>
   ): Promise<void>;
 }

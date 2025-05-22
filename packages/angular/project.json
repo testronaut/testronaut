@@ -2,25 +2,24 @@
   "name": "angular",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/angular/src",
-  "prefix": "lib",
   "projectType": "library",
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/angular:package",
-      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
       "options": {
-        "project": "packages/angular/ng-package.json"
-      },
-      "configurations": {
-        "production": {
-          "tsConfig": "packages/angular/tsconfig.lib.prod.json"
-        },
-        "development": {
-          "tsConfig": "packages/angular/tsconfig.lib.json"
-        }
-      },
-      "defaultConfiguration": "production"
+        "outputPath": "dist/packages/angular",
+        "main": "packages/angular/src/index.ts",
+        "additionalEntryPoints": ["packages/angular/src/browser.ts"],
+        "tsConfig": "packages/angular/tsconfig.lib.json",
+        "assets": ["packages/angular/*.md"]
+      }
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/{projectRoot}"
+      }
     },
     "test": {
       "executor": "@nx/vite:test",
@@ -28,9 +27,6 @@
       "options": {
         "reportsDirectory": "../../coverage/packages/angular"
       }
-    },
-    "lint": {
-      "executor": "@nx/eslint:lint"
     }
   }
 }

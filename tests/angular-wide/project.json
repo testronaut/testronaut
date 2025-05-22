@@ -13,7 +13,6 @@
         "outputPath": "dist/tests/angular-wide",
         "index": "tests/angular-wide/src/index.html",
         "browser": "tests/angular-wide/src/main.ts",
-        "polyfills": ["zone.js"],
         "tsConfig": "tests/angular-wide/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -87,6 +86,33 @@
         "port": 4200,
         "staticFilePath": "dist/tests/angular-wide/browser",
         "spa": true
+      }
+    },
+    "typecheck": {
+      "dependsOn": ["typecheck:pw", "typecheck:spec"]
+    },
+    "typecheck:pw": {
+      "command": "tsc --noEmit -p tests/angular-wide/tsconfig.pw.json"
+    },
+    "typecheck:spec": {
+      "command": "tsc --noEmit -p tests/angular-wide/tsconfig.spec.json"
+    },
+    "e2e": {
+      "dependsOn": [
+        "e2e:default"
+      ]
+    },
+    "e2e:default": {
+      "command": "playwright test",
+      "options": {
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["e2e:failing-multi-worker"]
+    },
+    "e2e:failing-multi-worker": {
+      "command": "playwright test --config=playwright.failing-multi-worker.config.ts",
+      "options": {
+        "cwd": "{projectRoot}"
       }
     }
   }

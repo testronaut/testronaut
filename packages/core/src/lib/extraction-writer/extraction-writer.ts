@@ -1,19 +1,21 @@
 import { join, relative } from 'node:path/posix';
 import * as ts from 'typescript';
 
-import { ExtractedFunction, FileAnalysis } from '../file-analysis';
-import { FileSystem } from '../infra/file-system';
+import {
+  type ExtractedFunction,
+  type FileAnalysis,
+} from '../core/file-analysis';
+import { type FileSystem } from '../infra/file-system';
 import { FileSystemImpl } from '../infra/file-system.impl';
 import {
   generateExportedConstObjectLiteral,
   generateImportDeclaration,
 } from './ast-factory';
-import { ExtractionConfig } from './extraction-config';
 import { FileOps } from './file-ops';
 import { adjustImportPath } from './path-utils';
 
 export class ExtractionWriter {
-  readonly #config: ExtractionConfig;
+  readonly #config: ExtractionWriterConfig;
   /* Absolute path to extraction dir. */
   readonly #extractionPath: string;
   readonly #entryPointPath: string;
@@ -23,7 +25,7 @@ export class ExtractionWriter {
   constructor({
     fileSystem = new FileSystemImpl(),
     ...config
-  }: ExtractionConfig & {
+  }: ExtractionWriterConfig & {
     fileSystem?: FileSystem;
   }) {
     this.#fileOps = new FileOps({ fileSystem: fileSystem });
@@ -37,18 +39,18 @@ export class ExtractionWriter {
     this.#entryPointPath = join(this.#extractionPath, 'index.ts');
   }
 
-  init() {
-    this.#fileOps.createFileIfNotExistsSync(
+  /**
+   * Overwrites the entrypoint file.
+   *
+   * It is common to have remaining entrypoint from previous runs.
+   * Sometimes these previous runs can import files that do not exist anymore —
+   * e.g. a run from another branch importing a component that was removed.
+   */
+  resetEntrypoint() {
+    this.#fileSystem.writeFileSync(
       this.#entryPointPath,
-      /* - prettier-ignore prevents users from moving the import line to a different line than the global variable
-       * as it would break our simple pattern matching replacement.
-       * - @ts-nocheck fixes "TS7053: Element implicitly has an any type" error on `globalThis['some-hash']`.
-       * - eslint-disable-next-line allows @ts-nocheck. */
-      `\
-// prettier-ignore
-// eslint-disable-next-line
-// @ts-nocheck
-`
+      DISABLE_CHECKS_MAGIC_STRING,
+      { overwrite: true }
     );
   }
 
@@ -58,10 +60,12 @@ export class ExtractionWriter {
 
     await this.#fileSystem.writeFile(
       destFilePath,
-      this.#generateExtractedFunctionsFile({
-        destFilePath,
-        fileAnalysis,
-      }),
+      `\
+${DISABLE_CHECKS_MAGIC_STRING}
+${this.#generateExtractedFunctionsFile({
+  destFilePath,
+  fileAnalysis,
+})}`,
       { overwrite: true }
     );
 
@@ -131,17 +135,21 @@ export class ExtractionWriter {
     destFilePath: string;
     fileAnalysis: FileAnalysis;
   }) {
-    const importIdentifiers = fileAnalysis.extractedFunctions
-      .map((extractedFunction) => extractedFunction.importedIdentifiers)
-      .flat()
-      .map((importIdentifier) => ({
-        ...importIdentifier,
-        module: adjustImportPath({
-          srcFilePath: fileAnalysis.path,
-          destFilePath,
-          importPath: importIdentifier.module,
-        }),
-      }));
+    let importIdentifiers = [
+      ...fileAnalysis.importedIdentifiers,
+      ...fileAnalysis.extractedFunctions
+        .map((extractedFunction) => extractedFunction.importedIdentifiers)
+        .flat(),
+    ];
+
+    importIdentifiers = importIdentifiers.map((importIdentifier) => ({
+      ...importIdentifier,
+      module: adjustImportPath({
+        srcFilePath: fileAnalysis.path,
+        destFilePath,
+        importPath: importIdentifier.module,
+      }),
+    }));
 
     const moduleImports = Object.entries(
       Object.groupBy(importIdentifiers, (item) => item.module)
@@ -174,4 +182,27 @@ export class ExtractionWriter {
       value: extractedFunctionsRecord,
     });
   }
+}
+
+/* - prettier-ignore prevents users from moving the import line to a different line than the global variable
+ * as it would break our simple pattern matching replacement.
+ * - @ts-nocheck fixes "TS7053: Element implicitly has an any type" error on `globalThis['some-hash']`.
+ * - eslint-disable-next-line allows @ts-nocheck. */
+const DISABLE_CHECKS_MAGIC_STRING = `\
+// prettier-ignore
+// eslint-disable-next-line
+// @ts-nocheck
+`;
+
+export interface ExtractionWriterConfig {
+  /**
+   * The root directory of the project.
+   * Mainly used to compute the relative path of the parsed files.
+   */
+  projectRoot: string;
+
+  /**
+   * The path to the directory where the extracted files will be saved.
+   */
+  extractionDir: string;
 }
