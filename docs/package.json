@@ -17,6 +17,8 @@
   "dependencies": {
     "@docusaurus/core": "3.7.0",
     "@docusaurus/preset-classic": "3.7.0",
+    "@fontsource/exo-2": "^5.2.5",
+    "@fontsource/michroma": "^5.2.5",
     "@fontsource/orbitron": "^5.2.5",
     "@mdx-js/react": "^3.0.0",
     "clsx": "^2.0.0",

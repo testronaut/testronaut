@@ -5,16 +5,16 @@
  */
 
 
-@import "@fontsource/orbitron/index.css";
+@import "@fontsource/exo-2/index.css";
 
 body {
-  font-family: 'Orbitron', sans-serif !important;
+  font-family: 'Exo 2', sans-serif !important;
 }
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-font-family-base: 'Orbitron', sans-serif;
-  --ifm-heading-font-family: 'Orbitron', sans-serif;
+  --ifm-font-family-base: 'Exo 2', sans-serif;
+  --ifm-heading-font-family: 'Exo 2', sans-serif;
   --ifm-color-primary: #6366f1;         /* Indigo 500 */
   --ifm-color-primary-dark: #4f46e5;    /* Indigo 600 */
   --ifm-color-primary-darker: #4338ca;  /* Indigo 700 */

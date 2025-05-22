@@ -14,6 +14,12 @@ importers:
       '@docusaurus/preset-classic':
         specifier: 3.7.0
         version: 3.7.0(@algolia/client-search@5.25.0)(@mdx-js/react@3.1.0(@types/react@19.1.4)(react@19.1.0))(@types/react@19.1.4)(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(search-insights@2.17.3)(typescript@5.6.3)
+      '@fontsource/exo-2':
+        specifier: ^5.2.5
+        version: 5.2.5
+      '@fontsource/michroma':
+        specifier: ^5.2.5
+        version: 5.2.5
       '@fontsource/orbitron':
         specifier: ^5.2.5
         version: 5.2.5
@@ -1132,6 +1138,12 @@ packages:
   '@docusaurus/utils@3.7.0':
     resolution: {integrity: sha512-e7zcB6TPnVzyUaHMJyLSArKa2AG3h9+4CfvKXKKWNx6hRs+p0a+u7HHTJBgo6KW2m+vqDnuIHK4X+bhmoghAFA==}
     engines: {node: '>=18.0'}
+
+  '@fontsource/exo-2@5.2.5':
+    resolution: {integrity: sha512-+BZGs1YVW9MpF39pBFBaj0FG5wskFLb4YIcGrSwCgKOqCk1ywU3SloUCKzbSZcdckZKluroV/cdobU0EobHjjg==}
+
+  '@fontsource/michroma@5.2.5':
+    resolution: {integrity: sha512-jN3xcboj3SPWotJSw1DHHLjLksXpyPD2inQt+jGoLeMOzXHHuFiwnhYdbmOWlbOSX0ljMoNgOK40HHlo20b4CA==}
 
   '@fontsource/orbitron@5.2.5':
     resolution: {integrity: sha512-e3164ITI9u27irFN4tszwj/OIA9q/TIGKWJ6NUEDvziRO3/9RfnJjioBRyLW6lpslu+oV6US/17bNGlMfZqr5A==}
@@ -6828,6 +6840,10 @@ snapshots:
       - supports-color
       - uglify-js
       - webpack-cli
+
+  '@fontsource/exo-2@5.2.5': {}
+
+  '@fontsource/michroma@5.2.5': {}
 
   '@fontsource/orbitron@5.2.5': {}
 

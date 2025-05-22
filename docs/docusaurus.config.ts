@@ -38,6 +38,9 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
         },
+        theme: {
+          customCss: './src/css/custom.css',
+        },
       },
     ],
   ],
