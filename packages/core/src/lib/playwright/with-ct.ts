@@ -30,16 +30,19 @@ import { Options, PlaywrightCtOptions } from './options';
  * ```
  *
  */
-export function withCt(
-  args: WithCtArgs
-): PlaywrightTestConfig & { use: Options } {
-  const { configPath, ...rest } = args;
+export function withCt({
+  configPath,
+  extractionDir,
+  testServer,
+  transforms,
+}: WithCtArgs): PlaywrightTestConfig & { use: Options } {
   const projectRoot = dirname(configPath);
   const port = 7357;
 
   const extractionPipeline = new ExtractionPipeline({
-    extractionDir: args.extractionDir,
+    extractionDir,
     projectRoot,
+    transforms,
   });
 
   /* We have to make sure that `generated/index.ts` is present even if empty
@@ -51,15 +54,21 @@ export function withCt(
   return {
     testDir: 'src',
     testMatch: '**/*.ct-spec.ts',
+    /* Forcing a single worker as a temporary workaround
+     * meanwhile we implement a proper solution to avoid race conditions
+     * on generated extractions. */
+    workers: 1,
     use: {
       baseURL: `http://localhost:${port}`,
       ct: {
+        extractionDir,
         projectRoot,
-        ...rest,
+        testServer,
+        transforms,
       },
     },
     webServer: {
-      command: args.testServer.command.replace('{port}', port.toString()),
+      command: testServer.command.replace('{port}', port.toString()),
       port,
     },
   };

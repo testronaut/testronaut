@@ -1,5 +1,5 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { defineConfig, devices, withCtAngular } from '@playwright-ct/angular';
+import { defineConfig, devices, withCt } from '@playwright-ct/core';
 
 /**
  * Read environment variables from file.
@@ -14,7 +14,7 @@ import { defineConfig, devices, withCtAngular } from '@playwright-ct/angular';
  */
 export default defineConfig(
   nxE2EPreset(__filename),
-  withCtAngular({
+  withCt({
     configPath: __filename,
     extractionDir: 'ct-tests/generated',
     testServer: {
@@ -23,17 +23,18 @@ export default defineConfig(
     },
   }),
   {
-    timeout: 3_000,
     use: {
       trace: 'on-first-retry',
     },
-  },
-  {
-    /* Configure projects for major browsers */
+    /* Override workers count ot make `runInBrowser` fail on 2nd worker. */
+    workers: 2,
     projects: [
-      { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-      { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-      { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+      {
+        name: 'failing-multi-worker',
+        use: { ...devices['Desktop Chrome'] },
+        fullyParallel: true,
+        testMatch: '**/*.failing-multi-worker-ct-spec.ts',
+      },
     ],
   }
 );

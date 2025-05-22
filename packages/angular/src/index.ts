@@ -1,1 +1,3 @@
-export { addCtProjects } from './lib/define-config-with-ct';
+export { defineConfig, devices, expect } from '@playwright-ct/core';
+export { withCtAngular } from './lib/with-ct-angular';
+export { test } from './lib/fixtures';

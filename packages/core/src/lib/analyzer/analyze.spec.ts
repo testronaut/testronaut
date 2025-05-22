@@ -199,7 +199,9 @@ runInBrowser(fn);
 
 function analyzeFileContent(content: string): FileAnalysis {
   return analyze({
-    path: 'my-component.spec.ts',
-    content,
+    fileData: {
+      path: 'my-component.spec.ts',
+      content,
+    },
   });
 }

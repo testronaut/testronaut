@@ -1,7 +1,8 @@
-import { AnalysisContext } from './core';
 import * as ts from 'typescript';
-import { getDeclaration } from './utils';
 import { createExtractedFunction } from '../core/file-analysis';
+import { getRunInBrowserIdentifier } from '../core/run-in-browser-identifier';
+import { AnalysisContext } from './core';
+import { getDeclaration } from './utils';
 
 const _RUN_IN_BROWSER_IDENTIFIER = 'runInBrowser';
 
@@ -37,7 +38,7 @@ function isRunInBrowserCall(
   callExpression: ts.CallExpression
 ): boolean {
   /* Identifier is `runInBrowser`. */
-  if (callExpression.expression.getText() === _RUN_IN_BROWSER_IDENTIFIER) {
+  if (callExpression.expression.getText() === getRunInBrowserIdentifier()) {
     return true;
   }
 
@@ -51,7 +52,7 @@ function isRunInBrowserCall(
     runInBrowserDeclaration != null &&
     ts.isObjectBindingPattern(runInBrowserDeclaration.parent) &&
     runInBrowserDeclaration.parent.elements.at(0)?.propertyName?.getText() ===
-      _RUN_IN_BROWSER_IDENTIFIER
+      getRunInBrowserIdentifier()
   );
 }
 
@@ -64,28 +65,27 @@ function parseRunInBrowserArgs(
 } {
   if (node.arguments.length === 0) {
     throw new InvalidRunInBrowserCallError(
-      '`runInBrowser` must have at least one argument'
+      `\`${getRunInBrowserIdentifier()}\` must have at least one argument`
     );
   }
 
-  if (node.arguments.length > 2) {
+  if (node.arguments.length > 3) {
     throw new InvalidRunInBrowserCallError(
-      '`runInBrowser` must have at most two arguments'
+      `\`${getRunInBrowserIdentifier()}\` must have at most three arguments`
     );
   }
 
   const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
   if (nameArg && !ts.isStringLiteralLike(nameArg)) {
     throw new InvalidRunInBrowserCallError(
-      '`runInBrowser` name must be a string literal'
+      `\`${getRunInBrowserIdentifier()}\` name must be a string literal`
     );
   }
 
-  const codeArg =
-    node.arguments.length === 1 ? node.arguments[0] : node.arguments[1];
+  const codeArg = node.arguments.at(-1);
   if (!ts.isFunctionLike(codeArg)) {
     throw new InvalidRunInBrowserCallError(
-      '`runInBrowser` function must be an inline function'
+      `\`${getRunInBrowserIdentifier()}\` function must be an inline function`
     );
   }
 
