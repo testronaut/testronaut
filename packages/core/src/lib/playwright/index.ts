@@ -1,4 +1,4 @@
 export { defineConfig, devices, expect } from '@playwright/test';
-export * from './fixtures';
+export { test, type Fixtures, type RunInBrowser } from './fixtures';
 export type { Options, TestronautOptions } from './options';
-export * from './with-testronaut';
+export { withTestronaut, type WithTestronautParams } from './with-testronaut';
