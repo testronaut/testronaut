@@ -21,7 +21,7 @@ import { angularTransform } from './angular-transform';
  * export default defineConfig(
  *   withTestronautAngular({
  *     configPath: __filename,
- *     extractionDir: 'test-server/generated',
+ *     extractionDir: 'testronaut/generated',
  *     testServer: {
  *       command:
  *         'pnpm exec nx serve',
