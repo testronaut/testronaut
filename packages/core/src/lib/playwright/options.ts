@@ -10,11 +10,6 @@ export interface TestronautOptions {
   projectRoot: string;
 
   /**
-   * The directory where the extracted code will be generated.
-   */
-  extractionDir: string;
-
-  /**
    * Options to configure and run the test server.
    */
   testServer: {
@@ -23,6 +18,11 @@ export interface TestronautOptions {
      */
     command: string;
   };
+
+  /**
+   * The directory where the extracted code will be generated.
+   */
+  extractionDir?: string;
 
   /**
    * List of transforms to apply to files before extraction.

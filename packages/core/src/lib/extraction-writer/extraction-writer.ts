@@ -30,12 +30,10 @@ export class ExtractionWriter {
   }) {
     this.#fileOps = new FileOps({ fileSystem: fileSystem });
     this.#fileSystem = fileSystem;
+    const extractionDir = config.extractionDir ?? 'test-server/generated';
 
     this.#config = config;
-    this.#extractionPath = join(
-      this.#config.projectRoot,
-      this.#config.extractionDir
-    );
+    this.#extractionPath = join(this.#config.projectRoot, extractionDir);
     this.#entryPointPath = join(this.#extractionPath, 'index.ts');
   }
 
@@ -204,5 +202,5 @@ export interface ExtractionWriterConfig {
   /**
    * The path to the directory where the extracted files will be saved.
    */
-  extractionDir: string;
+  extractionDir?: string;
 }
