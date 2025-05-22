@@ -1,10 +1,10 @@
 import type { Transform } from '../analyzer/transform';
 
 export interface Options {
-  ct: PlaywrightCtOptions;
+  testronaut: TestronautOptions;
 }
 
-export interface PlaywrightCtOptions {
+export interface TestronautOptions {
   /**
    * This is generally the folder containing the `playwright.config.ts` file.
    * It is used:

@@ -1,4 +1,4 @@
 import './generated';
-import { setUpTestronautAngular } from '@playwright-ct/angular/browser';
+import { setUpTestronautAngular } from '@testronaut/angular/browser';
 
 setUpTestronautAngular();

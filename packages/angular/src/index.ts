@@ -1,3 +1,3 @@
-export { defineConfig, devices, expect } from '@playwright-ct/core';
-export { withCtAngular } from './lib/with-ct-angular';
+export { defineConfig, devices, expect } from '@testronaut/core';
+export { withTestronautAngular } from './lib/with-testronaut-angular';
 export { test } from './lib/fixtures';

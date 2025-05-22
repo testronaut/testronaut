@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright-ct/core';
+import { expect, test } from '@testronaut/core';
 
 test('test it', async ({ page }) => {
   await page.waitForFunction(() => {

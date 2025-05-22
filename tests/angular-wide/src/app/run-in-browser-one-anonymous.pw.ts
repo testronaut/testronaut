@@ -1,4 +1,4 @@
-import { test } from '@playwright-ct/core';
+import { test } from '@testronaut/core';
 
 /* TODO: once we make `runInBrowser` throw instead,
  * we can `expect(() => runInBrowser(...)).rejects.toThrow()` instead. */

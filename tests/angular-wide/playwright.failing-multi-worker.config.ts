@@ -1,5 +1,5 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { defineConfig, devices, withCt } from '@playwright-ct/core';
+import { defineConfig, devices, withTestronaut } from '@testronaut/core';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,12 +17,12 @@ const __filename = fileURLToPath(import.meta.url);
  */
 export default defineConfig(
   nxE2EPreset(__filename),
-  withCt({
+  withTestronaut({
     configPath: __filename,
     extractionDir: 'test-server/generated',
     testServer: {
       command:
-        'pnpm exec nx serve angular-wide --configuration ct --port {port} --live-reload false',
+        'pnpm exec nx serve angular-wide --configuration testronaut --port {port} --live-reload false',
     },
   }),
   {

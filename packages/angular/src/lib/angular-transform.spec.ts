@@ -2,7 +2,7 @@ import {
   TransformResult,
   createFileData,
   createImportedIdentifier,
-} from '@playwright-ct/core/devkit';
+} from '@testronaut/core/devkit';
 import { describe } from 'vitest';
 
 import { angularTransform } from './angular-transform';
@@ -10,7 +10,7 @@ import { angularTransform } from './angular-transform';
 describe(angularTransform.name, () => {
   it('replaces anonymous mount call with runInBrowser + mount', () => {
     const result = transform(`
-import { test } from '@playwright-ct/angular';
+import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
 
 test('hello', async ({ mount }) => {
@@ -19,7 +19,7 @@ test('hello', async ({ mount }) => {
     `);
 
     expect(result.content).toContain(`\
-import { test } from '@playwright-ct/angular';
+import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
 test('hello', async ({ runInBrowser }) => {
     await runInBrowser(() => mount(Hello));
@@ -29,7 +29,7 @@ test('hello', async ({ runInBrowser }) => {
 
   it('replaces mount call with runInBrowser + mount', () => {
     const result = transform(`
-import { test } from '@playwright-ct/angular';
+import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
 
 test('hello', async ({ mount }) => {
@@ -38,7 +38,7 @@ test('hello', async ({ mount }) => {
     `);
 
     expect(result.content).toContain(`\
-import { test } from '@playwright-ct/angular';
+import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
 test('hello', async ({ runInBrowser }) => {
     await runInBrowser('hello', () => mount(Hello));
@@ -46,9 +46,9 @@ test('hello', async ({ runInBrowser }) => {
 `);
   });
 
-  it('returns `mount` import from `@playwright-ct/angular/browser` in the imported identifiers to be added', () => {
+  it('returns `mount` import from `@testronaut/angular/browser` in the imported identifiers to be added', () => {
     const result = transform(`
-import { test } from '@playwright-ct/angular';
+import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
 
 test('hello', async ({ mount }) => {
@@ -59,14 +59,14 @@ test('hello', async ({ mount }) => {
     expect(result.importedIdentifiers).toEqual([
       createImportedIdentifier({
         name: 'mount',
-        module: '@playwright-ct/angular/browser',
+        module: '@testronaut/angular/browser',
       }),
     ]);
   });
 
   it('does nothing if there is no mount function', () => {
     const result = transform(`
-import { test } from '@playwright-ct/angular';
+import { test } from '@testronaut/angular';
 
 test('hello', async ({ runInBrowser }) => {
   await runInBrowser(() => {
