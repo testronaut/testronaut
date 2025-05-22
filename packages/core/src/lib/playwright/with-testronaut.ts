@@ -1,9 +1,10 @@
-import { type PlaywrightTestConfig } from '@playwright/test';
-import { dirname, join } from 'node:path/posix';
-import { ExtractionWriter } from '../extraction-writer/extraction-writer';
-import { type Options, type TestronautOptions } from './options';
+import type { PlaywrightTestConfig } from '@playwright/test';
 import { spawnSync } from 'node:child_process';
+import { dirname, join } from 'node:path/posix';
 import { fileURLToPath } from 'node:url';
+import { ExtractionWriter } from '../extraction-writer/extraction-writer';
+import type { FileSystem } from '../infra/file-system';
+import type { TestronautOptions } from './options';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -34,12 +35,13 @@ const __filename = fileURLToPath(import.meta.url);
  * ```
  *
  */
-export function withTestronaut({
+export function _internal_withTestronaut({
   configPath,
   extractionDir,
   testServer,
   transforms,
-}: WithTestronautParams): PlaywrightTestConfig & { use: Options } {
+  fileSystem,
+}: _internal_WithTestronautParams): PlaywrightTestronautConfig {
   const isServerRunningCmd = join(dirname(__filename), 'is-server-running.js');
   const projectRoot = dirname(configPath);
   const port = 7357;
@@ -47,6 +49,7 @@ export function withTestronaut({
   const extractionWriter = new ExtractionWriter({
     extractionDir,
     projectRoot,
+    fileSystem,
   });
 
   /* HACK: We have to make sure that:
@@ -94,7 +97,14 @@ export function withTestronaut({
   };
 }
 
-export interface WithTestronautParams extends Omit<TestronautOptions, 'projectRoot'> {
+export const withTestronaut: WithTestronaut = _internal_withTestronaut;
+
+export interface WithTestronaut {
+  (args: WithTestronautParams): PlaywrightTestronautConfig;
+}
+
+export interface WithTestronautParams
+  extends Omit<TestronautOptions, 'projectRoot'> {
   /**
    * The path to the Playwright config file.
    */
@@ -103,3 +113,11 @@ export interface WithTestronautParams extends Omit<TestronautOptions, 'projectRo
   // as soon as `withTestronaut` is called.
   configPath: string;
 }
+
+export interface _internal_WithTestronautParams extends WithTestronautParams {
+  fileSystem?: FileSystem;
+}
+
+type PlaywrightTestronautConfig = PlaywrightTestConfig & {
+  use: { testronaut: TestronautOptions };
+};
