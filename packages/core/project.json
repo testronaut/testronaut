@@ -19,6 +19,7 @@
       "options": {
         "outputPath": "dist/packages/core",
         "main": "packages/core/src/index.ts",
+        "additionalEntryPoints": ["packages/core/src/devkit.ts"],
         "tsConfig": "packages/core/tsconfig.lib.json",
         "assets": ["packages/core/*.md"]
       }

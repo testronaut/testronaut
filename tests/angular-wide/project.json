@@ -13,7 +13,6 @@
         "outputPath": "dist/tests/angular-wide",
         "index": "tests/angular-wide/src/index.html",
         "browser": "tests/angular-wide/src/main.ts",
-        "polyfills": ["zone.js"],
         "tsConfig": "tests/angular-wide/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [

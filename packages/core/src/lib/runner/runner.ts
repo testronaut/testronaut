@@ -14,21 +14,23 @@ export class Runner {
   async runInBrowser({
     hash,
     functionName,
+    data,
   }: {
     hash: string;
     functionName: string;
+    data: Record<string, unknown>;
   }) {
     await this.waitUntilHashIsAvailable(hash);
 
-    // execute the function in the browser context
+    /* Execute the function in the browser context. */
     await this.page.evaluate(
-      async ({ functionName, hash }) => {
+      async ({ functionName, hash, data }) => {
         const module = await (globalThis as unknown as ExtractionUnitRecord)[
           hash
         ]();
-        return module.extractedFunctionsRecord[functionName]();
+        return module.extractedFunctionsRecord[functionName](data);
       },
-      { functionName, hash }
+      { functionName, hash, data }
     );
   }
 
@@ -57,5 +59,10 @@ export class Runner {
 
 type ExtractionUnitRecord = Record<
   string,
-  () => Promise<{ extractedFunctionsRecord: Record<string, () => void> }>
+  () => Promise<{
+    extractedFunctionsRecord: Record<
+      string,
+      (data?: Record<string, unknown>) => void
+    >;
+  }>
 >;

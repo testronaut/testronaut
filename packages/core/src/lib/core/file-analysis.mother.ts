@@ -15,6 +15,7 @@ export const fileAnalysisMother = {
         const fileAnalysis = createFileAnalysis({
           path,
           hash,
+          importedIdentifiers: [],
         });
 
         return createFileAnalysisInnerMother(fileAnalysis);
