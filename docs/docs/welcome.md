@@ -46,4 +46,4 @@ The result is a **stable, visual, and framework-aware testing experience** that 
 
 ---
 
-Welcome to Testronaut. Let’s explore a better way to test components.
+Welcome to Testronaut. Reaching New Frontiers in Frontend Testing

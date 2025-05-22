@@ -14,6 +14,9 @@ importers:
       '@docusaurus/preset-classic':
         specifier: 3.7.0
         version: 3.7.0(@algolia/client-search@5.25.0)(@mdx-js/react@3.1.0(@types/react@19.1.4)(react@19.1.0))(@types/react@19.1.4)(acorn@8.14.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(search-insights@2.17.3)(typescript@5.6.3)
+      '@fontsource/orbitron':
+        specifier: ^5.2.5
+        version: 5.2.5
       '@mdx-js/react':
         specifier: ^3.0.0
         version: 3.1.0(@types/react@19.1.4)(react@19.1.0)
@@ -1129,6 +1132,9 @@ packages:
   '@docusaurus/utils@3.7.0':
     resolution: {integrity: sha512-e7zcB6TPnVzyUaHMJyLSArKa2AG3h9+4CfvKXKKWNx6hRs+p0a+u7HHTJBgo6KW2m+vqDnuIHK4X+bhmoghAFA==}
     engines: {node: '>=18.0'}
+
+  '@fontsource/orbitron@5.2.5':
+    resolution: {integrity: sha512-e3164ITI9u27irFN4tszwj/OIA9q/TIGKWJ6NUEDvziRO3/9RfnJjioBRyLW6lpslu+oV6US/17bNGlMfZqr5A==}
 
   '@hapi/hoek@9.3.0':
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
@@ -6822,6 +6828,8 @@ snapshots:
       - supports-color
       - uglify-js
       - webpack-cli
+
+  '@fontsource/orbitron@5.2.5': {}
 
   '@hapi/hoek@9.3.0': {}
 
