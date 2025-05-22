@@ -1,5 +1,5 @@
 import { DuplicateExtractedFunctionsError } from './duplicate-extracted-functions.error';
-import { ExtractedFunction, FileAnalysis } from './file-analysis';
+import { type ExtractedFunction, type FileAnalysis } from './file-analysis';
 
 /**
  * @throws {DuplicateExtractedFunctionsError} if there are duplicate extracted functions.

@@ -6,7 +6,7 @@
     "typescript": "~5.6.2",
     "@playwright/test": "^1.36.0"
   },
-  "type": "commonjs",
+  "type": "module",
   "main": "./src/index.js",
   "typings": "./src/index.d.ts",
   "exports": {

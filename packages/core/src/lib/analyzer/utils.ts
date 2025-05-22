@@ -1,5 +1,5 @@
 import * as ts from 'typescript';
-import { Declaration } from 'typescript';
+import type { Declaration } from 'typescript';
 
 /**
  * Find the import declaration of a node in its ancestors.

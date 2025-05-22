@@ -1,4 +1,4 @@
-import { InputSignal, Type } from '@angular/core';
+import type { InputSignal, Type } from '@angular/core';
 import { test as base } from '@playwright-ct/core';
 
 export { expect } from '@playwright-ct/core';

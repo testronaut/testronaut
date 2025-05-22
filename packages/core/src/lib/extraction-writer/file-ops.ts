@@ -1,7 +1,7 @@
 import {
   FileDoesNotExistError,
   FileExistsError,
-  FileSystem,
+  type FileSystem,
 } from '../infra/file-system';
 
 /**

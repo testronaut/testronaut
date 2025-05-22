@@ -1,4 +1,4 @@
-import { Optional } from '../utils/optional';
+import type { Optional } from '../utils/optional';
 
 export interface FileAnalysis {
   path: string;

@@ -2,13 +2,13 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { analyze } from '../analyzer/analyze';
 import { createFileData } from '../analyzer/core';
-import { Transform } from '../analyzer/transform';
+import { type Transform } from '../analyzer/transform';
 import { assertNoDuplicateExtractedFunctions } from '../core/assert-no-duplicate-extracted-functions';
 import {
   ExtractionWriter,
-  ExtractionWriterConfig,
+  type ExtractionWriterConfig,
 } from '../extraction-writer/extraction-writer';
-import { createFileInfo, FileInfo } from './file-info';
+import { createFileInfo, type FileInfo } from './file-info';
 
 export class ExtractionPipeline {
   readonly #extractionWriter: ExtractionWriter;

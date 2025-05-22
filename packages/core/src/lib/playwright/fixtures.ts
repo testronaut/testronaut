@@ -1,15 +1,15 @@
-import {
+import type {
   PlaywrightTestArgs,
   PlaywrightTestOptions,
   PlaywrightWorkerArgs,
   PlaywrightWorkerOptions,
-  test as base,
   TestType,
 } from '@playwright/test';
+import { test as base } from '@playwright/test';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
 
-import { PlaywrightCtOptions } from './options';
+import type { PlaywrightCtOptions } from './options';
 
 /**
  * This is the type inferred from `base.extend()` but without the `ct` options.
