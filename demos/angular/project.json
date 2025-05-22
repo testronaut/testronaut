@@ -46,7 +46,7 @@
           "extractLicenses": false,
           "sourceMap": true
         },
-        "ct": {
+        "testronaut": {
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
@@ -66,8 +66,8 @@
         "development": {
           "buildTarget": "demos-angular:build:development"
         },
-        "ct": {
-          "buildTarget": "demos-angular:build:ct"
+        "testronaut": {
+          "buildTarget": "demos-angular:build:testronaut"
         }
       },
       "defaultConfiguration": "development"

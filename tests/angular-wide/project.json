@@ -44,7 +44,7 @@
           "extractLicenses": false,
           "sourceMap": true
         },
-        "ct": {
+        "testronaut": {
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
@@ -64,8 +64,8 @@
         "development": {
           "buildTarget": "angular-wide:build:development"
         },
-        "ct": {
-          "buildTarget": "angular-wide:build:ct"
+        "testronaut": {
+          "buildTarget": "angular-wide:build:testronaut"
         }
       },
       "defaultConfiguration": "development"

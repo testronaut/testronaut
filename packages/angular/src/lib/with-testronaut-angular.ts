@@ -1,4 +1,4 @@
-import { withCt, type WithCtArgs } from '@testronaut/core';
+import { withTestronaut, type WithTestronautParams } from '@testronaut/core';
 import { angularTransform } from './angular-transform';
 
 /**
@@ -19,7 +19,7 @@ import { angularTransform } from './angular-transform';
  *
  * ```ts
  * export default defineConfig(
- *   withCtAngular({
+ *   withTestronautAngular({
  *     configPath: __filename,
  *     extractionDir: 'test-server/generated',
  *     testServer: {
@@ -38,8 +38,8 @@ import { angularTransform } from './angular-transform';
  * );
  * ```
  */
-export function withCtAngular(config: WithCtAngularArgs) {
-  return withCt({
+export function withTestronautAngular(config: WithTestronautAngularParams) {
+  return withTestronaut({
     ...config,
     transforms: [...(config.transforms ?? []), angularTransform],
   });
@@ -48,4 +48,4 @@ export function withCtAngular(config: WithCtAngularArgs) {
 /**
  * @todo make `testServer` optional as for Angular, we can detect the command for CLI & NX.
  */
-export type WithCtAngularArgs = WithCtArgs;
+export type WithTestronautAngularParams = WithTestronautParams;

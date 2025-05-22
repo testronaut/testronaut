@@ -17,10 +17,10 @@ const __filename = fileURLToPath(import.meta.url);
  *
  * @example
  * ```ts
- * import { defineConfig, withCt } from '@testronaut/core';
+ * import { defineConfig, withTestronaut } from '@testronaut/core';
  *
  * export default defineConfig(
- *  withCt({
+ *  withTestronaut({
  *   configPath: __filename,
  *   testServer: {
  *    command: 'npm run start -- --port {port}',
@@ -34,12 +34,12 @@ const __filename = fileURLToPath(import.meta.url);
  * ```
  *
  */
-export function withCt({
+export function withTestronaut({
   configPath,
   extractionDir,
   testServer,
   transforms,
-}: WithCtArgs): PlaywrightTestConfig & { use: Options } {
+}: WithTestronautParams): PlaywrightTestConfig & { use: Options } {
   const isServerRunningCmd = join(dirname(__filename), 'is-server-running.js');
   const projectRoot = dirname(configPath);
   const port = 7357;
@@ -80,7 +80,7 @@ export function withCt({
     workers: 1,
     use: {
       baseURL: `http://localhost:${port}`,
-      ct: {
+      testronaut: {
         extractionDir,
         projectRoot,
         testServer,
@@ -94,12 +94,12 @@ export function withCt({
   };
 }
 
-export interface WithCtArgs extends Omit<TestronautOptions, 'projectRoot'> {
+export interface WithTestronautParams extends Omit<TestronautOptions, 'projectRoot'> {
   /**
    * The path to the Playwright config file.
    */
   // INTERNAL: This is needed because Playwright doesn't provide the config path
   // outside fixtures or the global setup, but we init the extraction pipeline
-  // as soon as `withCt` is called.
+  // as soon as `withTestronaut` is called.
   configPath: string;
 }

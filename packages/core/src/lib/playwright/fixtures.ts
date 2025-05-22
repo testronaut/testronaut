@@ -12,9 +12,9 @@ import { Runner } from '../runner/runner';
 import type { TestronautOptions } from './options';
 
 /**
- * This is the type inferred from `base.extend()` but without the `ct` options.
+ * This is the type inferred from `base.extend()` but without the `testronaut` options.
  * This is needed because we do not want to expose our internal options to the user.
- * Also, `Omit<typeof test, 'ct'>` does not work because `test` is a function
+ * Also, `Omit<typeof test, 'testronaut'>` does not work because `test` is a function
  * and `Omit` also removes the function signature as a side effect.
  */
 type TestronautTestType = TestType<
@@ -23,9 +23,9 @@ type TestronautTestType = TestType<
 >;
 
 export const test: TestronautTestType = base.extend<
-  Fixtures & { ct: TestronautOptions | null }
+  Fixtures & { testronaut: TestronautOptions | null }
 >({
-  ct: [null, { option: true }],
+  testronaut: [null, { option: true }],
 
   /**
    * Users should not care how to navigate a "page". CT takes
@@ -41,19 +41,19 @@ export const test: TestronautTestType = base.extend<
     await use(page);
   },
 
-  runInBrowser: async ({ ct, page }, use, testInfo) => {
-    if (!ct) {
+  runInBrowser: async ({ testronaut, page }, use, testInfo) => {
+    if (!testronaut) {
       // TODO: Setup a link with detailed instructions
       throw new Error(
-        'No config for Playwright CT. Use `withCt` in `defineConfig` (playwright.config.ts) to set it up.'
+        'No config for Playwright CT. Use `withTestronaut` in `defineConfig` (playwright.config.ts) to set it up.'
       );
     }
 
     const runner = new Runner(
       new ExtractionPipeline({
-        projectRoot: ct.projectRoot,
-        extractionDir: ct.extractionDir,
-        transforms: ct.transforms,
+        projectRoot: testronaut.projectRoot,
+        extractionDir: testronaut.extractionDir,
+        transforms: testronaut.transforms,
       }),
       page
     );

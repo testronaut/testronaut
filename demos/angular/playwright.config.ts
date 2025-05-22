@@ -1,5 +1,5 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { withCt } from '@testronaut/core';
+import { withTestronaut } from '@testronaut/core';
 import { defineConfig, devices } from '@playwright/test';
 
 /**
@@ -15,12 +15,12 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig(
   nxE2EPreset(__filename),
-  withCt({
+  withTestronaut({
     configPath: __filename,
     extractionDir: 'test-server/generated',
     testServer: {
       command:
-        'pnpm exec nx serve angular-wide --configuration ct --port {port} --live-reload false',
+        'pnpm exec nx serve angular-wide --configuration testronaut --port {port} --live-reload false',
     },
   }),
   {
@@ -38,7 +38,7 @@ export default defineConfig(
     ],
     webServer: {
       command:
-        'pnpm exec nx serve demos-angular --configuration ct --port 7357 --live-reload false',
+        'pnpm exec nx serve demos-angular --configuration testronaut --port 7357 --live-reload false',
       reuseExistingServer: !process.env['CI'],
     },
   }

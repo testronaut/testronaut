@@ -1,12 +1,12 @@
-export interface CtConfig {
+export interface TestronautConfig {
   extractionDir: string;
   projectRoot: string;
 }
 
 /**
- * This is the additional configuration type which
- * is added by `{@link withCt}` to the Playwright config.
+ * This is the additional configuration type that
+ * is added by `{@link withTestronaut}` to the Playwright config.
  */
-export interface TestronautConfig {
-  use: { ct: CtConfig };
+export interface TestronautPlaywrightConfig {
+  use: { testronaut: TestronautConfig };
 }

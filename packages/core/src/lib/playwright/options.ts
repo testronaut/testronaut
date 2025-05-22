@@ -1,7 +1,7 @@
 import type { Transform } from '../analyzer/transform';
 
 export interface Options {
-  ct: TestronautOptions;
+  testronaut: TestronautOptions;
 }
 
 export interface TestronautOptions {
