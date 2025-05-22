@@ -31,16 +31,18 @@ import { spawnSync } from 'node:child_process';
  * ```
  *
  */
-export function withCt(
-  args: WithCtArgs
-): PlaywrightTestConfig & { use: Options } {
-  const { configPath, ...rest } = args;
+export function withCt({
+  configPath,
+  extractionDir,
+  testServer,
+  transforms,
+}: WithCtArgs): PlaywrightTestConfig & { use: Options } {
   const isServerRunningCmd = join(__dirname, 'is-server-running.js');
   const projectRoot = dirname(configPath);
   const port = 7358;
 
   const extractionWriter = new ExtractionWriter({
-    extractionDir: args.extractionDir,
+    extractionDir,
     projectRoot,
   });
 
@@ -62,7 +64,6 @@ export function withCt(
    * Note that `globalSetup` sounds like the right place, but it runs after the web servers starts
    * and it can be easily mistakenly overriden by the user.
    * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
-
   if (spawnSync(isServerRunningCmd, [port.toString()]).status !== 0) {
     extractionWriter.resetEntrypoint();
   }
@@ -70,15 +71,21 @@ export function withCt(
   return {
     testDir: 'src',
     testMatch: '**/*.ct-spec.ts',
+    /* Forcing a single worker as a temporary workaround
+     * meanwhile we implement a proper solution to avoid race conditions
+     * on generated extractions. */
+    workers: 1,
     use: {
       baseURL: `http://localhost:${port}`,
       ct: {
+        extractionDir,
         projectRoot,
-        ...rest,
+        testServer,
+        transforms,
       },
     },
     webServer: {
-      command: args.testServer.command.replace('{port}', port.toString()),
+      command: testServer.command.replace('{port}', port.toString()),
       port,
     },
   };
