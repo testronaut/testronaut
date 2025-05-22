@@ -1,5 +1,8 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { defineConfig, devices, withCt } from '@playwright-ct/core';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
 
 /**
  * Read environment variables from file.
