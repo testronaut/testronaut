@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 import {
   createExtractedFunction,
   createFileAnalysis,
-  ExtractedFunction,
-  FileAnalysis,
-  ImportedIdentifier,
+  type ExtractedFunction,
+  type FileAnalysis,
+  type ImportedIdentifier,
 } from '../core/file-analysis';
-import { AnalysisContext, createFileData, FileData } from './core';
-import { Transform } from './transform';
+import { AnalysisContext, createFileData, type FileData } from './core';
+import type { Transform } from './transform';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
 

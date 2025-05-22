@@ -1,4 +1,4 @@
-import { withCt, WithCtArgs } from '@playwright-ct/core';
+import { withCt, type WithCtArgs } from '@playwright-ct/core';
 import { angularTransform } from './angular-transform';
 
 /**

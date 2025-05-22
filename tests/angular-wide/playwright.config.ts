@@ -1,5 +1,6 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { defineConfig, devices, withCtAngular } from '@playwright-ct/angular';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Read environment variables from file.
@@ -8,6 +9,8 @@ import { defineConfig, devices, withCtAngular } from '@playwright-ct/angular';
 // import dotenv from 'dotenv';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
+
+const __filename = fileURLToPath(import.meta.url);
 
 /**
  * See https://playwright.dev/docs/test-configuration.

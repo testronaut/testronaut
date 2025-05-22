@@ -1,4 +1,4 @@
-import { Transform } from '../analyzer/transform';
+import type { Transform } from '../analyzer/transform';
 
 export interface Options {
   ct: PlaywrightCtOptions;

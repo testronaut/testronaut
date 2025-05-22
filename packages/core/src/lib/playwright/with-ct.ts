@@ -1,8 +1,11 @@
-import { PlaywrightTestConfig } from '@playwright/test';
+import { type PlaywrightTestConfig } from '@playwright/test';
 import { dirname, join } from 'node:path/posix';
 import { ExtractionWriter } from '../extraction-writer/extraction-writer';
-import { Options, PlaywrightCtOptions } from './options';
+import { type Options, type PlaywrightCtOptions } from './options';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
 
 /**
  * This function is used to configure Playwright for component testing.
@@ -37,9 +40,9 @@ export function withCt({
   testServer,
   transforms,
 }: WithCtArgs): PlaywrightTestConfig & { use: Options } {
-  const isServerRunningCmd = join(__dirname, 'is-server-running.js');
+  const isServerRunningCmd = join(dirname(__filename), 'is-server-running.js');
   const projectRoot = dirname(configPath);
-  const port = 7358;
+  const port = 7357;
 
   const extractionWriter = new ExtractionWriter({
     extractionDir,

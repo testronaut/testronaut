@@ -1,5 +1,5 @@
-import { FileData } from './core';
-import { ImportedIdentifier } from '../core/file-analysis';
+import type { FileData } from './core';
+import type { ImportedIdentifier } from '../core/file-analysis';
 
 export interface Transform {
   name: string;

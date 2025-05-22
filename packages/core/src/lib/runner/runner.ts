@@ -1,14 +1,17 @@
-import { expect, Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 import { ExtractionPipeline } from './extraction-pipeline';
 
 export class Runner {
-  constructor(
-    private extractionPipeline: ExtractionPipeline,
-    private page: Page
-  ) {}
+  #extractionPipeline: ExtractionPipeline;
+  #page: Page;
+
+  constructor(extractionPipeline: ExtractionPipeline, page: Page) {
+    this.#extractionPipeline = extractionPipeline;
+    this.#page = page;
+  }
 
   async extract(filePath: string) {
-    return this.extractionPipeline.extract(filePath);
+    return this.#extractionPipeline.extract(filePath);
   }
 
   async runInBrowser({
@@ -23,7 +26,7 @@ export class Runner {
     await this.waitUntilHashIsAvailable(hash);
 
     /* Execute the function in the browser context. */
-    await this.page.evaluate(
+    await this.#page.evaluate(
       async ({ functionName, hash, data }) => {
         const module = await (globalThis as unknown as ExtractionUnitRecord)[
           hash
@@ -38,7 +41,7 @@ export class Runner {
     let timeout = 100;
     return expect(async () => {
       try {
-        await this.page.waitForFunction(
+        await this.#page.waitForFunction(
           ({ hash }) => hash in globalThis,
           { hash },
           { timeout }
@@ -49,7 +52,7 @@ export class Runner {
         timeout *= 2;
 
         /* Reload on failure. */
-        await this.page.reload();
+        await this.#page.reload();
 
         throw error;
       }

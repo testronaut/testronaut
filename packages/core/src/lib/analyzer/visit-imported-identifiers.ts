@@ -2,7 +2,7 @@ import { AnalysisContext } from './core';
 import * as ts from 'typescript';
 import {
   createImportedIdentifier,
-  ImportedIdentifier,
+  type ImportedIdentifier,
 } from '../core/file-analysis';
 import { findImportDeclaration, getDeclaration } from './utils';
 

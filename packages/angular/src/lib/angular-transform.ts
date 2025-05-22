@@ -2,8 +2,8 @@ import {
   AnalysisContext,
   createImportedIdentifier,
   getRunInBrowserIdentifier,
-  Transform,
-  TransformResult,
+  type Transform,
+  type TransformResult,
 } from '@playwright-ct/core/devkit';
 import {
   applyTransformVisitors,
