@@ -50,9 +50,9 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
-          "browser": "demos/angular/ct-tests/vanilla-main.ts",
-          "index": "demos/angular/ct-tests/index.html",
-          "tsConfig": "demos/angular/ct-tests/tsconfig.json"
+          "browser": "demos/angular/test-server/vanilla-main.ts",
+          "index": "demos/angular/test-server/index.html",
+          "tsConfig": "demos/angular/test-server/tsconfig.json"
         }
       },
       "defaultConfiguration": "production"

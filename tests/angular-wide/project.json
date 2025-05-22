@@ -48,9 +48,9 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
-          "browser": "tests/angular-wide/ct-tests/main.ts",
-          "index": "tests/angular-wide/ct-tests/index.html",
-          "tsConfig": "tests/angular-wide/ct-tests/tsconfig.json"
+          "browser": "tests/angular-wide/test-server/main.ts",
+          "index": "tests/angular-wide/test-server/index.html",
+          "tsConfig": "tests/angular-wide/test-server/tsconfig.json"
         }
       },
       "defaultConfiguration": "production"

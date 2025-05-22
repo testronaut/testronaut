@@ -21,7 +21,7 @@ import { angularTransform } from './angular-transform';
  * export default defineConfig(
  *   withCtAngular({
  *     configPath: __filename,
- *     extractionDir: 'ct-tests/generated',
+ *     extractionDir: 'test-server/generated',
  *     testServer: {
  *       command:
  *         'pnpm exec nx serve',

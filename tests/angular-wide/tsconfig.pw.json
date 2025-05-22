@@ -8,5 +8,5 @@
     "playwright.config.ts",
     "playwright.failing-multi-worker.config.ts"
   ],
-  "include": ["src/**/*.ct-spec.ts"]
+  "include": ["src/**/*.pw.ts"]
 }
