@@ -30,7 +30,7 @@ export class ExtractionWriter {
   }) {
     this.#fileOps = new FileOps({ fileSystem: fileSystem });
     this.#fileSystem = fileSystem;
-    const extractionDir = config.extractionDir ?? 'test-server/generated';
+    const extractionDir = config.extractionDir ?? 'testronaut/generated';
 
     this.#config = config;
     this.#extractionPath = join(this.#config.projectRoot, extractionDir);
