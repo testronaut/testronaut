@@ -22,7 +22,7 @@
       "path": "./tsconfig.pw.json"
     },
     {
-      "path": "ct-tests/tsconfig.json"
+      "path": "test-server/tsconfig.json"
     }
   ],
   "extends": "../../tsconfig.base.json",

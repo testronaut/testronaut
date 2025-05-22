@@ -19,7 +19,7 @@ export default defineConfig(
   nxE2EPreset(__filename),
   withCt({
     configPath: __filename,
-    extractionDir: 'ct-tests/generated',
+    extractionDir: 'test-server/generated',
     testServer: {
       command:
         'pnpm exec nx serve angular-wide --configuration ct --port {port} --live-reload false',
@@ -36,7 +36,7 @@ export default defineConfig(
         name: 'failing-multi-worker',
         use: { ...devices['Desktop Chrome'] },
         fullyParallel: true,
-        testMatch: '**/*.failing-multi-worker-ct-spec.ts',
+        testMatch: '**/*.failing-multi-worker-pw.ts',
       },
     ],
   }

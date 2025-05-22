@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
  * It will:
  * - Initialize the `index.ts` in the `extractionDir` directory where the extracted code will be written.
  * - Set up the web server that serves the extracted code.
- * - Set up Playwright to match '*.ct-spec.ts' files in `src` folder by default.
+ * - Set up Playwright to match '*.pw.ts' files in `src` folder by default.
  *
  * @example
  * ```ts
@@ -73,7 +73,7 @@ export function withCt({
 
   return {
     testDir: 'src',
-    testMatch: '**/*.ct-spec.ts',
+    testMatch: '**/*.pw.ts',
     /* Forcing a single worker as a temporary workaround
      * meanwhile we implement a proper solution to avoid race conditions
      * on generated extractions. */
