@@ -9,7 +9,7 @@ import { test as base } from '@playwright/test';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
 
-import type { PlaywrightCtOptions } from './options';
+import type { TestronautOptions } from './options';
 
 /**
  * This is the type inferred from `base.extend()` but without the `ct` options.
@@ -17,13 +17,13 @@ import type { PlaywrightCtOptions } from './options';
  * Also, `Omit<typeof test, 'ct'>` does not work because `test` is a function
  * and `Omit` also removes the function signature as a side effect.
  */
-type PlaywrightCtTestType = TestType<
+type TestronautTestType = TestType<
   PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
   PlaywrightWorkerArgs & PlaywrightWorkerOptions
 >;
 
-export const test: PlaywrightCtTestType = base.extend<
-  Fixtures & { ct: PlaywrightCtOptions | null }
+export const test: TestronautTestType = base.extend<
+  Fixtures & { ct: TestronautOptions | null }
 >({
   ct: [null, { option: true }],
 

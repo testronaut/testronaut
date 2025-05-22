@@ -1,5 +1,5 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { defineConfig, devices, withCtAngular } from '@playwright-ct/angular';
+import { defineConfig, devices, withCtAngular } from '@testronaut/angular';
 import { fileURLToPath } from 'node:url';
 
 /**

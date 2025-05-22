@@ -7,6 +7,6 @@ export interface CtConfig {
  * This is the additional configuration type which
  * is added by `{@link withCt}` to the Playwright config.
  */
-export interface PlaywrightCtConfig {
+export interface TestronautConfig {
   use: { ct: CtConfig };
 }

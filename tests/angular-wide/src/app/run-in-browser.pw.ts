@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright-ct/core';
+import { expect, test } from '@testronaut/core';
 
 test('anonymous runInBrowser', async ({ page, runInBrowser }) => {
   await runInBrowser(() => {

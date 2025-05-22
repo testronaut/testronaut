@@ -1,7 +1,7 @@
 import type { InputSignal, Type } from '@angular/core';
-import { test as base } from '@playwright-ct/core';
+import { test as base } from '@testronaut/core';
 
-export { expect } from '@playwright-ct/core';
+export { expect } from '@testronaut/core';
 
 export const test = base.extend<Fixtures>({
   mount: async ({ runInBrowser }, use) => {

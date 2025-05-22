@@ -1,5 +1,5 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { withCt } from '@playwright-ct/core';
+import { withCt } from '@testronaut/core';
 import { defineConfig, devices } from '@playwright/test';
 
 /**

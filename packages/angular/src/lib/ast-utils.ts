@@ -1,7 +1,7 @@
 /*
  * These utils will probably useful for other plugins as well.
  * In the future, depending on the usage, we should adapt them
- * and move them to `@playwright-ct/core/devkit`.
+ * and move them to `@testronaut/core/devkit`.
  */
 
 import * as ts from 'typescript';

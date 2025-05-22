@@ -1,7 +1,7 @@
 import { type PlaywrightTestConfig } from '@playwright/test';
 import { dirname, join } from 'node:path/posix';
 import { ExtractionWriter } from '../extraction-writer/extraction-writer';
-import { type Options, type PlaywrightCtOptions } from './options';
+import { type Options, type TestronautOptions } from './options';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
  *
  * @example
  * ```ts
- * import { defineConfig, withCt } from '@playwright-ct/core';
+ * import { defineConfig, withCt } from '@testronaut/core';
  *
  * export default defineConfig(
  *  withCt({
@@ -94,7 +94,7 @@ export function withCt({
   };
 }
 
-export interface WithCtArgs extends Omit<PlaywrightCtOptions, 'projectRoot'> {
+export interface WithCtArgs extends Omit<TestronautOptions, 'projectRoot'> {
   /**
    * The path to the Playwright config file.
    */

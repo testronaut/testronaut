@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright-ct/core';
+import { expect, test } from '@testronaut/core';
 
 /* Testing the safeguard that makes sure the second worker crashes with an explicit error.
  * We run two tests, skip the first one, and make sure the second one crashes. */

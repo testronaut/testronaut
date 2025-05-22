@@ -1,5 +1,5 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { defineConfig, devices, withCt } from '@playwright-ct/core';
+import { defineConfig, devices, withCt } from '@testronaut/core';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);

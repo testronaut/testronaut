@@ -4,7 +4,7 @@ import {
   getRunInBrowserIdentifier,
   type Transform,
   type TransformResult,
-} from '@playwright-ct/core/devkit';
+} from '@testronaut/core/devkit';
 import {
   applyTransformVisitors,
   createArrowFunction,
@@ -54,7 +54,7 @@ export const angularTransform: Transform = {
         ? [
             createImportedIdentifier({
               name: MOUNT_IDENTIFIER,
-              module: '@playwright-ct/angular/browser',
+              module: '@testronaut/angular/browser',
             }),
           ]
         : [],

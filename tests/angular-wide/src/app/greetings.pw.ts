@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright-ct/angular';
-import { configure } from '@playwright-ct/angular/browser';
+import { expect, test } from '@testronaut/angular';
+import { configure } from '@testronaut/angular/browser';
 import { Greetings, provideGreeting } from './greetings.ng';
 
 test(`anonymous mount`, async ({ page, mount }) => {

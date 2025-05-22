@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path/posix';
 
 /**
- * TODO: replace this with `FileOps` from https://github.com/playwright-ct/playwright-ct/pull/4
+ * TODO: replace this with `FileOps` from https://github.com/testronaut/testronaut/pull/4
  */
 export class TmpFileOps {
   createFileIfNotExistsSync(filePath: string) {

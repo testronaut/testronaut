@@ -6,6 +6,6 @@ import { applyFileSystemContract } from './file-system.contract';
 describe(FileSystemImpl.name, () => {
   applyFileSystemContract(async () => ({
     fileSystem: new FileSystemImpl(),
-    testingRootPath: await mkdtemp('/tmp/test-playwright-ct-file-system-impl-'),
+    testingRootPath: await mkdtemp('/tmp/test-testronaut-file-system-impl-'),
   }));
 });
