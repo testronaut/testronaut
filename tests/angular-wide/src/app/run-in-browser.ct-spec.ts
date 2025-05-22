@@ -10,10 +10,18 @@ test.describe('runInBrowser', () => {
   });
 
   test('named runInBrowser', async ({ page, runInBrowser }) => {
-    await runInBrowser('bye', () => {
-      document.body.textContent = 'Bye!';
+    await runInBrowser('hello', () => {
+      document.body.textContent = 'Hello!';
     });
 
-    await expect(page.getByText('Bye!')).toBeVisible();
+    await expect(page.getByText('Hello!')).toBeVisible();
+  });
+
+  test('named runInBrowser with args', async ({ page, runInBrowser }) => {
+    await runInBrowser('hello foo', { name: 'Foo' }, ({ name }) => {
+      document.body.textContent = `Hello ${name}!`;
+    });
+
+    await expect(page.getByText('Hello Foo!')).toBeVisible();
   });
 });

@@ -1,7 +1,7 @@
 import { describe } from 'vitest';
 import { ExtractionWriter } from './extraction-writer';
-import { createExtractedFunction } from '../file-analysis';
-import { fileAnalysisMother } from '../file-analysis.mother';
+import { createExtractedFunction } from '../core/file-analysis';
+import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
 
 describe(ExtractionWriter.name, () => {
@@ -51,11 +51,37 @@ describe(ExtractionWriter.name, () => {
       '/my-project/test-server/index.ts': expect.stringContaining(
         `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
       ),
-      '/my-project/test-server/src/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "": () => { console.log('Hi!'); }
 };
-`,
+`),
+    });
+  });
+
+  it('disables checks on extracted functions', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            code: `() => { console.log('Hi!'); }`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(`\
+// prettier-ignore
+// eslint-disable-next-line
+// @ts-nocheck
+`),
     });
   });
 
@@ -79,11 +105,12 @@ export const extractedFunctionsRecord = {
       '/my-project/test-server/index.ts': expect.stringContaining(
         `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
       ),
-      '/my-project/test-server/src/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "sayHello": () => { console.log('Hi!'); }
 };
-`,
+`),
     });
   });
 
@@ -108,11 +135,12 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/src/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "": () => { console.log('Hello!'); }
 };
-`,
+`),
     });
   });
 
@@ -138,9 +166,15 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/index.ts': `\
-globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');
-globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
+      '/my-project/test-server/index.ts': expect.stringContaining(
+        `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`
+      ),
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(
+          `export const extractedFunctionsRecord = {
+    "": () => { console.log('Hi!'); }
+};`
+        ),
     });
   });
 
@@ -193,12 +227,13 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/src/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
     "": () => { console.log(MyComponent); }
 };
-`,
+`),
     });
   });
 
@@ -224,12 +259,13 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/src/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
     "": () => { console.log(MyComponent); }
 };
-`,
+`),
     });
   });
 
@@ -276,12 +312,13 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/test-server/src/my-component.spec.ts': `\
+      '/my-project/test-server/src/my-component.spec.ts':
+        expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
     "": () => { console.log(MyService, MyServiceError); }
 };
-`,
+`),
     });
   });
 });

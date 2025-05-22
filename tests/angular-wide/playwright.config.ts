@@ -1,5 +1,5 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { defineConfig, devices, withCt } from '@playwright-ct/core';
+import { defineConfig, devices, withCtAngular } from '@playwright-ct/angular';
 
 /**
  * Read environment variables from file.
@@ -14,7 +14,7 @@ import { defineConfig, devices, withCt } from '@playwright-ct/core';
  */
 export default defineConfig(
   nxE2EPreset(__filename),
-  withCt({
+  withCtAngular({
     configPath: __filename,
     extractionDir: 'ct-tests/generated',
     testServer: {
@@ -23,9 +23,12 @@ export default defineConfig(
     },
   }),
   {
+    timeout: 3_000,
     use: {
       trace: 'on-first-retry',
     },
+  },
+  {
     /* Configure projects for major browsers */
     projects: [
       { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

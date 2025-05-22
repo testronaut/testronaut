@@ -1,10 +1,5 @@
 import * as ts from 'typescript';
 
-export interface FileData {
-  path: string;
-  content: string;
-}
-
 export class AnalysisContext {
   readonly sourceFile: ts.SourceFile;
   readonly typeChecker: ts.TypeChecker;
@@ -24,4 +19,13 @@ export class AnalysisContext {
       .createProgram([path], {}, compilerHost)
       .getTypeChecker();
   }
+}
+
+export interface FileData {
+  path: string;
+  content: string;
+}
+
+export function createFileData(fileData: FileData): FileData {
+  return fileData;
 }
