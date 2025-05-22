@@ -39,7 +39,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Built for Angular (for now)',
-    imageSrc: '/img/angular.png',
+    imageSrc: 'img/angular.png',
     description: (
       <>
         Testronaut is designed to support any frontend framework. But to start,
