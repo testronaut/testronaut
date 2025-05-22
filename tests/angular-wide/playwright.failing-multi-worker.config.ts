@@ -26,11 +26,15 @@ export default defineConfig(
     use: {
       trace: 'on-first-retry',
     },
-    /* Configure projects for major browsers */
+    /* Override workers count ot make `runInBrowser` fail on 2nd worker. */
+    workers: 2,
     projects: [
-      { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-      { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-      { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+      {
+        name: 'failing-multi-worker',
+        use: { ...devices['Desktop Chrome'] },
+        fullyParallel: true,
+        testMatch: '**/*.failing-multi-worker-ct-spec.ts',
+      },
     ],
   }
 );

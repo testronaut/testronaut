@@ -59,6 +59,12 @@ export const test: PlaywrightCtTestType = base.extend<
     const { hash } = await runner.extract(testInfo.file);
 
     const runInBrowserImpl: RunInBrowser = async (nameOrFunction) => {
+      if (testInfo.parallelIndex !== 0) {
+        throw new Error(
+          '`runInBrowser` does not support multiple workers yet. Please run your tests in a single worker.'
+        );
+      }
+
       const functionName =
         typeof nameOrFunction === 'string' ? nameOrFunction : '';
 
