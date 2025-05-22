@@ -41,7 +41,7 @@
     "@nx/vite": "20.3.0",
     "@nx/web": "20.3.0",
     "@nx/workspace": "20.3.0",
-    "@playwright/test": "^1.36.0",
+    "@playwright/test": "^1.52.0",
     "@schematics/angular": "~19.0.0",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
@@ -81,5 +81,8 @@
   },
   "nx": {
     "includedScripts": []
+  },
+  "volta": {
+    "node": "24.1.0"
   }
 }
