@@ -25,7 +25,7 @@ function HomepageHeader() {
         >
           <img
             className={clsx(styles.logo)}
-            src="/img/logo.svg"
+            src="img/logo.svg"
             alt="Testronaut Logo"
             title="Testronaut Logo"
             style={{ width: '240px', height: '240px', flexShrink: 0 }}

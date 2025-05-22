@@ -10,7 +10,7 @@ sidebar_position: 2
 
 <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '3rem' }}>
   <img
-    src="/img/team/younes-240px.jpg"
+    src="../img/team/younes-240px.jpg"
     alt="Younes Jaaidi"
     width="120"
     height="120"
@@ -32,7 +32,7 @@ sidebar_position: 2
 
 <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '3rem' }}>
   <img
-    src="/img/team/rainer-240px.jpg"
+    src="../img/team/rainer-240px.jpg"
     alt="Rainer Hahnekamp"
     width="120"
     height="120"
