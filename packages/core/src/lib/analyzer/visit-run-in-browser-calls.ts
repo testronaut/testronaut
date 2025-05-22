@@ -1,8 +1,10 @@
 import * as ts from 'typescript';
-import { getRunInBrowserIdentifier } from '../core/run-in-browser-identifier';
 import { createExtractedFunction } from '../core/file-analysis';
+import { getRunInBrowserIdentifier } from '../core/run-in-browser-identifier';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
+
+const _RUN_IN_BROWSER_IDENTIFIER = 'runInBrowser';
 
 export interface RunInBrowserCall {
   node: ts.CallExpression;
