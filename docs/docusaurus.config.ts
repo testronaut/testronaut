@@ -38,21 +38,7 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
-          // Useful options to enforce blogging best practices
-          onInlineTags: 'warn',
-          onInlineAuthors: 'warn',
-          onUntruncatedBlogPosts: 'warn',
-        },
-        theme: {
-          customCss: './src/css/custom.css',
-        },
-      } satisfies Preset.Options,
+      },
     ],
   ],
 
@@ -60,19 +46,18 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/testronaut-social-card.jpg',
     navbar: {
-      title: 'My Site',
+      title: 'Testronaut',
       logo: {
-        alt: 'My Site Logo',
+        alt: 'Testronaut',
         src: 'img/logo.svg',
       },
       items: [
         {
           type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
+          sidebarId: 'mainSidebar',
           position: 'left',
-          label: 'Tutorial',
+          label: 'Docs',
         },
-        { to: '/blog', label: 'Blog', position: 'left' },
         {
           href: 'https://github.com/testronaut/testronaut',
           label: 'GitHub',
@@ -87,8 +72,8 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Tutorial',
-              to: '/docs/intro',
+              label: 'Welcome',
+              to: '/docs/welcome',
             },
           ],
         },
@@ -101,7 +86,7 @@ const config: Config = {
             },
             {
               label: 'Discord',
-              href: 'https://discordapp.com/invite/testronaut',
+              href: 'https://discordapp.com/invite/ydSKFTa4',
             },
             {
               label: 'X',
@@ -112,10 +97,6 @@ const config: Config = {
         {
           title: 'More',
           items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
             {
               label: 'GitHub',
               href: 'https://github.com/testronaut/testronaut',
