@@ -23,7 +23,6 @@ export default defineConfig(
   nxE2EPreset(__filename),
   withTestronautAngular({
     configPath: __filename,
-    extractionDir: 'test-server/generated',
     testServer: {
       command:
         'pnpm exec nx serve angular-wide --configuration testronaut --port {port} --live-reload false',
