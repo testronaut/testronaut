@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Welcome!
 
 Modern frontend frameworks provide powerful tools for building components—but testing them is often a different story.

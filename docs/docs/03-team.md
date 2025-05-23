@@ -1,7 +1,3 @@
----
-sidebar_position: 2
----
-
 # Meet the Team
 
 **Testronaut** is an experimental project built by two developers who care deeply about testing, developer experience, and Angular.
