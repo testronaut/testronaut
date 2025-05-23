@@ -16,6 +16,9 @@
   },
   "nxCloudId": "677a61b0df2f9b1dfef68c36",
   "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"]
+    },
     "@angular-devkit/build-angular:application": {
       "cache": true,
       "dependsOn": ["^build"],

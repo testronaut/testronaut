@@ -14,14 +14,29 @@
   "tags": [],
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "@nx/rollup:rollup",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/core",
-        "main": "packages/core/src/index.ts",
-        "additionalEntryPoints": ["packages/core/src/devkit.ts"],
-        "tsConfig": "packages/core/tsconfig.lib.json",
-        "assets": ["packages/core/*.md"]
+        "project": "{projectRoot}/package.json",
+        "outputPath": "dist/{projectRoot}",
+        "entryFile": "{projectRoot}/src/index.ts",
+        "additionalEntryPoints": ["{projectRoot}/src/devkit.ts"],
+        "generateExportsField": true,
+        "tsConfig": "{projectRoot}/tsconfig.lib.json",
+        "main": "{projectRoot}/src/index.ts",
+        "format": ["cjs", "esm"],
+        "assets": [
+          {
+            "glob": "LICENSE",
+            "input": ".",
+            "output": "."
+          },
+          {
+            "glob": "*.md",
+            "input": "{projectRoot}",
+            "output": "."
+          }
+        ]
       }
     },
     "nx-release-publish": {
