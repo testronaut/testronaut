@@ -1,3 +1,3 @@
 # Testronaut
 
-Coming soon!
+[Read docs](https://testronaut.github.io/testronaut/)
