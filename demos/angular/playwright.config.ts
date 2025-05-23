@@ -1,6 +1,9 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { withTestronaut } from '@testronaut/core';
+import { withTestronautAngular } from '@testronaut/angular';
 import { defineConfig, devices } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
 
 /**
  * Read environment variables from file.
@@ -15,12 +18,11 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig(
   nxE2EPreset(__filename),
-  withTestronaut({
+  withTestronautAngular({
     configPath: __filename,
-    extractionDir: 'testronaut/generated',
     testServer: {
       command:
-        'pnpm exec nx serve angular-wide --configuration testronaut --port {port} --live-reload false',
+        'pnpm nx serve demos-angular --configuration testronaut --port {port} --live-reload false',
     },
   }),
   {
@@ -36,10 +38,5 @@ export default defineConfig(
       { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
       { name: 'webkit', use: { ...devices['Desktop Safari'] } },
     ],
-    webServer: {
-      command:
-        'pnpm exec nx serve demos-angular --configuration testronaut --port 7357 --live-reload false',
-      reuseExistingServer: !process.env['CI'],
-    },
   }
 );

@@ -4,7 +4,10 @@ import { Component, computed, signal } from '@angular/core';
   template: `
     <div class="p-4 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
       @for(product of productsWithAmount(); track product.id) {
-      <div class="flex items-center justify-between p-2 border-b">
+      <div
+        role="listitem"
+        class="flex items-center justify-between p-2 border-b"
+      >
         <p class="text-lg font-medium">
           {{ product.name }} ({{ product.price }} EUR)
         </p>
@@ -29,7 +32,7 @@ import { Component, computed, signal } from '@angular/core';
     </div>
   `,
 })
-export class BasketComponent {
+export class Basket {
   protected readonly products = [
     { id: 1, name: 'Apple', price: 1.99 },
     { id: 2, name: 'Water', price: 0.69 },
@@ -81,4 +84,4 @@ export class BasketComponent {
   }
 }
 
-export default BasketComponent;
+export default Basket;

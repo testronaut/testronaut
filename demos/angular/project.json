@@ -50,7 +50,7 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,
-          "browser": "demos/angular/testronaut/vanilla-main.ts",
+          "browser": "demos/angular/testronaut/main.ts",
           "index": "demos/angular/testronaut/index.html",
           "tsConfig": "demos/angular/testronaut/tsconfig.json"
         }
