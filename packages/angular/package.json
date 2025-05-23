@@ -2,8 +2,6 @@
   "name": "@testronaut/angular",
   "version": "0.0.1",
   "type": "module",
-  "main": "./src/index.js",
-  "typings": "./src/index.d.ts",
   "sideEffects": false,
   "peerDependencies": {
     "@angular/core": "^19.0.0",
@@ -11,15 +9,5 @@
     "@testronaut/core": "0.0.1",
     "tslib": "^2.8.1",
     "typescript": "~5.6.0"
-  },
-  "exports": {
-    ".": {
-      "require": "./src/index.js",
-      "types": "./src/index.d.ts"
-    },
-    "./devkit": {
-      "require": "./src/browser.js",
-      "types": "./src/browser.d.ts"
-    }
   }
 }

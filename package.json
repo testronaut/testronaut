@@ -38,6 +38,7 @@
     "@nx/jest": "20.3.0",
     "@nx/js": "20.3.0",
     "@nx/playwright": "20.3.0",
+    "@nx/rollup": "20.3.0",
     "@nx/vite": "20.3.0",
     "@nx/web": "20.3.0",
     "@nx/workspace": "20.3.0",
@@ -81,8 +82,5 @@
   },
   "nx": {
     "includedScripts": []
-  },
-  "volta": {
-    "node": "24.1.0"
   }
 }
