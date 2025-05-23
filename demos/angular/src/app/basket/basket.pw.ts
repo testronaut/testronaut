@@ -1,16 +1,11 @@
-import { expect, test } from '@testronaut/core';
+import { expect, test } from '@testronaut/angular';
+import { Basket } from './basket.ng';
 
-test('test it', async ({ page }) => {
-  await page.waitForFunction(() => {
-    // @ts-expect-error property does not exist
-    return globalThis['dzvDWHTi'];
-  });
-
-  await page.evaluate(async () => {
-    // @ts-expect-error property does not exist
-    const { extractedFunctionsMap } = await globalThis['dzvDWHTi']();
-    await extractedFunctionsMap['']();
-  });
-
-  await expect(page.getByText('Hello World!')).toBeVisible();
+test('load the basket', async ({ page, mount }) => {
+  await mount(Basket);
+  await expect(page.getByRole('listitem')).toHaveText([
+    /Apple/,
+    /Water/,
+    /Bread/,
+  ]);
 });
