@@ -4,7 +4,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "lift-off": "nx e2e demos-angular"
   },
   "private": true,
   "dependencies": {
