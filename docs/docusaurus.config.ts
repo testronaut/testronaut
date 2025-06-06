@@ -89,7 +89,7 @@ const config: Config = {
             },
             {
               label: 'Discord',
-              href: 'https://discordapp.com/invite/ydSKFTa4',
+              href: 'https://discord.gg/QDnWpKRrW8',
             },
             {
               label: 'X',
