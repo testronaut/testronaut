@@ -68,7 +68,8 @@
           "buildTarget": "angular-wide:build:testronaut"
         }
       },
-      "defaultConfiguration": "development"
+      "defaultConfiguration": "development",
+      "continuous": true
     },
     "extract-i18n": {
       "executor": "@angular-devkit/build-angular:extract-i18n",
@@ -98,9 +99,7 @@
       "command": "tsc --noEmit -p tests/angular-wide/tsconfig.spec.json"
     },
     "e2e": {
-      "dependsOn": [
-        "e2e:default"
-      ]
+      "dependsOn": ["e2e:default"]
     },
     "e2e:default": {
       "command": "playwright test",
