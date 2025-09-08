@@ -1,7 +1,6 @@
 {
   "name": "@testronaut/angular",
   "version": "0.0.1",
-  "type": "module",
   "sideEffects": false,
   "peerDependencies": {
     "@angular/core": "^19.0.0",
