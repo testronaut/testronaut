@@ -9,6 +9,12 @@
         "config": ".verdaccio/config.yml",
         "storage": "tmp/local-registry/storage"
       }
+    },
+    "reset": {
+      "dependsOn": ["clear-cache-rollup"]
+    },
+    "clear-cache-rollup": {
+      "command": "rm -rf packages/*/node_modules/.cache"
     }
   }
 }

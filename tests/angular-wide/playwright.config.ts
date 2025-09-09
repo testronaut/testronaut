@@ -6,14 +6,6 @@ import {
 } from '@testronaut/angular';
 import { fileURLToPath } from 'node:url';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
 const __filename = fileURLToPath(import.meta.url);
 
 /**

@@ -69,12 +69,19 @@
       "plugin": "@nx/playwright/plugin",
       "options": {
         "targetName": "e2e"
-      }
+      },
+      "exclude": ["demos/angular/*", "tests/angular-wide/*"]
     },
     {
       "plugin": "@nx/eslint/plugin",
       "options": {
         "targetName": "lint"
+      }
+    },
+    {
+      "plugin": "@nx/rollup/plugin",
+      "options": {
+        "buildTargetName": "build"
       }
     }
   ],

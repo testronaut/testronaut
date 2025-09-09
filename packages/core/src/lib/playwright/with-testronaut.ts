@@ -118,6 +118,6 @@ export interface _internal_WithTestronautParams extends WithTestronautParams {
   fileSystem?: FileSystem;
 }
 
-type PlaywrightTestronautConfig = PlaywrightTestConfig & {
+export type PlaywrightTestronautConfig = PlaywrightTestConfig & {
   use: { testronaut: TestronautOptions };
 };

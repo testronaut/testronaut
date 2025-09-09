@@ -98,15 +98,11 @@
       "command": "tsc --noEmit -p tests/angular-wide/tsconfig.spec.json"
     },
     "e2e": {
-      "dependsOn": [
-        "e2e:default"
-      ]
-    },
-    "e2e:default": {
+      /* Using custom command instead of plugin due to chicken and egg situation
+       * where plugin loads playwright config which needs a built version of our packages
+       * and we need to load the nx graph to be able to build the packages. */
       "command": "playwright test",
-      "options": {
-        "cwd": "{projectRoot}"
-      },
+      "options": { "cwd": "{projectRoot}" },
       "dependsOn": ["e2e:failing-multi-worker"]
     },
     "e2e:failing-multi-worker": {

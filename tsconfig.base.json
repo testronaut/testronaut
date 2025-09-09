@@ -13,14 +13,7 @@
     "lib": ["esnext", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@testronaut/angular": ["packages/angular/src/index.ts"],
-      "@testronaut/angular/browser": ["packages/angular/src/browser.ts"],
-      "@testronaut/core": ["packages/core/src/index.ts"],
-      "@testronaut/core/devkit": ["packages/core/src/devkit.ts"]
-    }
+    "baseUrl": "."
   },
   "exclude": ["node_modules", "tmp"]
 }
-
