@@ -3,6 +3,12 @@
   "type": "module",
   "version": "0.0.1",
   "sideEffects": false,
+  "files": [
+    "*.d.ts",
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "peerDependencies": {
     "@angular/core": "^19.0.0",
     "@angular/platform-browser-dynamic": "^19.0.0",
