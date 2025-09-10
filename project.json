@@ -11,10 +11,13 @@
       }
     },
     "reset": {
-      "dependsOn": ["clear-cache-rollup"]
+      "dependsOn": ["clear-cache-rollup", "clear-dist"]
     },
     "clear-cache-rollup": {
       "command": "rm -rf packages/*/node_modules/.cache"
+    },
+    "clear-dist": {
+      "command": "rm -rf dist packages/*/dist"
     }
   }
 }

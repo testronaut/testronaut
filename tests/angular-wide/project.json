@@ -84,18 +84,18 @@
       "options": {
         "buildTarget": "angular-wide:build",
         "port": 4200,
-        "staticFilePath": "dist/tests/angular-wide/browser",
+        "staticFilePath": "dist/{projectRoot}/browser",
         "spa": true
       }
     },
     "typecheck": {
-      "dependsOn": ["typecheck:pw", "typecheck:spec"]
-    },
-    "typecheck:pw": {
-      "command": "tsc --noEmit -p tests/angular-wide/tsconfig.pw.json"
-    },
-    "typecheck:spec": {
-      "command": "tsc --noEmit -p tests/angular-wide/tsconfig.spec.json"
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "tsc --noEmit -p {projectRoot}/tsconfig.pw.json",
+          "tsc --noEmit -p {projectRoot}/tsconfig.spec.json"
+        ]
+      }
     },
     "e2e": {
       /* Using custom command instead of plugin due to chicken and egg situation

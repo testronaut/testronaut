@@ -19,7 +19,21 @@
     "build": {
       "dependsOn": ["^build"]
     },
+    "e2e": {
+      "dependsOn": ["^build"]
+    },
+    "e2e-ci--**/*": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"]
+    },
     "@angular-devkit/build-angular:application": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@nx/angular:package": {
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
@@ -46,12 +60,6 @@
         }
       }
     },
-    "e2e": {
-      "dependsOn": ["^build"]
-    },
-    "e2e-ci--**/*": {
-      "dependsOn": ["^build"]
-    },
     "@nx/js:tsc": {
       "cache": true,
       "dependsOn": ["^build"],
@@ -60,11 +68,6 @@
     "@nx/vite:test": {
       "cache": true,
       "inputs": ["default", "^production"]
-    },
-    "@nx/angular:package": {
-      "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
     }
   },
   "plugins": [
