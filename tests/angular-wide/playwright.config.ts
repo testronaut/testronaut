@@ -21,7 +21,7 @@ export default defineConfig(
     },
   }),
   {
-    timeout: 3_000,
+    timeout: process.env['CI'] ? 10_000 : 3_000,
     use: {
       trace: 'on-first-retry',
     },

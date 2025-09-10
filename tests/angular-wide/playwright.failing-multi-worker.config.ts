@@ -21,6 +21,7 @@ export default defineConfig(
     use: {
       trace: 'on-first-retry',
     },
+    timeout: process.env['CI'] ? 10_000 : 3_000,
     /* Override workers count ot make `runInBrowser` fail on 2nd worker. */
     workers: 2,
     projects: [
