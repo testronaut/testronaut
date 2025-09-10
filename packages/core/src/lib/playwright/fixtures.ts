@@ -12,12 +12,26 @@ import { Runner } from '../runner/runner';
 import type { TestronautOptions } from './options';
 
 /**
+ * This avoids transitive dependencies type inference errors such as:
+ *
+ * error TS2742: The inferred type of 'test' cannot be named without a reference to '.pnpm/playwright@1.52.0/node_modules/playwright/test'.
+ * This is likely not portable. A type annotation is necessary.
+ */
+export type {
+  PlaywrightTestArgs,
+  PlaywrightTestOptions,
+  PlaywrightWorkerArgs,
+  PlaywrightWorkerOptions,
+  TestType,
+};
+
+/**
  * This is the type inferred from `base.extend()` but without the `testronaut` options.
  * This is needed because we do not want to expose our internal options to the user.
  * Also, `Omit<typeof test, 'testronaut'>` does not work because `test` is a function
  * and `Omit` also removes the function signature as a side effect.
  */
-type TestronautTestType = TestType<
+export type TestronautTestType = TestType<
   PlaywrightTestArgs & PlaywrightTestOptions & Fixtures,
   PlaywrightWorkerArgs & PlaywrightWorkerOptions
 >;

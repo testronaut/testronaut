@@ -1,9 +1,9 @@
 import { nxE2EPreset } from '@nx/playwright/preset';
-import { withTestronautAngular } from '@testronaut/angular';
-import { defineConfig, devices } from '@playwright/test';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
+import {
+  defineConfig,
+  devices,
+  withTestronautAngular,
+} from '@testronaut/angular';
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -14,16 +14,16 @@ export default defineConfig(
     configPath: __filename,
     testServer: {
       command:
-        'pnpm nx serve demos-angular --configuration testronaut --port {port} --live-reload false',
+        'pnpm exec nx serve angular-wide --configuration testronaut --port {port} --live-reload false',
     },
   }),
   {
-    /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+    timeout: process.env['CI'] ? 10_000 : 3_000,
     use: {
-      /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
       trace: 'on-first-retry',
     },
-
+  },
+  {
     /* Configure projects for major browsers */
     projects: [
       { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

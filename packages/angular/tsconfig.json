@@ -1,17 +1,26 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "baseUrl": ".",
+    "rootDir": ".",
+    "outDir": "dist",
     "target": "ES2022",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noPropertyAccessFromIndexSignature": true
+    "noPropertyAccessFromIndexSignature": true,
+    "types": ["node"]
   },
   "files": [],
   "include": [],
   "references": [
+    {
+      "path": "../core"
+    },
     {
       "path": "./tsconfig.lib.json"
     },

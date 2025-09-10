@@ -5,14 +5,6 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
-/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig(
@@ -29,6 +21,7 @@ export default defineConfig(
     use: {
       trace: 'on-first-retry',
     },
+    timeout: process.env['CI'] ? 10_000 : 3_000,
     /* Override workers count ot make `runInBrowser` fail on 2nd worker. */
     workers: 2,
     projects: [

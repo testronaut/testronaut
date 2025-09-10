@@ -6,14 +6,6 @@ import {
 } from '@testronaut/angular';
 import { fileURLToPath } from 'node:url';
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
 const __filename = fileURLToPath(import.meta.url);
 
 /**
@@ -29,7 +21,7 @@ export default defineConfig(
     },
   }),
   {
-    timeout: 3_000,
+    timeout: process.env['CI'] ? 10_000 : 3_000,
     use: {
       trace: 'on-first-retry',
     },
