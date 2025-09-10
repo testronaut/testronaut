@@ -26,12 +26,5 @@
       "import": "./dist/browser.esm.js",
       "default": "./dist/browser.esm.js"
     }
-  },
-  "typesVersions": {
-    "*": {
-      "browser": [
-        "dist/browser.esm.d.ts"
-      ]
-    }
   }
 }

@@ -24,12 +24,5 @@
       "import": "./dist/devkit.esm.js",
       "default": "./dist/devkit.esm.js"
     }
-  },
-  "typesVersions": {
-    "*": {
-      "devkit": [
-        "dist/devkit.esm.d.ts"
-      ]
-    }
   }
 }
