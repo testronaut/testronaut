@@ -1,5 +1,8 @@
 {
   "files.associations": {
     "project.json": "jsonc"
+  },
+  "search.exclude": {
+    "**/dist/**": true
   }
 }
