@@ -1,5 +1,6 @@
 {
   "files.associations": {
+    "nx.json": "jsonc",
     "project.json": "jsonc"
   },
   "search.exclude": {

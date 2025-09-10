@@ -80,7 +80,10 @@
           "buildDepsName": "build-deps",
           "watchDepsName": "watch-deps"
         }
-      }
+      },
+      /* Exclude docs from typechecking.
+       * TODO: turn docs into a monorepo project. */
+      "exclude": ["docs/**/*"]
     },
     {
       "plugin": "@nx/playwright/plugin",
