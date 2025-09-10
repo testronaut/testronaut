@@ -103,13 +103,14 @@
        * and we need to load the nx graph to be able to build the packages. */
       "command": "playwright test",
       "options": { "cwd": "{projectRoot}" },
-      "dependsOn": ["e2e:failing-multi-worker"]
+      "dependsOn": ["^build", "e2e:failing-multi-worker"]
     },
     "e2e:failing-multi-worker": {
       "command": "playwright test --config=playwright.failing-multi-worker.config.ts",
       "options": {
         "cwd": "{projectRoot}"
-      }
+      },
+      "dependsOn": ["^build"]
     }
   }
 }
