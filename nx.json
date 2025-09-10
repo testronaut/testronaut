@@ -79,6 +79,10 @@
       }
     },
     {
+      "plugin": "@nx/vite/plugin",
+      "options": {}
+    },
+    {
       "plugin": "@nx/rollup/plugin",
       "options": {
         "buildTargetName": "build"
