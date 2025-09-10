@@ -6,7 +6,6 @@
     "rootDir": ".",
     "declaration": true,
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo",
     "target": "ES2022",
     "forceConsistentCasingInFileNames": true,
     "strict": true,

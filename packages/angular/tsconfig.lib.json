@@ -1,5 +1,8 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo"
+  },
   "include": ["src/**/*.ts"],
   "exclude": [
     "vite.config.ts",
