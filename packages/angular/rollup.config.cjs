@@ -6,6 +6,6 @@ module.exports = withNx({
   generatePackageJson: false,
   outputPath: './dist',
   tsConfig: './tsconfig.lib.json',
-  compiler: 'babel',
+  compiler: 'tsc',
   format: ['cjs', 'esm'],
 });
