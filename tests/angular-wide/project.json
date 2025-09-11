@@ -65,7 +65,10 @@
           "buildTarget": "angular-wide:build:development"
         },
         "testronaut": {
-          "buildTarget": "angular-wide:build:testronaut"
+          "buildTarget": "angular-wide:build:testronaut",
+          "prebundle": {
+            "exclude": ["@testronaut/angular"]
+          }
         }
       },
       "defaultConfiguration": "development"
