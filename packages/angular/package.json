@@ -1,7 +1,7 @@
 {
   "name": "@testronaut/angular",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "sideEffects": false,
   "files": [
     "*.d.ts",
