@@ -84,9 +84,8 @@
           "watchDepsName": "watch-deps"
         }
       },
-      /* Exclude docs from typechecking.
-       * TODO: turn docs into a monorepo project. */
-      "exclude": ["docs/**/*"]
+      /* TODO re-enable this. */
+      "exclude": ["demos/angular/*", "docs/**/*"]
     },
     {
       "plugin": "@nx/playwright/plugin",
@@ -99,7 +98,9 @@
       "plugin": "@nx/eslint/plugin",
       "options": {
         "targetName": "lint"
-      }
+      },
+      /* TODO re-enable this. */
+      "exclude": ["docs/**/*"]
     },
     {
       "plugin": "@nx/vite/plugin",
