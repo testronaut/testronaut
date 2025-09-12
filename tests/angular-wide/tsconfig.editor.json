@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "include": ["src/**/*.ts"],
   "exclude": [
-    "jest.config.ts",
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
     "vite.config.ts",
