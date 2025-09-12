@@ -39,3 +39,5 @@ jobs:
       - run: pnpm exec playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
       - run: pnpm exec nx affected -t lint test build e2e typecheck --exclude=tag:type:demo
+      - run: pnpm nx-cloud fix-ci
+        if: always()
