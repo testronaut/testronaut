@@ -1,1 +1,1 @@
-export * from './dist/devkit.esm';
+export * from './dist/devkit';
