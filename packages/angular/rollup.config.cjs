@@ -1,11 +1,8 @@
-const { withNx } = require('@nx/rollup/with-nx');
+const {
+  createRollupConfig,
+} = require('../build-utils/create-rollup-config.cjs');
 
-module.exports = withNx({
+module.exports = createRollupConfig({
   main: './src/index.ts',
   additionalEntryPoints: ['./src/browser.ts'],
-  generatePackageJson: false,
-  outputPath: './dist',
-  tsConfig: './tsconfig.lib.json',
-  compiler: 'tsc',
-  format: ['cjs', 'esm'],
 });
