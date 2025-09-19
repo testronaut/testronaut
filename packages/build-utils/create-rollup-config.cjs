@@ -12,19 +12,15 @@ exports.createRollupConfig = ({ main, additionalEntryPoints }) => {
     outputPath: './dist',
     tsConfig: './tsconfig.lib.json',
     compiler: 'tsc',
-    format: ['cjs', 'esm'],
+    format: ['esm'],
   });
 
   return {
     ...base,
-    output: base.output.map((output) => {
-      const fileNames = output.format === 'cjs' ? '[name].cjs' : '[name].mjs';
-
-      return {
-        ...output,
-        chunkFileNames: fileNames,
-        entryFileNames: fileNames,
-      };
-    }),
+    output: base.output.map((output) => ({
+      ...output,
+      chunkFileNames: '[name].mjs',
+      entryFileNames: '[name].mjs',
+    })),
   };
 };
