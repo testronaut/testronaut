@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+set -e
+set -x
+
+# set global git user if not already set
+if [ -z "$(git config --global user.email)" ] && [ -z "$(git config --global user.name)" ]; then
+  git config --global user.email "testrobot@testronaut.dev"
+  git config --global user.name "Testrobot"
+fi
+
+nx local-registry &
+
+REGISTRY_PID=$!
+
+nx release patch -y
+
+pnpm add -Dw "@testronaut/angular@latest" "@testronaut/core@latest"
+
+kill $REGISTRY_PID
+
+pnpm playwright test --config=tests/angular-wide/playwright.config.cts --reporter=list

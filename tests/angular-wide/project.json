@@ -66,9 +66,8 @@
         },
         "testronaut": {
           "buildTarget": "angular-wide:build:testronaut",
-          "prebundle": {
-            "exclude": ["@testronaut/angular"]
-          }
+          "liveReload": false,
+          "prebundle": false
         }
       },
       "defaultConfiguration": "development"
@@ -100,7 +99,7 @@
         ]
       }
     },
-    "e2e": {
+    "testronaut": {
       /* Using custom command instead of plugin due to chicken and egg situation
        * where plugin loads playwright config which needs a built version of our packages
        * and we need to load the nx graph to be able to build the packages. */
@@ -108,12 +107,16 @@
       "options": {
         "commands": [
           "playwright test",
-          "playwright test --config=playwright.failing-multi-worker.config.ts",
-          /* Test commonjs support. */
-          "playwright test --config=playwright.config.cts"
+          "playwright test --config=playwright.failing-multi-worker.config.ts"
         ],
         "cwd": "{projectRoot}",
         "parallel": false
+      },
+      "configurations": {
+        "commonjs": {
+          "commands": ["{projectRoot}/test-commonjs-support.sh"],
+          "cwd": "{workspaceRoot}"
+        }
       }
     }
   }
