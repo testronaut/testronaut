@@ -1,6 +1,7 @@
 {
   "name": "@testronaut/core",
   "version": "0.0.3",
+  "type": "module",
   "sideEffects": false,
   "files": [
     "*.d.ts",
@@ -15,20 +16,15 @@
     "@playwright/test": "^1.36.0"
   },
   "module": "./dist/index.mjs",
-  "main": "./dist/index.cjs",
   "types": "./dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
     "./devkit": {
       "types": "./dist/devkit.d.ts",
-      "require": "./dist/devkit.cjs",
-      "import": "./dist/devkit.mjs",
       "default": "./dist/devkit.mjs"
     }
   }
