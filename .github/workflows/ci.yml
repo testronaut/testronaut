@@ -58,6 +58,6 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
       # This target changes the `package.json` and `pnpm-lock.yaml` files.
       # Do not run anything that might be affected by this after this step.
-      - run: pnpm exec nx affected -t testronaut --configuration commonjs --exclude=tag:type:demo
+      - run: pnpm exec nx affected -t testronaut-commonjs
       - run: pnpm nx-cloud fix-ci
         if: always()
