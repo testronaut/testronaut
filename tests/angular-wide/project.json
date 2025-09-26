@@ -109,13 +109,11 @@
         ],
         "cwd": "{projectRoot}",
         "parallel": false
-      },
-      "configurations": {
-        "commonjs": {
-          "commands": ["{projectRoot}/test-commonjs-support.sh"],
-          "cwd": "{workspaceRoot}"
-        }
       }
+    },
+    "testronaut-commonjs": {
+      "command": "{projectRoot}/test-commonjs-support.sh",
+      "dependsOn": ["@testronaut/source:local-registry"]
     }
   }
 }
