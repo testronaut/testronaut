@@ -24,6 +24,9 @@
     "e2e-ci--**/*": {
       "dependsOn": ["^build"]
     },
+    "test": {
+      "dependsOn": ["^build"]
+    },
     "typecheck": {
       "dependsOn": ["^build"]
     },
@@ -50,11 +53,6 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
-    },
-    "@nx/vite:test": {
-      "cache": true,
-      "inputs": ["default", "^production"],
-      "dependsOn": ["^build"]
     }
   },
   "plugins": [
