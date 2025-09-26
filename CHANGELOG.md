@@ -1,3 +1,13 @@
+## 0.0.4 (2025-09-26)
+
+### 🩹 Fixes
+
+- **angular,core:** remove commonjs bundles ([#58](https://github.com/testronaut/testronaut/pull/58))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.3 (2025-09-17)
 
 ### 🩹 Fixes
