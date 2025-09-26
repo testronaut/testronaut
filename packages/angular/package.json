@@ -10,6 +10,7 @@
     "LICENSE"
   ],
   "dependencies": {
+    "@nx/devkit": "21.5.3",
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
@@ -30,5 +31,6 @@
       "types": "./dist/browser.d.ts",
       "default": "./dist/browser.mjs"
     }
-  }
+  },
+  "generators": "./generators.json"
 }

@@ -3,5 +3,14 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/core/src",
   "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/rollup:rollup",
+      "options": {
+        "config": "packages/core/rollup.config.cjs"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    }
+  },
   "implicitDependencies": ["build-utils"]
 }

@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "ng-add": {
+      "factory": "./src/generators/ng-add/ng-add",
+      "schema": "./src/generators/ng-add/schema.json",
+      "description": "ng-add generator"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "ng-add",
+  "title": "ng-add",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "The name of the project to add Testronaut to",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "default": ""
+    },
+    "createExamples": {
+      "type": "boolean",
+      "description": "",
+      "x-prompt": "Should we create some example tests?"
+    }
+  }
+}
