@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 
 set -e
-set -x
 
 # set global git user if not already set
 if [ -z "$(git config --global user.email)" ] && [ -z "$(git config --global user.name)" ]; then
@@ -13,7 +12,9 @@ nx local-registry &
 
 REGISTRY_PID=$!
 
-nx release patch -y
+# Bump a major version to avoid collisions with potential existing versions
+# as the current PR could be a bit older than the latest release.
+nx release major -y
 
 pnpm add -Dw "@testronaut/angular@latest" "@testronaut/core@latest"
 

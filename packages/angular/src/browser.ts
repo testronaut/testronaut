@@ -1,13 +1,13 @@
 import {
-  provideExperimentalZonelessChangeDetection,
+  provideZonelessChangeDetection,
   Provider,
   type Type,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting,
-} from '@angular/platform-browser-dynamic/testing';
+  BrowserTestingModule,
+  platformBrowserTesting,
+} from '@angular/platform-browser/testing';
 import { TestronautAngularNotSetUpError } from './lib/testronaut-angular-not-set-up.error';
 
 export async function mount(
@@ -32,15 +32,10 @@ export async function configure({ providers }: { providers: Provider[] }) {
 }
 
 export async function setUpTestronautAngular() {
-  // TODO: replace with BrowserTestingModule & platformBrowserTesting
-  // when Angular 20 is released.
-  TestBed.initTestEnvironment(
-    BrowserDynamicTestingModule,
-    platformBrowserDynamicTesting()
-  );
+  TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 
   TestBed.configureTestingModule({
-    providers: [provideExperimentalZonelessChangeDetection()],
+    providers: [provideZonelessChangeDetection()],
   });
 
   isSetUp = true;
