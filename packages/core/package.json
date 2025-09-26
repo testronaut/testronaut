@@ -10,7 +10,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "typescript": "~5.6.2"
+    "typescript": "~5.9.2"
   },
   "peerDependencies": {
     "@playwright/test": "^1.36.0"

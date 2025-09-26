@@ -57,7 +57,7 @@ export const test: TestronautTestType = base.extend<
 
   runInBrowser: async ({ testronaut, page }, use, testInfo) => {
     if (!testronaut) {
-      // TODO: Setup a link with detailed instructions
+      /* TODO: Setup a link with detailed instructions */
       throw new Error(
         'No config for Playwright CT. Use `withTestronaut` in `defineConfig` (playwright.config.ts) to set it up.'
       );
