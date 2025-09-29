@@ -27,6 +27,9 @@
     "test": {
       "dependsOn": ["^build"]
     },
+    "testronaut": {
+      "dependsOn": ["^build"]
+    },
     "typecheck": {
       "dependsOn": ["^build"]
     },

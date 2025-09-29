@@ -91,7 +91,7 @@ export const test: TestronautTestType = base.extend<
         data = args[0] as Record<string, unknown>;
       }
 
-      await runner.runInBrowser({
+      return await runner.runInBrowser({
         hash,
         functionName,
         data,
@@ -107,18 +107,18 @@ export interface Fixtures {
 }
 
 export interface RunInBrowser {
-  <RETURN>(fn: () => RETURN | Promise<RETURN>): Promise<void>;
+  <RETURN>(fn: () => RETURN | Promise<RETURN>): Promise<RETURN>;
 
-  <RETURN>(name: string, fn: () => RETURN | Promise<RETURN>): Promise<void>;
+  <RETURN>(name: string, fn: () => RETURN | Promise<RETURN>): Promise<RETURN>;
 
   <DATA extends Record<string, unknown>, RETURN>(
     data: DATA,
     fn: (data: DATA) => RETURN | Promise<RETURN>
-  ): Promise<void>;
+  ): Promise<RETURN>;
 
   <DATA extends Record<string, unknown>, RETURN>(
     name: string,
     data: DATA,
     fn: (data: DATA) => RETURN | Promise<RETURN>
-  ): Promise<void>;
+  ): Promise<RETURN>;
 }

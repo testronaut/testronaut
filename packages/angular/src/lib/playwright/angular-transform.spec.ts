@@ -5,7 +5,7 @@ import {
 } from '@testronaut/core/devkit';
 import { describe } from 'vitest';
 
-import { angularTransform } from './angular-transform';
+import { angularTransform } from '../angular-transform';
 
 describe(angularTransform.name, () => {
   it('replaces anonymous mount call with runInBrowser + mount', () => {

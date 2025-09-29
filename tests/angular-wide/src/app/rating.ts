@@ -10,8 +10,9 @@ import {
   selector: 'app-rating',
   styles: `
     .star {
-      cursor:pointer;
-      font-size:2rem;
+      all: unset;
+      cursor: pointer;
+      font-size: 2rem;
     }
   `,
   template: `
