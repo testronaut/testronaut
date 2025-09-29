@@ -1,6 +1,5 @@
 import type { Type } from '@angular/core';
-import { type Page } from '@playwright/test';
-import { test as base } from '@testronaut/core';
+import { test as base, type Page } from '@testronaut/core';
 import {
   BrowserMount,
   Inputs,
