@@ -8,16 +8,10 @@ if [ -z "$(git config --global user.email)" ] && [ -z "$(git config --global use
   git config --global user.name "Testrobot"
 fi
 
-nx local-registry &
-
-REGISTRY_PID=$!
-
 # Bump a major version to avoid collisions with potential existing versions
 # as the current PR could be a bit older than the latest release.
 nx release major -y
 
 pnpm add -Dw "@testronaut/angular@latest" "@testronaut/core@latest"
-
-kill $REGISTRY_PID
 
 pnpm playwright test --config=tests/angular-wide/playwright.config.cts --reporter=list
