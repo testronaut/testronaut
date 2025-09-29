@@ -1,32 +1,43 @@
-import type { InputSignal, Type } from '@angular/core';
+import type { Type } from '@angular/core';
+import { type Page } from '@playwright/test';
 import { test as base } from '@testronaut/core';
-import { BrowserMount } from '../common';
+import {
+  BrowserMount,
+  Inputs,
+  OUTPUT_BUS_VARIABLE_NAME,
+  OutputEvent,
+  OutputTypes,
+} from '../common';
 
 export { expect } from '@testronaut/core';
 
 export const test = base.extend<Fixtures>({
-  mount: async ({ runInBrowser }, use) => {
-    const mountImpl: Mount = async (...args) => {
+  mount: async ({ page, runInBrowser }, use) => {
+    const mountImpl: Fixtures['mount'] = async <CMP_TYPE extends Type<unknown>>(
+      ...args: Parameters<Mount<CMP_TYPE>>
+    ) => {
       /* Handle both signatures:
        * - mount(cmp, opts)
        * - mount(functionName, cmp, opts) */
-      const functionName = typeof args[0] === 'string' ? args[0] : null;
-      const opts =
-        functionName != null && typeof args[1] === 'object' ? args[1] : null;
+      const { functionName, options } = normalizeArgs(args);
 
-      const inputs = opts?.inputs;
+      const inputs = options?.inputs;
 
       /* Using a placeholder function here because what matters to `runInBrowser`
        * is the name (if not anonymous). */
       const { outputNames } =
         functionName != null
-          ? await runInBrowser(functionName, { inputs }, placeholderMount)
-          : await runInBrowser({ inputs }, placeholderMount);
+          ? await runInBrowser(
+              functionName,
+              { inputs },
+              placeholderMount<CMP_TYPE>
+            )
+          : await runInBrowser({ inputs }, placeholderMount<CMP_TYPE>);
+
+      const { outputsCalls } = listenToOutputBus({ page, outputNames });
 
       return {
-        outputs: Object.fromEntries(
-          outputNames.map((name) => [name, { calls: [] }])
-        ),
+        outputs: outputsCalls,
       };
     };
 
@@ -34,47 +45,101 @@ export const test = base.extend<Fixtures>({
   },
 });
 
+function normalizeArgs<CMP_TYPE extends Type<unknown>>(
+  args: MountParameters<CMP_TYPE>
+): {
+  functionName: string | null;
+  options: MountOpts<InstanceType<CMP_TYPE>>;
+} {
+  if (isNamedMount(args)) {
+    return {
+      functionName: args[0],
+      options: args[2] ?? {},
+    };
+  } else {
+    return {
+      functionName: null,
+      options: args[1] ?? {},
+    };
+  }
+}
+
+function isNamedMount<CMP extends Type<unknown>>(
+  args: MountParameters<CMP>
+): args is MountParametersNamed<CMP> {
+  return typeof args[0] === 'string';
+}
+
+/**
+ * This is a placeholder functiont that should never be called.
+ */
+const placeholderMount = async <CMP_TYPE extends Type<unknown>>(): ReturnType<
+  BrowserMount<CMP_TYPE>
+> => {
+  throw new Error(`Placeholder function shouldn't have been called.`);
+};
+
+function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
+  page,
+  outputNames,
+}: {
+  page: Page;
+  outputNames: Array<keyof OutputTypes<InstanceType<CMP_TYPE>>>;
+}) {
+  const outputsCalls = Object.fromEntries(
+    outputNames.map((name) => [name, { calls: [] }])
+  ) as unknown as Outputs<InstanceType<CMP_TYPE>>;
+
+  page.exposeFunction(
+    OUTPUT_BUS_VARIABLE_NAME,
+    (outputEvent: OutputEvent<InstanceType<CMP_TYPE>>) => {
+      const output = outputsCalls[outputEvent.outputName];
+      output.calls = [...output.calls, outputEvent.value];
+    }
+  );
+
+  return { outputsCalls };
+}
+
 interface Fixtures {
-  mount: Mount;
+  mount: <CMP_TYPE extends Type<unknown>>(
+    ...args: MountParameters<CMP_TYPE>
+  ) => Promise<MountResult<InstanceType<CMP_TYPE>>>;
 }
 
-interface Mount {
-  <CMP extends Type<unknown>>(
-    cmp: CMP,
-    opts?: MountOpts<InstanceType<CMP>>
-  ): Promise<MountResult<InstanceType<CMP>>>;
-  <CMP extends Type<unknown>>(
-    name: string,
-    cmp: CMP,
-    opts?: MountOpts<InstanceType<CMP>>
-  ): Promise<MountResult<InstanceType<CMP>>>;
+interface Mount<CMP_TYPE extends Type<unknown>> {
+  (...args: MountParameters<CMP_TYPE>): Promise<
+    MountResult<InstanceType<CMP_TYPE>>
+  >;
 }
 
-interface MountOpts<CMP> {
+type MountParameters<CMP_TYPE extends Type<unknown>> =
+  | MountParametersAnonymous<CMP_TYPE>
+  | MountParametersNamed<CMP_TYPE>;
+
+type MountParametersAnonymous<CMP_TYPE extends Type<unknown>> = [
+  cmp: CMP_TYPE,
+  opts?: MountOpts<InstanceType<CMP_TYPE>>
+];
+
+type MountParametersNamed<CMP_TYPE extends Type<unknown>> = [
+  name: string,
+  cmp: CMP_TYPE,
+  opts?: MountOpts<InstanceType<CMP_TYPE>>
+];
+
+export interface MountOpts<CMP> {
   inputs?: Inputs<CMP>;
 }
 
-interface MountResult<CMP> {
+export interface MountResult<CMP> {
   outputs: Outputs<CMP>;
 }
 
-type Inputs<CMP> = Partial<{
-  [PROP in keyof CMP]: CMP[PROP] extends InputSignal<infer VALUE>
-    ? VALUE
-    : never;
-}>;
-
-type Outputs<CMP> = {
+export type Outputs<CMP> = {
   [PROP in keyof CMP]: CMP[PROP] extends {
     subscribe: (fn: (value: infer VALUE) => void) => unknown;
   }
     ? { calls: VALUE[] }
     : never;
-};
-
-/**
- * This is a placeholder functiont that should never be called.
- */
-const placeholderMount = async (): ReturnType<BrowserMount> => {
-  throw new Error(`Placeholder function shouldn't have been called.`);
 };

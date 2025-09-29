@@ -1,18 +1,39 @@
-import { Provider, provideZonelessChangeDetection } from '@angular/core';
+import {
+  OutputRef,
+  Provider,
+  provideZonelessChangeDetection,
+  Type,
+} from '@angular/core';
 
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   BrowserTestingModule,
   platformBrowserTesting,
 } from '@angular/platform-browser/testing';
-import { BrowserMount } from '../common';
+import {
+  BrowserMount,
+  OUTPUT_BUS_VARIABLE_NAME,
+  OutputEvent,
+  OutputTypes,
+} from '../common';
 import { TestronautAngularNotSetUpError } from '../playwright/testronaut-angular-not-set-up.error';
 import { getComponentOutputs } from './ng-internals';
 
-export const mount: BrowserMount = async (cmp, { inputs = {} } = {}) => {
-  assertIsSetUp();
+export const mount = async <CMP_TYPE extends Type<unknown>>(
+  ...args: Parameters<BrowserMount<CMP_TYPE>>
+): ReturnType<BrowserMount<CMP_TYPE>> => {
+  const [cmp, { inputs = {} } = {}] = args;
 
-  const fixture = TestBed.createComponent(cmp);
+  assertIsSetUp();
+  const g = globalThis as unknown as {
+    [OUTPUT_BUS_VARIABLE_NAME]: (
+      outputEvent: OutputEvent<InstanceType<typeof cmp>>
+    ) => void;
+  };
+
+  const fixture = TestBed.createComponent(cmp) as ComponentFixture<
+    InstanceType<CMP_TYPE>
+  >;
 
   Object.entries(inputs).forEach(([key, value]) => {
     fixture.componentRef.setInput(key, value);
@@ -20,7 +41,18 @@ export const mount: BrowserMount = async (cmp, { inputs = {} } = {}) => {
 
   await fixture.whenStable();
 
-  return { outputNames: getComponentOutputs(cmp) };
+  const outputNames = getComponentOutputs(cmp);
+
+  for (const outputName of outputNames) {
+    subscribeToOutput(fixture.componentInstance, outputName, (value) => {
+      g[OUTPUT_BUS_VARIABLE_NAME]({
+        outputName,
+        value,
+      });
+    });
+  }
+
+  return { outputNames };
 };
 
 export async function configure({ providers }: { providers: Provider[] }) {
@@ -45,4 +77,13 @@ function assertIsSetUp() {
   }
 }
 
+function subscribeToOutput<CMP, PROP extends keyof OutputTypes<CMP>>(
+  componentInstance: CMP,
+  outputName: PROP,
+  callback: (value: OutputTypes<CMP>[PROP]) => void
+) {
+  (componentInstance[outputName] as OutputRef<CMP[PROP]>)?.subscribe(
+    callback as (value: CMP[PROP]) => void
+  );
+}
 let isSetUp = false;
