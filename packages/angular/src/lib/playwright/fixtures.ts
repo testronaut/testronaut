@@ -6,6 +6,7 @@ import {
   OUTPUT_BUS_VARIABLE_NAME,
   OutputEvent,
   OutputTypes,
+  ValueOrAsyncFactory,
 } from '../common';
 
 export { expect } from '@testronaut/core';
@@ -119,13 +120,13 @@ type MountParameters<CMP_TYPE extends Type<unknown>> =
   | MountParametersNamed<CMP_TYPE>;
 
 type MountParametersAnonymous<CMP_TYPE extends Type<unknown>> = [
-  cmp: CMP_TYPE,
+  cmp: ValueOrAsyncFactory<CMP_TYPE>,
   opts?: MountOpts<InstanceType<CMP_TYPE>>
 ];
 
 type MountParametersNamed<CMP_TYPE extends Type<unknown>> = [
   name: string,
-  cmp: CMP_TYPE,
+  cmp: ValueOrAsyncFactory<CMP_TYPE>,
   opts?: MountOpts<InstanceType<CMP_TYPE>>
 ];
 

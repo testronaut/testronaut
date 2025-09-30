@@ -3,10 +3,16 @@ import { InputSignal, Type } from '@angular/core';
 export const OUTPUT_BUS_VARIABLE_NAME = '__TESTRONAUT_OUTPUT_BUS';
 
 export interface BrowserMount<CMP_TYPE extends Type<unknown>> {
-  (cmp: CMP_TYPE, opts?: BrowserMountOpts<InstanceType<CMP_TYPE>>): Promise<{
+  (
+    cmp: ValueOrAsyncFactory<CMP_TYPE>,
+    opts?: BrowserMountOpts<InstanceType<CMP_TYPE>>
+  ): Promise<{
     outputNames: Array<keyof OutputTypes<InstanceType<CMP_TYPE>>>;
   }>;
 }
+
+export type ValueOrAsyncFactory<T> = T | AsyncFactory<T>;
+export type AsyncFactory<T> = () => Promise<T>;
 
 export interface BrowserMountOpts<CMP> {
   inputs?: Inputs<CMP>;
