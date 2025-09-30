@@ -4,6 +4,7 @@
     "project.json": "jsonc"
   },
   "search.exclude": {
-    "**/dist/**": true
+    "**/dist/**": true,
+    "**/testronaut/generated/**": true
   }
 }
