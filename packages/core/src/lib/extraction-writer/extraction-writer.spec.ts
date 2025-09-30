@@ -1,8 +1,8 @@
 import { describe } from 'vitest';
-import { ExtractionWriter } from './extraction-writer';
 import { createExtractedFunction } from '../core/file-analysis';
 import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
+import { ExtractionWriter } from './extraction-writer';
 
 describe(ExtractionWriter.name, () => {
   it('creates "index.ts" file on init', async () => {

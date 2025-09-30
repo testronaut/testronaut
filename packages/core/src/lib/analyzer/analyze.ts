@@ -8,7 +8,10 @@ import {
 } from '../core/file-analysis';
 import { AnalysisContext, createFileData, type FileData } from './core';
 import type { Transform } from './transform';
-import { visitImportedIdentifiers } from './visit-imported-identifiers';
+import {
+  visitDynamicImports,
+  visitImportedIdentifiers,
+} from './visit-imported-identifiers';
 import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
 
 export function analyze({
@@ -47,10 +50,17 @@ export function analyze({
       importedIdentifiers.push(importedIdentifier)
     );
 
+    /* Extracted dynamic imports inside `runInBrowser` call. */
+    const dynamicImports: string[] = [];
+    visitDynamicImports(runInBrowserCall.node, (dynamicImport) =>
+      dynamicImports.push(dynamicImport)
+    );
+
     extractedFunctions.push(
       createExtractedFunction({
         code: runInBrowserCall.code,
         name: runInBrowserCall.name,
+        dynamicImports,
         importedIdentifiers,
       })
     );
