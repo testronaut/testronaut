@@ -322,6 +322,32 @@ export const extractedFunctionsRecord = {
 `),
     });
   });
+
+  it('relativizes dynamic imports', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            dynamicImports: ['./my-component'],
+            code: `() => import('./my-component').then(({ MyComponent }) => { console.log(MyComponent); })`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/testronaut/src/my-component.spec.ts':
+        expect.stringContaining(`\
+export const extractedFunctionsRecord = {
+    "": () => import('../../src/my-component').then(({ MyComponent }) => { console.log(MyComponent); })
+};
+`),
+    });
+  });
 });
 
 async function setUpInitializedWriter() {
