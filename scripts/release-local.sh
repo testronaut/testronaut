@@ -9,16 +9,6 @@ REGISTRY_URL=${REGISTRY_URL:-"http://localhost:4873"}
 
 cd "$ROOT_DIR"
 
-echo "Checking Verdaccio at $REGISTRY_URL ..."
-if ! PONG=$(curl -sf -m 3 "$REGISTRY_URL/-/ping" || true); then
-  echo "Error: Verdaccio not reachable at $REGISTRY_URL. Start it first (e.g., 'npx verdaccio --listen $REGISTRY_URL')." >&2
-  exit 1
-fi
-
-if [[ "$PONG" != *"pong"* ]]; then
-  echo "Warning: Unexpected ping response from Verdaccio: $PONG" >&2
-fi
-
 echo "Verifying registry authentication ..."
 if ! pnpm whoami --registry "$REGISTRY_URL" >/dev/null 2>&1; then
   echo "You are not logged in to $REGISTRY_URL. Please run:"
@@ -32,53 +22,48 @@ pnpm nx run-many -t build
 prep_dist_package() {
   local PROJECT="$1"
   echo "Preparing dist package.json for ${PROJECT} ..."
-  PROJECT="$PROJECT" REGISTRY_URL="$REGISTRY_URL" node - <<'NODE'
-const fs = require('fs');
-const path = require('path');
+  local PKG_DIR="$ROOT_DIR/packages/${PROJECT}"
+  local DIST_DIR="$PKG_DIR/dist"
+  local SRC_PKG="$PKG_DIR/package.json"
+  local DIST_PKG="$DIST_DIR/package.json"
 
-const project = process.env.PROJECT;
-const root = process.cwd();
-const srcPkgPath = path.join(root, 'packages', project, 'package.json');
-const distDir = path.join(root, 'packages', project, 'dist');
-const distPkgPath = path.join(distDir, 'package.json');
+  if [[ ! -d "$DIST_DIR" ]]; then
+    echo "Error: dist directory not found for ${PROJECT}: ${DIST_DIR}" >&2
+    exit 1
+  fi
 
-if (!fs.existsSync(distDir)) {
-  console.error(`Error: dist directory not found for ${project}: ${distDir}`);
-  process.exit(1);
-}
+  cp "$SRC_PKG" "$DIST_PKG"
 
-const srcPkg = JSON.parse(fs.readFileSync(srcPkgPath, 'utf8'));
+  # Replace ./dist/ -> ./ across JSON string values
+  sed -i '' -E 's#"\./dist/#"\./#g' "$DIST_PKG"
 
-// Deep replace helper
-const replaceDist = (val) => {
-  if (typeof val === 'string') return val.replaceAll('./dist/', './');
-  if (Array.isArray(val)) return val.map(replaceDist);
-  if (val && typeof val === 'object') {
-    const out = {};
-    for (const [k, v] of Object.entries(val)) out[k] = replaceDist(v);
-    return out;
-  }
-  return val;
-};
+  # Ensure files is ["**/*"]
+  awk '
+    BEGIN{ in_files=0 }
+    /"files"[[:space:]]*:/ { print "  \"files\": [\"**/*\"],"; in_files=1; next }
+    in_files {
+      if ($0 ~ /]/) { in_files=0; next } else { next }
+    }
+    { print }
+  ' "$DIST_PKG" > "${DIST_PKG}.tmp" && mv "${DIST_PKG}.tmp" "$DIST_PKG"
 
-const outPkg = replaceDist({ ...srcPkg });
+  # Remove workspaces field if present
+  # naive removal of a top-level "workspaces": ... block
+  awk '
+    BEGIN { skip=0 }
+    /"workspaces"[[:space:]]*:/ { skip=1 }
+    skip && /],?/ { skip=0; next }
+    !skip { print }
+  ' "$DIST_PKG" > "${DIST_PKG}.tmp" && mv "${DIST_PKG}.tmp" "$DIST_PKG"
 
-// Ensure files include everything inside dist
-outPkg.files = ['**/*'];
+  # Bump patch version
+  current=$(sed -nE 's/.*"version"[[:space:]]*:[[:space:]]*"([0-9]+)\.([0-9]+)\.([0-9]+)".*/\1.\2.\3/p' "$DIST_PKG")
+  IFS='.' read -r MA MI PA <<< "$current"
+  MA=${MA:-0}; MI=${MI:-0}; PA=${PA:-0}
+  new="${MA}.${MI}.$((PA+1))"
+  sed -i '' -E "s/(\"version\"[[:space:]]*:[[:space:]]*\")(?:[0-9]+\.[0-9]+\.[0-9]+)(\")/\1${new}\2/" "$DIST_PKG"
 
-// Remove workspace-specific fields if any
-delete outPkg.workspaces;
-
-// Bump patch version only in dist package.json
-const version = outPkg.version || '0.0.0';
-const parts = version.split('.').map((n) => parseInt(n, 10) || 0);
-while (parts.length < 3) parts.push(0);
-parts[2] += 1;
-outPkg.version = `${parts[0]}.${parts[1]}.${parts[2]}`;
-
-fs.writeFileSync(distPkgPath, JSON.stringify(outPkg, null, 2));
-console.log(`Wrote ${distPkgPath} with version ${outPkg.version}`);
-NODE
+  echo "Wrote $DIST_PKG with version $new"
 }
 
 prep_dist_package core
