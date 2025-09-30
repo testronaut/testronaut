@@ -13,7 +13,7 @@ export { expect } from '@testronaut/core';
 export const test = base.extend<Fixtures>({
   mount: async ({ page, runInBrowser }, use) => {
     const mountImpl: Fixtures['mount'] = async <CMP_TYPE extends Type<unknown>>(
-      ...args: Parameters<Mount<CMP_TYPE>>
+      ...args: MountParameters<CMP_TYPE>
     ) => {
       /* Handle both signatures:
        * - mount(cmp, opts)
@@ -93,23 +93,25 @@ function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
     OUTPUT_BUS_VARIABLE_NAME,
     (outputEvent: OutputEvent<InstanceType<CMP_TYPE>>) => {
       const output = outputsCalls[outputEvent.outputName];
-      output.calls = [...output.calls, outputEvent.value];
+      output.calls = [
+        ...output.calls,
+        outputEvent.value as OutputTypes<
+          InstanceType<CMP_TYPE>
+        >[typeof outputEvent.outputName],
+      ];
     }
   );
 
   return { outputsCalls };
 }
 
-interface Fixtures {
-  mount: <CMP_TYPE extends Type<unknown>>(
-    ...args: MountParameters<CMP_TYPE>
-  ) => Promise<MountResult<InstanceType<CMP_TYPE>>>;
-}
-
-interface Mount<CMP_TYPE extends Type<unknown>> {
-  (...args: MountParameters<CMP_TYPE>): Promise<
-    MountResult<InstanceType<CMP_TYPE>>
-  >;
+export interface Fixtures {
+  mount<CMP_TYPE extends Type<unknown>>(
+    ...args: MountParametersAnonymous<CMP_TYPE>
+  ): Promise<MountResult<InstanceType<CMP_TYPE>>>;
+  mount<CMP_TYPE extends Type<unknown>>(
+    ...args: MountParametersNamed<CMP_TYPE>
+  ): Promise<MountResult<InstanceType<CMP_TYPE>>>;
 }
 
 type MountParameters<CMP_TYPE extends Type<unknown>> =
@@ -136,9 +138,11 @@ export interface MountResult<CMP> {
 }
 
 export type Outputs<CMP> = {
-  [PROP in keyof CMP]: CMP[PROP] extends {
-    subscribe: (fn: (value: infer VALUE) => void) => unknown;
-  }
+  [PROP in keyof CMP]: CMP[PROP] extends Subscribable<infer VALUE>
     ? { calls: VALUE[] }
     : never;
+};
+
+type Subscribable<T> = {
+  subscribe: (fn: (value: T) => void) => unknown;
 };
