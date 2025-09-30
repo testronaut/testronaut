@@ -49,7 +49,7 @@ module.exports = [
         'error',
         {
           ignoredFiles: [
-            '{projectRoot}/**/*.{contract,spec}.ts',
+            '{projectRoot}/**/*.{contract,spec,test-d}.ts',
             '{projectRoot}/eslint.config.{js,cjs,mjs}',
             '{projectRoot}/rollup.config.{js,cjs,mjs}',
             '{projectRoot}/vite.config.{js,ts,mjs,mts}',
