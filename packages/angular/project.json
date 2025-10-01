@@ -2,5 +2,6 @@
   "name": "angular",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/angular/src",
-  "projectType": "library"
+  "projectType": "library",
+  "implicitDependencies": ["build-utils"]
 }
