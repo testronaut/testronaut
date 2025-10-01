@@ -1,3 +1,13 @@
+## 0.0.5 (2025-10-01)
+
+### 🚀 Features
+
+- **angular:** add Angular 20 support ([#59](https://github.com/testronaut/testronaut/pull/59), [#49](https://github.com/testronaut/testronaut/issues/49))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.4 (2025-09-26)
 
 ### 🩹 Fixes
