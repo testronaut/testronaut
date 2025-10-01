@@ -25,8 +25,8 @@ export class Runner {
   }) {
     await this.waitUntilHashIsAvailable(hash);
 
-    /* Execute the function in the browser context. */
-    await this.#page.evaluate(
+    /* Execute the function in the browser context and return the result. */
+    return await this.#page.evaluate(
       async ({ functionName, hash, data }) => {
         const module = await (globalThis as unknown as ExtractionUnitRecord)[
           hash

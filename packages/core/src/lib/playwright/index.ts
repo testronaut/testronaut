@@ -1,4 +1,4 @@
-export { defineConfig, devices, expect } from '@playwright/test';
+export { defineConfig, devices, expect, type Page } from '@playwright/test';
 export * from './fixtures';
 export {
   withTestronaut,
