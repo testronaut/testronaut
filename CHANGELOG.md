@@ -1,3 +1,13 @@
+## 0.0.6 (2025-10-01)
+
+### 🚀 Features
+
+- **angular:** add outputs support ([#62](https://github.com/testronaut/testronaut/pull/62))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.5 (2025-10-01)
 
 ### 🚀 Features
