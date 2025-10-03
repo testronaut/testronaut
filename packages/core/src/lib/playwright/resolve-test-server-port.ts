@@ -8,6 +8,14 @@ const MAX_PORT = 60000;
 
 const MAX_ATTEMPTS = 10;
 
+/**
+ * Resolves a port for a test server based on a seed.
+ *
+ * The goal is to always use the same port for each seed (e.g. project config path),
+ * then pick the next available port if the initial port is taken.
+ * This allows us the caller to decide if they should run some initialization
+ * logic or not.
+ */
 export function resolveTestServerPort(seed: string): {
   port: number;
   anotherTestServerMightBeRunning: boolean;
@@ -36,7 +44,7 @@ function isServerRunning(port: number) {
       '-e',
       `
 import { connect } from 'net';
-const s = connect({ port: ${port}, host: '127.0.0.1' });
+const s = connect({ port: ${port}, host: 'localhost' });
 s.once('connect', () => { s.end(); process.exit(0); });
 s.once('error', () => process.exit(1));
 `,

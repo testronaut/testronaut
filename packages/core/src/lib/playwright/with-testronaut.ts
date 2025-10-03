@@ -1,12 +1,9 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
-import { spawnSync } from 'node:child_process';
-import { dirname, join } from 'node:path/posix';
-import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path/posix';
 import { ExtractionWriter } from '../extraction-writer/extraction-writer';
 import type { FileSystem } from '../infra/file-system';
 import type { TestronautOptions } from './options';
-
-const __filename = fileURLToPath(import.meta.url);
+import { resolveTestServerPort } from './resolve-test-server-port';
 
 /**
  * This function is used to configure Playwright for component testing.
@@ -42,9 +39,7 @@ export function _internal_withTestronaut({
   transforms,
   fileSystem,
 }: _internal_WithTestronautParams): PlaywrightTestronautConfig {
-  const isServerRunningCmd = join(dirname(__filename), 'is-server-running.js');
   const projectRoot = dirname(configPath);
-  const port = 7357;
 
   const extractionWriter = new ExtractionWriter({
     extractionDir,
@@ -52,25 +47,33 @@ export function _internal_withTestronaut({
     fileSystem,
   });
 
-  /* HACK: We have to make sure that:
+  /* HACK: Concurrent projects or test runs or workers management.
+   *
+   * We have to make sure that:
+   * - Each project has its own test server to avoid that the end of a run or worker
+   *   interferes with a concurrent run that ends up withtout a server.
    * - The entrypoint file `generated/index.ts` is present even if empty before
    *   giving Playwright the chance to start the web server, otherwise, the web server
    *   fails, and Playwright doesn't run the tests which generate the entrypoint file
    *   and extracted files.
    * - The entrypoint file is reset at it might indirectly import files that do not exist
    *   anymore. This happens often when the user switches to another git branch for example.
-   * - We do not overwrite this file after the server starts as it can cause race conditions.
+   * - We do not overwrite this file after the server starts as it can cause race conditions
+   *   and make the tests fail.
    *   This happens when running the tests on different browsers. Playwright keeps the same
    *   web server but starts a different worker for each browser.
+   * - Pick an available port to avoid collisions with other test servers.
    *
-   * The current workaround is to check if the web server has already started or not.
+   * The current workaround is to check if the test server for this projecthas already started or not.
    *
    * This is temporarily as the right solution is to control the test server ourselves.
    *
    * Note that `globalSetup` sounds like the right place, but it runs after the web servers starts
    * and it can be easily mistakenly overriden by the user.
    * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
-  if (spawnSync(isServerRunningCmd, [port.toString()]).status !== 0) {
+  const { port, anotherTestServerMightBeRunning } =
+    resolveTestServerPort(projectRoot);
+  if (!anotherTestServerMightBeRunning) {
     extractionWriter.resetEntrypoint();
   }
 
