@@ -1,8 +1,8 @@
 import { describe } from 'vitest';
-import { ExtractionWriter } from './extraction-writer';
 import { createExtractedFunction } from '../core/file-analysis';
 import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
+import { ExtractionWriter } from './extraction-writer';
 
 describe(ExtractionWriter.name, () => {
   it('creates "index.ts" file on init', async () => {
@@ -318,6 +318,32 @@ export const extractedFunctionsRecord = {
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
     "": () => { console.log(MyService, MyServiceError); }
+};
+`),
+    });
+  });
+
+  it('relativizes dynamic imports', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(
+          createExtractedFunction({
+            dynamicImports: ['./my-component'],
+            code: `() => import('./my-component').then(({ MyComponent }) => { console.log(MyComponent); })`,
+          })
+        )
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/testronaut/src/my-component.spec.ts':
+        expect.stringContaining(`\
+export const extractedFunctionsRecord = {
+    "": () => import('../../src/my-component').then(({ MyComponent }) => { console.log(MyComponent); })
 };
 `),
     });

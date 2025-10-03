@@ -22,6 +22,7 @@ test('...', async ({runInBrowser}) => {
     expect(extractedFunctions).toEqual([
       {
         code: `() => console.log('Hello!')`,
+        dynamicImports: [],
         importedIdentifiers: [],
       },
     ]);
@@ -36,6 +37,7 @@ test('...', async ({runInBrowser}) => {
     expect(extractedFunctions).toEqual([
       {
         code: `async () => console.log('Hello!')`,
+        dynamicImports: [],
         importedIdentifiers: [],
       },
     ]);
@@ -50,6 +52,7 @@ test('...', async ({runInBrowser}) => {
     expect(extractedFunctions).toEqual([
       {
         code: `function sayHello() { console.log('Hello!'); }`,
+        dynamicImports: [],
         importedIdentifiers: [],
       },
     ]);
@@ -64,6 +67,7 @@ test.beforeEach(async ({runInBrowser}) => {
     expect(extractedFunctions).toEqual([
       {
         code: `() => console.log('Hello!')`,
+        dynamicImports: [],
         importedIdentifiers: [],
       },
     ]);
@@ -78,6 +82,7 @@ function somewhereElse() {
     expect(extractedFunctions).toEqual([
       {
         code: `() => console.log('Hello!')`,
+        dynamicImports: [],
         importedIdentifiers: [],
       },
     ]);
@@ -93,6 +98,7 @@ test('...', async ({runInBrowser}) => {
       {
         name: 'say hello',
         code: `() => console.log('Hello!')`,
+        dynamicImports: [],
         importedIdentifiers: [],
       },
     ]);
@@ -107,6 +113,7 @@ test('...', async ({runInBrowser: run}) => {
     expect(extractedFunctions).toEqual([
       {
         code: `() => console.log('Hello!')`,
+        dynamicImports: [],
         importedIdentifiers: [],
       },
     ]);
@@ -150,6 +157,21 @@ runInBrowser('say bye', () => {
             module: './another-file',
           },
         ],
+      }),
+    ]);
+  });
+
+  it('extracts dynamic imports', () => {
+    const { extractedFunctions } = analyzeFileContent(`
+      runInBrowser('say hi', () => {
+        const { something } = await import('./something');
+        console.log(something);
+      });
+    `);
+    expect(extractedFunctions).toEqual([
+      expect.objectContaining({
+        dynamicImports: ['./something'],
+        name: 'say hi',
       }),
     ]);
   });
