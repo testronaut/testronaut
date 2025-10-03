@@ -6,5 +6,5 @@
     "moduleResolution": "bundler"
   },
   "files": ["main.ts"],
-  "include": ["**/*.d.ts"]
+  "include": ["**/*.ts"]
 }
