@@ -33,7 +33,7 @@ export const test = base.extend<Fixtures>({
             )
           : await runInBrowser({ inputs }, placeholderMount<CMP_TYPE>);
 
-      const { outputsCalls } = listenToOutputBus({ page, outputNames });
+      const { outputsCalls } = await listenToOutputBus({ page, outputNames });
 
       return {
         outputs: outputsCalls,
@@ -78,7 +78,7 @@ const placeholderMount = async <CMP_TYPE extends Type<unknown>>(): ReturnType<
   throw new Error(`Placeholder function shouldn't have been called.`);
 };
 
-function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
+async function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
   page,
   outputNames,
 }: {
@@ -89,7 +89,7 @@ function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
     outputNames.map((name) => [name, { calls: [] }])
   ) as unknown as Outputs<InstanceType<CMP_TYPE>>;
 
-  page.exposeFunction(
+  await page.exposeFunction(
     OUTPUT_BUS_VARIABLE_NAME,
     (outputEvent: OutputEvent<InstanceType<CMP_TYPE>>) => {
       const output = outputsCalls[outputEvent.outputName];
