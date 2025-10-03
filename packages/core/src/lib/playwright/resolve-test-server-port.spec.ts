@@ -6,50 +6,69 @@ const test = base.extend<{ startServer: StartServerFn }>({
   // eslint-disable-next-line no-empty-pattern
   startServer: async ({}, use) => {
     let servers: Server[] = [];
+
     await use((port) => {
       const server = createServer((_, res) => {
-        res.statusCode = 200;
-        res.end();
-      });
+        res
+          .writeHead(200, {
+            'Content-Type': 'text/plain',
+            'Content-Length': '0',
+            Connection: 'close',
+          })
+          .end();
+      }).listen(port);
+
       servers = [...servers, server];
-      server.listen(port);
     });
+
+    for (const server of servers) {
+      server.close();
+    }
   },
 });
 type StartServerFn = (port: number) => void;
 
 describe(resolveTestServerPort.name, () => {
-  test.todo('derives the port from the provided seed', () => {
+  test('derives the port from the provided seed', () => {
     const { port } = resolveTestServerPort(
       '/users/me/my-project/playwright-testronaut.config.ts'
     );
 
-    /* 8801 is the port computed from the provided seed. */
-    expect(port).toBe(8801);
+    /* "10801" is derived from the hash of the config path. */
+    expect(port).toBe(10801);
   });
 
-  test.todo('picks the next available port', ({ startServer }) => {
+  test('picks the next available port', ({ startServer }) => {
     const seed = '/users/me/my-project/playwright-testronaut.config.ts';
-    startServer(8801);
-    startServer(8802);
-    startServer(8803);
+    for (let i = 10801; i <= 10803; i++) {
+      startServer(i);
+    }
 
     const { port } = resolveTestServerPort(seed);
-    expect(port).toBe(8804);
+    expect(port).toBe(10804);
   });
 
-  test.todo(
-    'tells if another test server might be running',
-    ({ startServer }) => {
-      const seed = '/users/me/my-project/playwright-testronaut.config.ts';
-      startServer(8801);
-
-      const { anotherTestServerMightBeRunning } = resolveTestServerPort(seed);
-      expect(anotherTestServerMightBeRunning).toBe(true);
+  test('fails after 10 attempts', ({ startServer }) => {
+    const seed = '/users/me/my-project/playwright-testronaut.config.ts';
+    for (let i = 10801; i <= 10810; i++) {
+      startServer(i);
     }
-  );
 
-  test.todo('tells if no other test server is running', () => {
+    expect(() => resolveTestServerPort(seed)).toThrow(
+      `Can't start test server. Ports 10801-10810 are taken.`
+    );
+  });
+
+  test('tells if another test server might be running', ({ startServer }) => {
+    const seed = '/users/me/my-project/playwright-testronaut.config.ts';
+
+    startServer(10801);
+
+    const { anotherTestServerMightBeRunning } = resolveTestServerPort(seed);
+    expect(anotherTestServerMightBeRunning).toBe(true);
+  });
+
+  test('tells if no other test server is running', () => {
     const seed = '/users/me/my-project/playwright-testronaut.config.ts';
     const { anotherTestServerMightBeRunning } = resolveTestServerPort(seed);
     expect(anotherTestServerMightBeRunning).toBe(false);
