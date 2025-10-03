@@ -5,8 +5,8 @@ import {
   ComponentOutput,
   Inputs,
   OUTPUT_BUS_VARIABLE_NAME,
-  OutputEvent,
-  OutputTypes,
+  OutputBusEvent,
+  OutputValueMap,
   ValueOrAsyncFactory,
 } from '../common';
 
@@ -85,7 +85,7 @@ function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
   outputNames,
 }: {
   page: Page;
-  outputNames: Array<keyof OutputTypes<InstanceType<CMP_TYPE>>>;
+  outputNames: Array<keyof OutputValueMap<InstanceType<CMP_TYPE>>>;
 }) {
   const outputsCalls = Object.fromEntries(
     outputNames.map((name) => [name, { calls: [] }])
@@ -93,14 +93,9 @@ function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
 
   page.exposeFunction(
     OUTPUT_BUS_VARIABLE_NAME,
-    (outputEvent: OutputEvent<InstanceType<CMP_TYPE>>) => {
+    (outputEvent: OutputBusEvent<InstanceType<CMP_TYPE>>) => {
       const output = outputsCalls[outputEvent.outputName];
-      output.calls = [
-        ...output.calls,
-        outputEvent.value as OutputTypes<
-          InstanceType<CMP_TYPE>
-        >[typeof outputEvent.outputName],
-      ];
+      output.calls = [...output.calls, outputEvent.value];
     }
   );
 

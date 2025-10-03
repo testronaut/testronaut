@@ -13,8 +13,8 @@ import {
 import {
   BrowserMount,
   OUTPUT_BUS_VARIABLE_NAME,
-  OutputEvent,
-  OutputTypes,
+  OutputBusEvent,
+  OutputValueMap,
   AsyncFactory,
   ValueOrAsyncFactory,
 } from '../common';
@@ -33,7 +33,7 @@ export const mount = async <CMP_TYPE extends Type<unknown>>(
   assertIsSetUp();
   const g = globalThis as unknown as {
     [OUTPUT_BUS_VARIABLE_NAME]: (
-      outputEvent: OutputEvent<InstanceType<typeof cmp>>
+      outputEvent: OutputBusEvent<InstanceType<typeof cmp>>
     ) => void;
   };
 
@@ -89,10 +89,10 @@ function isAsyncFactory<T>(
   return typeof value === 'function' && value.prototype === undefined;
 }
 
-function subscribeToOutput<CMP, PROP extends keyof OutputTypes<CMP>>(
+function subscribeToOutput<CMP, PROP extends keyof OutputValueMap<CMP>>(
   componentInstance: CMP,
   outputName: PROP,
-  callback: (value: OutputTypes<CMP>[PROP]) => void
+  callback: (value: OutputValueMap<CMP>[PROP]) => void
 ) {
   (componentInstance[outputName] as OutputRef<CMP[PROP]>)?.subscribe(
     callback as (value: CMP[PROP]) => void
