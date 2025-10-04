@@ -67,7 +67,8 @@
           "buildTarget": "demos-angular:build:development"
         },
         "testronaut": {
-          "buildTarget": "demos-angular:build:testronaut"
+          "buildTarget": "demos-angular:build:testronaut",
+          "prebundle": false
         }
       },
       "defaultConfiguration": "development",
