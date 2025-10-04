@@ -17,6 +17,11 @@ export interface TestronautOptions {
      * The command to start the test server.
      */
     command: string;
+
+    /**
+     * Override the default port number automatically picked by Testronaut.
+     */
+    port?: number;
   };
 
   /**

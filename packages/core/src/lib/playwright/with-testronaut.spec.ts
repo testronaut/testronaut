@@ -21,4 +21,49 @@ describe(withTestronaut.name, () => {
 
     expect(config.workers).toBe(1);
   });
+
+  it('generates a unique port for each project', () => {
+    const config = _internal_withTestronaut({
+      configPath: 'playwright.config.ts',
+      extractionDir: 'generated',
+      testServer: {
+        command: 'npm run start -- --port {port}',
+      },
+    });
+
+    expect(config.webServer).toMatchObject({
+      command: 'npm run start -- --port 3138',
+      port: 3138,
+    });
+  });
+
+  it('asks Playwright to reuse existing server', () => {
+    const config = _internal_withTestronaut({
+      configPath: 'playwright.config.ts',
+      extractionDir: 'generated',
+      testServer: {
+        command: 'npm run start -- --port {port}',
+      },
+    });
+
+    expect(config.webServer).toMatchObject({
+      reuseExistingServer: true,
+    });
+  });
+
+  it('uses the provided port if provided', () => {
+    const config = _internal_withTestronaut({
+      configPath: 'playwright.config.ts',
+      extractionDir: 'generated',
+      testServer: {
+        port: 10801,
+        command: 'npm run start -- --port {port}',
+      },
+    });
+
+    expect(config.webServer).toMatchObject({
+      command: 'npm run start -- --port 10801',
+      port: 10801,
+    });
+  });
 });
