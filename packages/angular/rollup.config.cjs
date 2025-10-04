@@ -1,47 +1,56 @@
 const {
   createRollupConfig,
 } = require('../build-utils/create-rollup-config.cjs');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+const { execSync } = require('child_process');
 
-const { entryPoints, assets } = findGeneratorEntryPoints();
-
-module.exports = createRollupConfig({
+const baseConfig = createRollupConfig({
   main: './src/index.ts',
-  additionalEntryPoints: [
-    './src/browser.ts',
-    ...entryPoints
-  ],
-  assets,
-  keepPath: {
-    pattern: /\/src\/generators\//,
-    dirname: path.join(__dirname)
-  },
+  additionalEntryPoints: ['./src/browser.ts'],
+  assets: findGeneratorAssets(),
 });
 
-// function findGeneratorEntryPoints() {
-//   const baseDir = path.join(__dirname, 'src', 'generators');
-//   return fs.readdirSync(baseDir, { withFileTypes: true })
-//     .filter((d) => d.isDirectory())
-//     .map((d) => path.join(baseDir, d.name, `${d.name}.ts`))
-//     .filter(fs.existsSync);
-// }
+module.exports = {
+  ...baseConfig,
+  plugins: [
+    ...baseConfig.plugins,
+    {
+      name: 'post-build-generators',
+      writeBundle() {
+        console.log('Compiling generators to CommonJS...');
+        try {
+          execSync('pnpm tsc --project tsconfig.generators.json', {
+            stdio: 'inherit',
+            cwd: __dirname,
+          });
+          console.log('✓ Generator compilation complete!');
+        } catch (error) {
+          console.error('Generator compilation failed:', error.message);
+          process.exit(1);
+        }
+      },
+    },
+  ],
+};
 
-function findGeneratorEntryPoints() {
+function findGeneratorAssets() {
   const baseDir = path.join(__dirname, 'src', 'generators');
-  const generatorDirs = fs.readdirSync(baseDir, { withFileTypes: true })
+  const generatorDirs = fs
+    .readdirSync(baseDir, { withFileTypes: true })
     .filter((d) => d.isDirectory());
+  const assets = generatorDirs.flatMap((d) => [
+    {
+      input: `${baseDir}/${d.name}`,
+      glob: 'schema.json',
+      output: `src/generators/${d.name}`,
+    },
+    {
+      input: `${baseDir}/${d.name}`,
+      glob: 'schema.d.ts',
+      output: `src/generators/${d.name}`,
+    },
+  ]);
 
-    const entryPoints = generatorDirs
-    .map((d) => path.join(baseDir, d.name, `${d.name}.ts`))
-
-    const assets = generatorDirs.flatMap((d) => [
-      { input: `${baseDir}/${d.name}`, glob: 'schema.json',  output: `src/generators/${d.name}` },
-      { input: `${baseDir}/${d.name}`, glob: 'schema.d.ts', output: `src/generators/${d.name}` },
-    ]);
-
-    return {
-      entryPoints,
-      assets,
-    };
+  return assets;
 }

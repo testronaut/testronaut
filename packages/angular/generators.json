@@ -1,5 +1,8 @@
 {
-  "generators": {
+  "$schema": "@angular-devkit/schematics/collection-schema.json",
+  "name": "testronaut",
+  "version": "0.0.1",
+  "schematics": {
     "ng-add": {
       "factory": "./dist/src/generators/ng-add/ng-add",
       "schema": "./dist/src/generators/ng-add/schema.json",

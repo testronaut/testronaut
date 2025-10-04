@@ -32,5 +32,5 @@
       "default": "./dist/browser.mjs"
     }
   },
-  "generators": "./generators.json"
+  "schematics": "./generators.json"
 }
