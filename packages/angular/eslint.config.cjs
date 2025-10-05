@@ -9,7 +9,7 @@ module.exports = [
     },
   },
   {
-    files: ['**/package.json', '**/generators.json'],
+    files: ['**/package.json', '**/collections.json'],
     rules: {
       '@nx/nx-plugin-checks': 'error',
     },

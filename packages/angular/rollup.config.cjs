@@ -35,7 +35,7 @@ module.exports = {
 };
 
 function findGeneratorAssets() {
-  const baseDir = path.join(__dirname, 'src', 'generators');
+  const baseDir = path.join(__dirname, 'src', 'schematics');
   const generatorDirs = fs
     .readdirSync(baseDir, { withFileTypes: true })
     .filter((d) => d.isDirectory());
@@ -43,12 +43,12 @@ function findGeneratorAssets() {
     {
       input: `${baseDir}/${d.name}`,
       glob: 'schema.json',
-      output: `src/generators/${d.name}`,
+      output: `src/schematics/${d.name}`,
     },
     {
       input: `${baseDir}/${d.name}`,
       glob: 'schema.d.ts',
-      output: `src/generators/${d.name}`,
+      output: `src/schematics/${d.name}`,
     },
   ]);
 
