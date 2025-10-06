@@ -2,8 +2,8 @@
   "compilerOptions": {
     "module": "esnext",
     "target": "es2020",
-    "outDir": "./dist/src/generators",
-    "rootDir": "./src/generators",
+    "outDir": "./dist/src/schematics",
+    "rootDir": "./src/schematics",
     "sourceMap": false,
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -13,6 +13,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": ["src/generators/**/*"],
+  "include": ["src/schematics/**/*"],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }
