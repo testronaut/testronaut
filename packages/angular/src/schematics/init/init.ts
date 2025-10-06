@@ -1,5 +1,6 @@
 import {
   convertNxGenerator,
+  generateFiles,
   getProjects,
   logger,
   readProjectConfiguration,
@@ -7,6 +8,7 @@ import {
   updateProjectConfiguration,
 } from '@nx/devkit';
 import { NgAddGeneratorSchema } from './schema';
+import * as path from 'path';
 
 export async function ngAddGenerator(
   tree: Tree,
@@ -63,8 +65,8 @@ export async function ngAddGenerator(
       },
     };
 
-    console.log('updating project configuration');
     updateProjectConfiguration(tree, projectName, config);
+    generateFiles(tree, path.join(__dirname, 'files'), config.root, {});
 
     logger.info('Testronaut added to successfully. Lift off!');
   } catch (error) {

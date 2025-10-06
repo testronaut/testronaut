@@ -3,10 +3,13 @@ import {
   addProjectConfiguration,
   logger,
   readProjectConfiguration,
+  Tree,
   updateProjectConfiguration,
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { ngAddGenerator } from './init';
+import * as path from 'path';
+import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 
 describe('ng-add generator', () => {
   const errorLogger = vitest.spyOn(logger, 'error');
@@ -17,18 +20,17 @@ describe('ng-add generator', () => {
     infoLogger.mockClear();
   });
 
-  const setup = async () => {
-    const tree = createTreeWithEmptyWorkspace();
-
+  const createProject = async (tree: Tree, name: string) => {
     await applicationGenerator(tree, {
-      directory: 'apps',
-      name: 'test',
+      directory: `apps/${name}`,
+      name,
       e2eTestRunner: E2eTestRunner.None,
     });
-    // addProjectConfiguration(tree, 'test', {
-    //   projectType: 'application',
-    //   root: 'apps/test',
-    // });
+  };
+
+  const setup = async () => {
+    const tree = createTreeWithEmptyWorkspace();
+    await createProject(tree, 'test');
 
     return tree;
   };
@@ -132,5 +134,44 @@ describe('ng-add generator', () => {
     expect(infoLogger).toHaveBeenCalledWith(
       'Testronaut configuration already exists in serve. Skipping configuration'
     );
+  });
+
+  it('picks the first project if no project is provided', async () => {
+    const tree = await setup();
+    await createProject(tree, 'test1');
+    await createProject(tree, 'test2');
+    await createProject(tree, 'test3');
+
+    ngAddGenerator(tree, { project: '' });
+
+    const config = readProjectConfiguration(tree, 'test');
+    expect(config.targets?.['build']?.configurations?.['testronaut']).toEqual({
+      optimization: false,
+      extractLicenses: false,
+      sourceMap: true,
+      browser: 'testronaut/main.ts',
+      index: 'testronaut/index.html',
+      tsConfig: 'testronaut/tsconfig.json',
+    });
+
+    expect(config.targets?.['serve']?.configurations?.['testronaut']).toEqual({
+      buildTarget: 'test:build:testronaut',
+      prebundle: {
+        exclude: ['@testronaut/angular'],
+      },
+    });
+
+    expect(infoLogger).toHaveBeenCalledWith(
+      'Testronaut added to successfully. Lift off!'
+    );
+    expect(errorLogger).toHaveBeenCalledTimes(0);
+  });
+
+  it('should add the testronaut files to the project', async () => {
+    const tree = await setup();
+    ngAddGenerator(tree, { project: 'test' });
+    expect(tree.exists('apps/test/testronaut/main.ts')).toBe(true);
+    expect(tree.exists('apps/test/testronaut/index.html')).toBe(true);
+    expect(tree.exists('apps/test/testronaut/tsconfig.json')).toBe(true);
   });
 });
