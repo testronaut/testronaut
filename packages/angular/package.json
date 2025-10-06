@@ -7,7 +7,8 @@
     "*.d.ts",
     "dist/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "collection.json"
   ],
   "dependencies": {
     "@nx/devkit": "21.5.3",
