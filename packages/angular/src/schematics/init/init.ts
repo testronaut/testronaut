@@ -17,7 +17,7 @@ export async function ngAddGenerator(
   try {
     const projectName = getProjectName(tree, options.project);
 
-    const config = readProjectConfiguration(tree, 'test');
+    const config = readProjectConfiguration(tree, projectName);
 
     if (!(config.targets?.['serve'] && config.targets?.['build'])) {
       throw new Error(

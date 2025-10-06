@@ -28,9 +28,9 @@ describe('ng-add generator', () => {
     });
   };
 
-  const setup = async () => {
+  const setup = async (projectName = 'test') => {
     const tree = createTreeWithEmptyWorkspace();
-    await createProject(tree, 'test');
+    await createProject(tree, projectName);
 
     return tree;
   };
@@ -137,14 +137,14 @@ describe('ng-add generator', () => {
   });
 
   it('picks the first project if no project is provided', async () => {
-    const tree = await setup();
+    const tree = await setup('memory');
     await createProject(tree, 'test1');
     await createProject(tree, 'test2');
     await createProject(tree, 'test3');
 
     ngAddGenerator(tree, { project: '' });
 
-    const config = readProjectConfiguration(tree, 'test');
+    const config = readProjectConfiguration(tree, 'memory');
     expect(config.targets?.['build']?.configurations?.['testronaut']).toEqual({
       optimization: false,
       extractLicenses: false,
@@ -155,7 +155,7 @@ describe('ng-add generator', () => {
     });
 
     expect(config.targets?.['serve']?.configurations?.['testronaut']).toEqual({
-      buildTarget: 'test:build:testronaut',
+      buildTarget: 'memory:build:testronaut',
       prebundle: {
         exclude: ['@testronaut/angular'],
       },
