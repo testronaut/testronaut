@@ -9,6 +9,9 @@ import {
 } from '@nx/devkit';
 import { NgAddGeneratorSchema } from './schema';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function ngAddGenerator(
   tree: Tree,

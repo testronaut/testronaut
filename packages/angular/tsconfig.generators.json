@@ -14,5 +14,10 @@
     "types": ["node"]
   },
   "include": ["src/schematics/**/*"],
-  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "src/schematics/*/files/**/*.ts",
+    "src/schematics/*/files/**/*.mts"
+  ]
 }
