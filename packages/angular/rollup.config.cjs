@@ -39,18 +39,32 @@ function findGeneratorAssets() {
   const generatorDirs = fs
     .readdirSync(baseDir, { withFileTypes: true })
     .filter((d) => d.isDirectory());
-  const assets = generatorDirs.flatMap((d) => [
-    {
-      input: `${baseDir}/${d.name}`,
-      glob: 'schema.json',
-      output: `src/schematics/${d.name}`,
-    },
-    {
-      input: `${baseDir}/${d.name}`,
-      glob: 'schema.d.ts',
-      output: `src/schematics/${d.name}`,
-    },
-  ]);
+  const assets = generatorDirs.flatMap((d) => {
+    const files = [
+      {
+        input: `${baseDir}/${d.name}`,
+        glob: 'schema.json',
+        output: `src/schematics/${d.name}`,
+      },
+      {
+        input: `${baseDir}/${d.name}`,
+        glob: 'schema.d.ts',
+        output: `src/schematics/${d.name}`,
+      },
+    ];
+
+    // Add files directory if it exists
+    const filesDir = path.join(baseDir, d.name, 'files');
+    if (fs.existsSync(filesDir)) {
+      files.push({
+        input: filesDir,
+        glob: '**/*',
+        output: `src/schematics/${d.name}/files`,
+      });
+    }
+
+    return files;
+  });
 
   return assets;
 }
