@@ -2,6 +2,17 @@ import { withTestronaut, type WithTestronautParams } from '@testronaut/core';
 import { angularTransform } from './angular-transform';
 
 /**
+ * This fixes errors when Playwright imports some Angular code.
+ *
+ * Error example:
+ * JIT compilation failed for injectable [class PlatformLocation]
+ * Error: The injectable 'PlatformLocation' needs to be compiled using the JIT compiler
+ *
+ * Note that this is the reason why `sideEffects` is set to `true` in the package.json.
+ */
+import '@angular/compiler';
+
+/**
  * From Playwright's perspective, CT is just like any other
  * E2E test which uses a special set of fixtures. All the
  * integration, processes, etc. should work as for any other
