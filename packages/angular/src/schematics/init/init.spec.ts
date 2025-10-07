@@ -8,8 +8,6 @@ import {
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { ngAddGenerator } from './init';
-import * as path from 'path';
-import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 
 describe('ng-add generator', () => {
   const errorLogger = vitest.spyOn(logger, 'error');
@@ -57,14 +55,16 @@ describe('ng-add generator', () => {
     });
 
     expect(errorLogger).toHaveBeenCalledTimes(0);
-    expect(infoLogger).toHaveBeenCalledTimes(1);
+    expect(infoLogger).toHaveBeenCalledWith(
+      'Testronaut successfully activated for project test. Lift off!'
+    );
   });
 
   it('should log an error if there are no projects', async () => {
     const tree = createTreeWithEmptyWorkspace();
     ngAddGenerator(tree, { project: 'test' });
     expect(errorLogger).toHaveBeenCalledWith(
-      'Testronaut failed to add: No projects found in workspace'
+      'Testronaut failed to activate: No projects found in workspace'
     );
   });
 
@@ -78,7 +78,7 @@ describe('ng-add generator', () => {
 
     ngAddGenerator(tree, { project: 'foo' });
     expect(errorLogger).toHaveBeenCalledWith(
-      "Testronaut failed to add: Project 'foo' not found. Available projects: 'test', 'bar'"
+      "Testronaut failed to activate: Project 'foo' not found. Available projects: 'test', 'bar'"
     );
   });
 
@@ -162,7 +162,7 @@ describe('ng-add generator', () => {
     });
 
     expect(infoLogger).toHaveBeenCalledWith(
-      'Testronaut added to successfully. Lift off!'
+      'Testronaut successfully activated. Lift off!'
     );
     expect(errorLogger).toHaveBeenCalledTimes(0);
   });

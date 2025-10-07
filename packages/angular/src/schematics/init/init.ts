@@ -71,10 +71,14 @@ export async function ngAddGenerator(
     updateProjectConfiguration(tree, projectName, config);
     generateFiles(tree, path.join(__dirname, 'files'), config.root, {});
 
-    logger.info('Testronaut added to successfully. Lift off!');
+    logger.info(
+      options.project
+        ? `Testronaut successfully activated for project ${projectName}. Lift off!`
+        : 'Testronaut successfully activated. Lift off!'
+    );
   } catch (error) {
     logger.error(
-      `Testronaut failed to add: ${
+      `Testronaut failed to activate: ${
         error instanceof Error ? error.message : String(error)
       }`
     );
