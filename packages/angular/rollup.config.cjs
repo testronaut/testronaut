@@ -14,7 +14,7 @@ const baseConfig = createRollupConfig({
 module.exports = {
   ...baseConfig,
   plugins: [
-    ...baseConfig.plugins,
+    ...(baseConfig.plugins || []),
     {
       name: 'post-build-generators',
       writeBundle() {
