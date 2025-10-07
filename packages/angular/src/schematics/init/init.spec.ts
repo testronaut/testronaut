@@ -173,5 +173,6 @@ describe('ng-add generator', () => {
     expect(tree.exists('apps/test/testronaut/main.ts')).toBe(true);
     expect(tree.exists('apps/test/testronaut/index.html')).toBe(true);
     expect(tree.exists('apps/test/testronaut/tsconfig.json')).toBe(true);
+    expect(tree.exists('apps/test/testronaut/.gitignore')).toBe(true);
   });
 });
