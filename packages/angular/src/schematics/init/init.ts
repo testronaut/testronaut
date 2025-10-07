@@ -12,6 +12,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+import { EOL } from 'os';
 
 export async function ngAddGenerator(
   tree: Tree,
@@ -70,6 +71,11 @@ export async function ngAddGenerator(
 
     updateProjectConfiguration(tree, projectName, config);
     generateFiles(tree, path.join(__dirname, 'files'), config.root, {});
+    // see https://github.com/npm/npm/issues/3763
+    tree.write(
+      path.join(config.root, 'testronaut', '.gitignore'),
+      'generated' + EOL
+    );
 
     logger.info(
       options.project
