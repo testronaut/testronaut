@@ -12,7 +12,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: __filename,
+    configPath: new URL(import.meta.url).pathname,
     testServer: {
       command:
         'pnpm ng serve --configuration testronaut --port {port} --live-reload false',
