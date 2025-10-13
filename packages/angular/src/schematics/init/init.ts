@@ -70,7 +70,24 @@ export async function ngAddGenerator(
     };
 
     updateProjectConfiguration(tree, projectName, config);
-    generateFiles(tree, path.join(__dirname, 'files'), config.root, {});
+    generateFiles(
+      tree,
+      path.join(__dirname, 'files', 'testronaut'),
+      path.join(config.root, 'testronaut'),
+      {}
+    );
+
+    const examplesDir = path.join(config.root, 'src', 'testronaut-examples');
+
+    if (options.createExamples) {
+      generateFiles(
+        tree,
+        path.join(__dirname, 'files', 'testronaut-examples'),
+        examplesDir,
+        {}
+      );
+    }
+
     // see https://github.com/npm/npm/issues/3763
     tree.write(
       path.join(config.root, 'testronaut', '.gitignore'),
@@ -78,9 +95,11 @@ export async function ngAddGenerator(
     );
 
     logger.info(
-      options.project
-        ? `Testronaut successfully activated for project ${projectName}. Lift off!`
-        : 'Testronaut successfully activated. Lift off!'
+      getSuccessMessage(
+        options.project,
+        Boolean(options.createExamples),
+        examplesDir
+      )
     );
   } catch (error) {
     logger.error(
@@ -112,6 +131,28 @@ function getProjectName(tree: Tree, providedProjectName: string | undefined) {
   }
 
   return projectNames[0];
+}
+
+function getSuccessMessage(
+  projectName: string,
+  withExamples: boolean,
+  examplesDir: string
+) {
+  let message = '';
+
+  if (projectName) {
+    message += `Testronaut successfully activated for project ${projectName}.`;
+  } else {
+    message += 'Testronaut successfully activated.';
+  }
+
+  if (withExamples) {
+    message += `${EOL}Study the examples in ${examplesDir}.${EOL}Lift off!`;
+  } else {
+    message += ' Lift off!';
+  }
+
+  return message;
 }
 
 export default convertNxGenerator(ngAddGenerator);

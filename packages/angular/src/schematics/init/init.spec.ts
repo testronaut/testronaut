@@ -8,6 +8,7 @@ import {
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { ngAddGenerator } from './init';
+import { EOL } from 'os';
 
 describe('ng-add generator', () => {
   const errorLogger = vitest.spyOn(logger, 'error');
@@ -174,5 +175,22 @@ describe('ng-add generator', () => {
     expect(tree.exists('apps/test/testronaut/index.html')).toBe(true);
     expect(tree.exists('apps/test/testronaut/tsconfig.json')).toBe(true);
     expect(tree.exists('apps/test/testronaut/.gitignore')).toBe(true);
+  });
+
+  it('should not add the examples by default', async () => {
+    const tree = await setup();
+    ngAddGenerator(tree, { project: 'test' });
+    expect(tree.exists('apps/test/src/testronaut-examples')).toBe(false);
+    // ensures not all files are copied, so we need to check the directory
+    expect(tree.exists('apps/test/testronaut-examples')).toBe(false);
+  });
+
+  it('shoud add examples when requested', async () => {
+    const tree = await setup();
+    ngAddGenerator(tree, { project: 'test', createExamples: true });
+    expect(tree.exists('apps/test/src/testronaut-examples')).toBe(true);
+    expect(infoLogger).toHaveBeenCalledWith(
+      `Testronaut successfully activated for project test.${EOL}Study the examples in apps/test/src/testronaut-examples.${EOL}Lift off!`
+    );
   });
 });
