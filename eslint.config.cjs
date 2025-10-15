@@ -1,10 +1,30 @@
 const nx = require('@nx/eslint-plugin');
+const tseslint = require('typescript-eslint');
 const unusedImports = require('eslint-plugin-unused-imports');
 
 module.exports = [
   ...nx.configs['flat/base'],
   ...nx.configs['flat/typescript'],
   ...nx.configs['flat/javascript'],
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: ['**/*.{ts,tsx}'],
+    ignores: ['**/*.spec.{ts,tsx}'],
+  })),
+  {
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      /* Causes more false positives than it's worth.
+       * E.g. synchronous fakes that implement async methods. */
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+    },
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+      },
+    },
+  },
   {
     ignores: [
       '**/dist',
@@ -29,18 +49,6 @@ module.exports = [
         },
       ],
     },
-  },
-  {
-    files: [
-      '**/*.ts',
-      '**/*.tsx',
-      '**/*.js',
-      '**/*.jsx',
-      '**/*.cjs',
-      '**/*.mjs',
-    ],
-    // Override or add rules here
-    rules: {},
   },
   {
     files: ['**/*.json'],

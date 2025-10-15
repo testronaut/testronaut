@@ -55,13 +55,13 @@ export const mount = async <CMP_TYPE extends Type<unknown>>(
   return { outputNames };
 };
 
-export async function configure({ providers }: { providers: Provider[] }) {
+export function configure({ providers }: { providers: Provider[] }) {
   assertIsSetUp();
 
   TestBed.configureTestingModule({ providers });
 }
 
-export async function setUpTestronautAngular() {
+export function setUpTestronautAngular() {
   TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 
   TestBed.configureTestingModule({
