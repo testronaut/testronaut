@@ -1,3 +1,13 @@
+## 0.0.9 (2025-10-15)
+
+### 🩹 Fixes
+
+- **core:** allow multiple runners against same test server ([#75](https://github.com/testronaut/testronaut/pull/75))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.8 (2025-10-15)
 
 ### 🩹 Fixes
