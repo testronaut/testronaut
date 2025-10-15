@@ -1,3 +1,13 @@
+## 0.0.8 (2025-10-15)
+
+### 🩹 Fixes
+
+- **angular:** fix random `page.exposeFunction: Target closed` errors ([#66](https://github.com/testronaut/testronaut/pull/66))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.7 (2025-10-15)
 
 ### 🩹 Fixes
