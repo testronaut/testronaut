@@ -93,6 +93,7 @@ export function _internal_withTestronaut({
     webServer: {
       command: testServer.command.replace('{port}', port.toString()),
       port,
+      reuseExistingServer: true,
     },
   };
 }
