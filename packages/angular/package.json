@@ -2,7 +2,7 @@
   "name": "@testronaut/angular",
   "version": "0.0.6",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": true,
   "files": [
     "*.d.ts",
     "dist/",
@@ -14,6 +14,7 @@
   },
   "peerDependencies": {
     "@angular/core": "^20.0.0",
+    "@angular/compiler": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
     "@testronaut/core": "workspace:*"
   },
