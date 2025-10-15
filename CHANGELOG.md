@@ -1,3 +1,14 @@
+## 0.0.7 (2025-10-15)
+
+### 🩹 Fixes
+
+- disable `prebundle` in  demo ([b2654a8](https://github.com/testronaut/testronaut/commit/b2654a8))
+- **angular:** fix errors where Playwright is running uncompiled Angular code ([#72](https://github.com/testronaut/testronaut/pull/72))
+
+### ❤️ Thank You
+
+- Rainer Hahnekamp @rainerhahnekamp
+
 ## 0.0.6 (2025-10-01)
 
 ### 🚀 Features
