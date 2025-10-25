@@ -25,7 +25,7 @@ export async function ngAddGenerator(
   try {
     const isAngularCli = tree.exists('angular.json') ? true : false;
 
-    const { build, serve, projectName, config, projectRoot } = isAngularCli
+    const { build, serve, projectName, config, sourceRoot, root } = isAngularCli
       ? getElementsForAngularCli(tree, options)
       : getElementsForNx(tree, options);
 
@@ -89,27 +89,24 @@ export async function ngAddGenerator(
 
     generateFiles(
       tree,
-      path.join(__dirname, 'files', 'testronaut'),
-      path.join(projectRoot, 'testronaut'),
+      path.join(__dirname, 'files/root'),
+      path.join(root, '.'),
       {}
     );
 
-    const examplesDir = path.join(projectRoot, 'testronaut-examples');
+    const examplesDir = path.join(sourceRoot, 'testronaut-examples');
 
     if (options.createExamples) {
       generateFiles(
         tree,
-        path.join(__dirname, 'files', 'testronaut-examples'),
+        path.join(__dirname, 'files/source-root', 'testronaut-examples'),
         examplesDir,
         {}
       );
     }
 
     // see https://github.com/npm/npm/issues/3763
-    tree.write(
-      path.join(projectRoot, 'testronaut', '.gitignore'),
-      'generated' + EOL
-    );
+    tree.write(path.join(root, 'testronaut', '.gitignore'), 'generated' + EOL);
 
     logger.info(
       getSuccessMessage(
@@ -178,12 +175,13 @@ function getElementsForAngularCli(tree: Tree, options: NgAddGeneratorSchema) {
   type ArchitectConfiguration = ProjectConfiguration['targets'];
   const projects: Record<
     string,
-    { architect: ArchitectConfiguration; sourceRoot: string }
+    { architect: ArchitectConfiguration; sourceRoot: string; root: string }
   > = JSON.parse(tree.read('angular.json', 'utf8') as string)['projects'];
 
   const projectName = getProjectName(tree, projects, options.project);
   const config = projects[projectName];
-  const projectRoot = config.sourceRoot;
+  const sourceRoot = config.sourceRoot;
+  const root = config.root;
 
   if (!(config.architect?.['serve'] && config.architect?.['build'])) {
     throw new Error(
@@ -194,7 +192,7 @@ function getElementsForAngularCli(tree: Tree, options: NgAddGeneratorSchema) {
   const build = config.architect['build'];
   const serve = config.architect['serve'];
 
-  return { build, serve, projectName, config, projectRoot };
+  return { build, serve, projectName, config, sourceRoot, root };
 }
 
 function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
@@ -204,7 +202,8 @@ function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
 
   const projectName = getProjectName(tree, projects, options.project);
   const config = projects[projectName];
-  const projectRoot = throwIfNullish(config.sourceRoot);
+  const sourceRoot = throwIfNullish(config.sourceRoot);
+  const root = throwIfNullish(config.root);
 
   if (!(config.targets?.['serve'] && config.targets?.['build'])) {
     throw new Error(
@@ -215,7 +214,7 @@ function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
   const build = config.targets['build'];
   const serve = config.targets['serve'];
 
-  return { build, serve, projectName, config, projectRoot };
+  return { build, serve, projectName, config, sourceRoot, root };
 }
 
 export default convertNxGenerator(ngAddGenerator);
@@ -225,7 +224,7 @@ export function throwIfNullish<T>(
   message = 'Value is nullish'
 ): T {
   if (value === undefined || value === null) {
-    throw new Error(message, { cause: value });
+    throw new Error(message);
   }
   return value;
 }

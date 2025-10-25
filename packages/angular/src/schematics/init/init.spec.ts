@@ -288,15 +288,23 @@ describe('ng-add generator', () => {
         const tree = await setup();
         ngAddGenerator(tree, { project: 'test' });
 
-        const folder = `${isAngularCli ? 'src' : 'apps/test/src'}/testronaut`;
+        const folder = `${isAngularCli ? '' : 'apps/test'}`;
 
-        ['main.ts', 'index.html', 'tsconfig.json', '.gitignore'].forEach(
-          (file) => {
-            expect(
-              tree.exists(`${folder}/${file}`),
-              `File ${file} should exist in ${folder}`
-            ).toBe(true);
-          }
+        [
+          'main.ts',
+          'index.html',
+          'tsconfig.json',
+          '.gitignore',
+          'generated/index.ts',
+        ].forEach((file) => {
+          expect(
+            tree.exists(`${folder}/testronaut/${file}`),
+            `File ${file} should exist in ${folder}`
+          ).toBe(true);
+        });
+
+        expect(tree.exists(`${folder}/playwright-testronaut.config.mts`)).toBe(
+          true
         );
       });
 
@@ -305,7 +313,7 @@ describe('ng-add generator', () => {
         ngAddGenerator(tree, { project: 'test' });
 
         const folder = `${
-          isAngularCli ? 'src' : 'apps/test/src'
+          isAngularCli ? '' : 'apps/test/src'
         }/testronaut-examples`;
         expect(tree.exists(folder)).toBe(false);
         // ensures not all files are copied, so we need to check the directory
