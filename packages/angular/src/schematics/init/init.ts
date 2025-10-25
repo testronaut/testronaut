@@ -3,7 +3,8 @@ import {
   generateFiles,
   getProjects,
   logger,
-  readProjectConfiguration,
+  ProjectConfiguration,
+  readJsonFile,
   Tree,
   updateProjectConfiguration,
 } from '@nx/devkit';
@@ -14,23 +15,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { EOL } from 'os';
 
+// Angular CLI specific configurtion
+export type ArchitectConfiguration = ProjectConfiguration['targets'];
+
 export async function ngAddGenerator(
   tree: Tree,
   options: NgAddGeneratorSchema
 ) {
   try {
-    const projectName = getProjectName(tree, options.project);
+    const isAngularCli = tree.exists('angular.json') ? true : false;
 
-    const config = readProjectConfiguration(tree, projectName);
-
-    if (!(config.targets?.['serve'] && config.targets?.['build'])) {
-      throw new Error(
-        `Project ${config.name} is missing serve and/or build targets`
-      );
-    }
-
-    const build = config.targets['build'];
-    const serve = config.targets['serve'];
+    const { build, serve, projectName, config, projectRoot } = isAngularCli
+      ? getElementsForAngularCli(tree, options)
+      : getElementsForNx(tree, options);
 
     if (!build.configurations) {
       build.configurations = {};
@@ -63,21 +60,38 @@ export async function ngAddGenerator(
     };
 
     serve.configurations['testronaut'] = {
-      buildTarget: `${config.name}:build:testronaut`,
-      prebundle: {
-        exclude: ['@testronaut/angular'],
-      },
+      buildTarget: `${projectName}:build:testronaut`,
+      prebundle: false,
     };
 
-    updateProjectConfiguration(tree, projectName, config);
+    if (isAngularCli) {
+      const originalConfig = JSON.parse(
+        tree.read('angular.json', 'utf8') as string
+      );
+      const modifiedConfig = {
+        ...originalConfig,
+        projects: {
+          ...originalConfig.projects,
+          [projectName]: config,
+        },
+      };
+      tree.write('angular.json', JSON.stringify(modifiedConfig, null, 2));
+    } else {
+      updateProjectConfiguration(
+        tree,
+        projectName,
+        config as ProjectConfiguration
+      );
+    }
+
     generateFiles(
       tree,
       path.join(__dirname, 'files', 'testronaut'),
-      path.join(config.root, 'testronaut'),
+      path.join(projectRoot, 'testronaut'),
       {}
     );
 
-    const examplesDir = path.join(config.root, 'src', 'testronaut-examples');
+    const examplesDir = path.join(projectRoot, 'testronaut-examples');
 
     if (options.createExamples) {
       generateFiles(
@@ -90,7 +104,7 @@ export async function ngAddGenerator(
 
     // see https://github.com/npm/npm/issues/3763
     tree.write(
-      path.join(config.root, 'testronaut', '.gitignore'),
+      path.join(projectRoot, 'testronaut', '.gitignore'),
       'generated' + EOL
     );
 
@@ -110,14 +124,16 @@ export async function ngAddGenerator(
   }
 }
 
-function getProjectName(tree: Tree, providedProjectName: string | undefined) {
-  const projects = getProjects(tree);
-
-  if (projects.size === 0) {
+function getProjectName(
+  tree: Tree,
+  projects: Record<string, unknown>,
+  providedProjectName: string | undefined
+) {
+  if (Object.keys(projects).length === 0) {
     throw new Error('No projects found in workspace');
   }
 
-  const projectNames = Array.from(projects.keys());
+  const projectNames = Object.keys(projects);
 
   if (providedProjectName) {
     if (projectNames.includes(providedProjectName)) {
@@ -153,6 +169,50 @@ function getSuccessMessage(
   }
 
   return message;
+}
+
+function getElementsForAngularCli(tree: Tree, options: NgAddGeneratorSchema) {
+  type ArchitectConfiguration = ProjectConfiguration['targets'];
+  const projects: Record<
+    string,
+    { architect: ArchitectConfiguration; sourceRoot: string }
+  > = JSON.parse(tree.read('angular.json', 'utf8') as string)['projects'];
+
+  const projectName = getProjectName(tree, projects, options.project);
+  const config = projects[projectName];
+  const projectRoot = config.sourceRoot;
+
+  if (!(config.architect?.['serve'] && config.architect?.['build'])) {
+    throw new Error(
+      `Project ${projectName} is missing serve and/or build targets`
+    );
+  }
+
+  const build = config.architect['build'];
+  const serve = config.architect['serve'];
+
+  return { build, serve, projectName, config, projectRoot };
+}
+
+function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
+  const projects: Record<string, ProjectConfiguration> = Object.fromEntries(
+    getProjects(tree).entries()
+  );
+
+  const projectName = getProjectName(tree, projects, options.project);
+  const config = projects[projectName];
+  const projectRoot = config.sourceRoot;
+
+  if (!(config.targets?.['serve'] && config.targets?.['build'])) {
+    throw new Error(
+      `Project ${config.name} is missing serve and/or build targets`
+    );
+  }
+
+  const build = config.targets['build'];
+  const serve = config.targets['serve'];
+
+  return { build, serve, projectName, config, projectRoot };
 }
 
 export default convertNxGenerator(ngAddGenerator);

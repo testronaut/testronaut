@@ -2,13 +2,15 @@ import { applicationGenerator, E2eTestRunner } from '@nx/angular/generators';
 import {
   addProjectConfiguration,
   logger,
-  readProjectConfiguration,
+  ProjectConfiguration,
   Tree,
   updateProjectConfiguration,
+  readProjectConfiguration as readProjectConfigurationNx,
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import { ngAddGenerator } from './init';
+import { ArchitectConfiguration, ngAddGenerator } from './init';
 import { EOL } from 'os';
+import { angularJsonTemplate } from './init-angular';
 
 describe('ng-add generator', () => {
   const errorLogger = vitest.spyOn(logger, 'error');
@@ -19,6 +21,15 @@ describe('ng-add generator', () => {
     infoLogger.mockClear();
   });
 
+  // function used for debugging purposes
+  function _printTree(tree: Tree, folder = '', indent = 0) {
+    for (const child of tree.children(folder)) {
+      const childName = `${folder}/${child}`;
+      console.log(' '.repeat(indent) + child);
+      _printTree(tree, childName, indent + 2);
+    }
+  }
+
   const createProject = async (tree: Tree, name: string) => {
     await applicationGenerator(tree, {
       directory: `apps/${name}`,
@@ -27,170 +38,291 @@ describe('ng-add generator', () => {
     });
   };
 
-  const setup = async (projectName = 'test') => {
+  async function setupForNx(projectName = 'test') {
     const tree = createTreeWithEmptyWorkspace();
     await createProject(tree, projectName);
 
     return tree;
-  };
+  }
 
-  it('should add the testronaut config to the build and ', async () => {
-    const tree = await setup();
-    await ngAddGenerator(tree, { project: 'test' });
-    const config = readProjectConfiguration(tree, 'test');
-
-    expect(config.targets?.['build']?.configurations?.['testronaut']).toEqual({
-      optimization: false,
-      extractLicenses: false,
-      sourceMap: true,
-      browser: 'testronaut/main.ts',
-      index: 'testronaut/index.html',
-      tsConfig: 'testronaut/tsconfig.json',
-    });
-
-    expect(config.targets?.['serve']?.configurations?.['testronaut']).toEqual({
-      buildTarget: 'test:build:testronaut',
-      prebundle: {
-        exclude: ['@testronaut/angular'],
-      },
-    });
-
-    expect(errorLogger).toHaveBeenCalledTimes(0);
-    expect(infoLogger).toHaveBeenCalledWith(
-      'Testronaut successfully activated for project test. Lift off!'
-    );
-  });
-
-  it('should log an error if there are no projects', async () => {
+  async function setupForAngularCli(projectName = 'test') {
     const tree = createTreeWithEmptyWorkspace();
-    ngAddGenerator(tree, { project: 'test' });
-    expect(errorLogger).toHaveBeenCalledWith(
-      'Testronaut failed to activate: No projects found in workspace'
-    );
-  });
-
-  it('should log an error if the project is not found', async () => {
-    const tree = await setup();
-
-    addProjectConfiguration(tree, 'bar', {
-      projectType: 'application',
-      root: 'apps/bar',
-    });
-
-    ngAddGenerator(tree, { project: 'foo' });
-    expect(errorLogger).toHaveBeenCalledWith(
-      "Testronaut failed to activate: Project 'foo' not found. Available projects: 'test', 'bar'"
-    );
-  });
-
-  it('should not modify the configuration if testronaut is already present in build', async () => {
-    const tree = await setup();
-    const config = readProjectConfiguration(tree, 'test');
-    assert(config.targets?.['build']?.configurations);
-    config.targets['build'].configurations['testronaut'] = {
-      foo: 'bar',
+    // we are creating a partial config which contains the relevant part for testronaut
+    const angularJson = structuredClone(angularJsonTemplate) as {
+      projects: Record<string, unknown>;
     };
-    updateProjectConfiguration(tree, 'test', config);
+    angularJson.projects[projectName] = angularJson.projects['eternal'];
+    delete angularJson.projects['eternal'];
 
-    ngAddGenerator(tree, { project: 'test' });
-    const newConfig = readProjectConfiguration(tree, 'test');
-    expect(
-      newConfig.targets?.['build']?.configurations?.['testronaut']
-    ).toEqual({
-      foo: 'bar',
-    });
+    tree.write('angular.json', JSON.stringify(angularJson, null, 2));
 
-    expect(
-      newConfig.targets?.['serve']?.configurations?.['testronaut']
-    ).toBeUndefined();
+    return tree;
+  }
 
-    expect(errorLogger).toHaveBeenCalledTimes(0);
-    expect(infoLogger).toHaveBeenCalledWith(
-      'Testronaut configuration already exists in build. Skipping configuration'
-    );
-  });
-
-  it('should not modify the configuration if testronaut is already present in serve', async () => {
-    const tree = await setup();
-    const config = readProjectConfiguration(tree, 'test');
-    assert(config.targets?.['serve']?.configurations);
-    config.targets['serve'].configurations['testronaut'] = {
-      foo: 'bar',
-    };
-    updateProjectConfiguration(tree, 'test', config);
-
-    ngAddGenerator(tree, { project: 'test' });
-    const newConfig = readProjectConfiguration(tree, 'test');
-
-    expect(
-      newConfig.targets?.['build']?.configurations?.['testronaut']
-    ).toBeUndefined();
-    expect(
-      newConfig.targets?.['serve']?.configurations?.['testronaut']
-    ).toEqual({
-      foo: 'bar',
-    });
-
-    expect(errorLogger).toHaveBeenCalledTimes(0);
-    expect(infoLogger).toHaveBeenCalledWith(
-      'Testronaut configuration already exists in serve. Skipping configuration'
-    );
-  });
-
-  it('picks the first project if no project is provided', async () => {
-    const tree = await setup('memory');
-    await createProject(tree, 'test1');
-    await createProject(tree, 'test2');
-    await createProject(tree, 'test3');
-
-    ngAddGenerator(tree, { project: '' });
-
-    const config = readProjectConfiguration(tree, 'memory');
-    expect(config.targets?.['build']?.configurations?.['testronaut']).toEqual({
-      optimization: false,
-      extractLicenses: false,
-      sourceMap: true,
-      browser: 'testronaut/main.ts',
-      index: 'testronaut/index.html',
-      tsConfig: 'testronaut/tsconfig.json',
-    });
-
-    expect(config.targets?.['serve']?.configurations?.['testronaut']).toEqual({
-      buildTarget: 'memory:build:testronaut',
-      prebundle: {
-        exclude: ['@testronaut/angular'],
+  for (const {
+    name,
+    isAngularCli,
+    setup,
+    readProjectConfiguration,
+    getTargets,
+    addProject,
+    updateProject,
+  } of [
+    {
+      name: 'Nx',
+      isAngularCli: false,
+      setup: setupForNx,
+      readProjectConfiguration: (tree: Tree, projectName: string) =>
+        readProjectConfigurationNx(tree, projectName),
+      getTargets: (config: ProjectConfiguration) => config.targets,
+      addProject(tree: Tree, projectName: string) {
+        addProjectConfiguration(tree, projectName, {
+          projectType: 'application',
+          root: `apps/${projectName}`,
+        });
       },
+      updateProject(
+        tree: Tree,
+        projectName: string,
+        config: ProjectConfiguration
+      ) {
+        updateProjectConfiguration(tree, projectName, config);
+      },
+    },
+    {
+      name: 'Angular CLI',
+      isAngularCli: true,
+      setup: setupForAngularCli,
+      readProjectConfiguration: (tree: Tree, projectName: string) => {
+        const config = tree.read('angular.json', 'utf8') as string;
+        const parseConfig = JSON.parse(config) as {
+          projects: Record<string, ProjectConfiguration>;
+        };
+        return parseConfig.projects[projectName];
+      },
+      getTargets(config: ProjectConfiguration) {
+        return (config as unknown as { architect: ArchitectConfiguration })
+          .architect;
+      },
+      addProject(tree: Tree, projectName: string) {
+        const originalConfig = JSON.parse(
+          tree.read('angular.json', 'utf8') as string
+        );
+
+        const newProject = structuredClone(
+          angularJsonTemplate.projects['eternal']
+        );
+        tree.write(
+          'angular.json',
+          JSON.stringify(
+            {
+              ...originalConfig,
+              projects: {
+                ...originalConfig.projects,
+                [projectName]: newProject,
+              },
+            },
+            null,
+            2
+          )
+        );
+      },
+      updateProject(
+        tree: Tree,
+        projectName: string,
+        config: ProjectConfiguration
+      ) {
+        const originalConfig = JSON.parse(
+          tree.read('angular.json', 'utf8') as string
+        );
+        const modifiedConfig = {
+          ...originalConfig,
+          projects: {
+            ...originalConfig.projects,
+            [projectName]: config,
+          },
+        };
+        tree.write('angular.json', JSON.stringify(modifiedConfig, null, 2));
+      },
+    },
+  ]) {
+    describe(name, () => {
+      it('should add the testronaut config to the build and ', async () => {
+        const tree = await setup();
+        await ngAddGenerator(tree, { project: 'test' });
+        const config = readProjectConfiguration(tree, 'test');
+        const targets = getTargets(config);
+
+        expect(targets?.['build']?.configurations?.['testronaut']).toEqual({
+          optimization: false,
+          extractLicenses: false,
+          sourceMap: true,
+          browser: 'testronaut/main.ts',
+          index: 'testronaut/index.html',
+          tsConfig: 'testronaut/tsconfig.json',
+        });
+
+        expect(targets?.['serve']?.configurations?.['testronaut']).toEqual({
+          buildTarget: 'test:build:testronaut',
+          prebundle: false,
+        });
+
+        expect(errorLogger).toHaveBeenCalledTimes(0);
+        expect(infoLogger).toHaveBeenCalledWith(
+          'Testronaut successfully activated for project test. Lift off!'
+        );
+      });
+
+      it('should log an error if there are no projects', async () => {
+        const tree = createTreeWithEmptyWorkspace();
+        ngAddGenerator(tree, { project: 'test' });
+        expect(errorLogger).toHaveBeenCalledWith(
+          'Testronaut failed to activate: No projects found in workspace'
+        );
+      });
+
+      it('should log an error if the project is not found', async () => {
+        const tree = await setup();
+
+        addProject(tree, 'bar');
+
+        ngAddGenerator(tree, { project: 'foo' });
+        expect(errorLogger).toHaveBeenCalledWith(
+          "Testronaut failed to activate: Project 'foo' not found. Available projects: 'test', 'bar'"
+        );
+      });
+
+      it('should not modify the configuration if testronaut is already present in build', async () => {
+        const tree = await setup();
+        const config = readProjectConfiguration(tree, 'test');
+        const targets = getTargets(config);
+        assert(targets?.['build']?.configurations);
+        targets['build'].configurations['testronaut'] = {
+          foo: 'bar',
+        };
+        updateProject(tree, 'test', config);
+
+        ngAddGenerator(tree, { project: 'test' });
+        const updatedConfig = readProjectConfiguration(tree, 'test');
+        const updatedTargets = getTargets(updatedConfig);
+        expect(
+          updatedTargets?.['build']?.configurations?.['testronaut']
+        ).toEqual({
+          foo: 'bar',
+        });
+
+        expect(
+          updatedTargets?.['serve']?.configurations?.['testronaut']
+        ).toBeUndefined();
+
+        expect(errorLogger).toHaveBeenCalledTimes(0);
+        expect(infoLogger).toHaveBeenCalledWith(
+          'Testronaut configuration already exists in build. Skipping configuration'
+        );
+      });
+
+      it('should not modify the configuration if testronaut is already present in serve', async () => {
+        const tree = await setup();
+        const config = readProjectConfiguration(tree, 'test');
+        const targets = getTargets(config);
+        assert(targets?.['serve']?.configurations);
+        targets['serve'].configurations['testronaut'] = {
+          foo: 'bar',
+        };
+        updateProject(tree, 'test', config);
+
+        ngAddGenerator(tree, { project: 'test' });
+        const newConfig = readProjectConfiguration(tree, 'test');
+        const updatedTargets = getTargets(newConfig);
+
+        expect(
+          updatedTargets?.['build']?.configurations?.['testronaut']
+        ).toBeUndefined();
+        expect(
+          updatedTargets?.['serve']?.configurations?.['testronaut']
+        ).toEqual({
+          foo: 'bar',
+        });
+
+        expect(errorLogger).toHaveBeenCalledTimes(0);
+        expect(infoLogger).toHaveBeenCalledWith(
+          'Testronaut configuration already exists in serve. Skipping configuration'
+        );
+      });
+
+      it('picks the first project if no project is provided', async () => {
+        const tree = await setup('memory');
+        await addProject(tree, 'test1');
+        await addProject(tree, 'test2');
+        await addProject(tree, 'test3');
+
+        ngAddGenerator(tree, { project: '' });
+
+        const config = readProjectConfiguration(tree, 'memory');
+        const targets = getTargets(config);
+        expect(targets?.['build']?.configurations?.['testronaut']).toEqual({
+          optimization: false,
+          extractLicenses: false,
+          sourceMap: true,
+          browser: 'testronaut/main.ts',
+          index: 'testronaut/index.html',
+          tsConfig: 'testronaut/tsconfig.json',
+        });
+
+        expect(targets?.['serve']?.configurations?.['testronaut']).toEqual({
+          buildTarget: 'memory:build:testronaut',
+          prebundle: false,
+        });
+
+        expect(infoLogger).toHaveBeenCalledWith(
+          'Testronaut successfully activated. Lift off!'
+        );
+        expect(errorLogger).toHaveBeenCalledTimes(0);
+      });
+
+      it('should add the testronaut files to the project', async () => {
+        const tree = await setup();
+        ngAddGenerator(tree, { project: 'test' });
+
+        const folder = `${isAngularCli ? 'src' : 'apps/test/src'}/testronaut`;
+
+        ['main.ts', 'index.html', 'tsconfig.json', '.gitignore'].forEach(
+          (file) => {
+            expect(
+              tree.exists(`${folder}/${file}`),
+              `File ${file} should exist in ${folder}`
+            ).toBe(true);
+          }
+        );
+      });
+
+      it('should not add the examples by default', async () => {
+        const tree = await setup();
+        ngAddGenerator(tree, { project: 'test' });
+
+        const folder = `${
+          isAngularCli ? 'src' : 'apps/test/src'
+        }/testronaut-examples`;
+        expect(tree.exists(folder)).toBe(false);
+        // ensures not all files are copied, so we need to check the directory
+        expect(
+          tree.exists(
+            `${isAngularCli ? 'src' : 'apps/test/src'}/testronaut-examples`
+          )
+        ).toBe(false);
+      });
+
+      it('shoud add examples when requested', async () => {
+        const tree = await setup();
+        ngAddGenerator(tree, { project: 'test', createExamples: true });
+        const folder = `${
+          isAngularCli ? 'src' : 'apps/test/src'
+        }/testronaut-examples`;
+        expect(tree.exists(folder)).toBe(true);
+        expect(infoLogger).toHaveBeenCalledWith(
+          `Testronaut successfully activated for project test.${EOL}Study the examples in ${folder}.${EOL}Lift off!`
+        );
+      });
     });
-
-    expect(infoLogger).toHaveBeenCalledWith(
-      'Testronaut successfully activated. Lift off!'
-    );
-    expect(errorLogger).toHaveBeenCalledTimes(0);
-  });
-
-  it('should add the testronaut files to the project', async () => {
-    const tree = await setup();
-    ngAddGenerator(tree, { project: 'test' });
-    expect(tree.exists('apps/test/testronaut/main.ts')).toBe(true);
-    expect(tree.exists('apps/test/testronaut/index.html')).toBe(true);
-    expect(tree.exists('apps/test/testronaut/tsconfig.json')).toBe(true);
-    expect(tree.exists('apps/test/testronaut/.gitignore')).toBe(true);
-  });
-
-  it('should not add the examples by default', async () => {
-    const tree = await setup();
-    ngAddGenerator(tree, { project: 'test' });
-    expect(tree.exists('apps/test/src/testronaut-examples')).toBe(false);
-    // ensures not all files are copied, so we need to check the directory
-    expect(tree.exists('apps/test/testronaut-examples')).toBe(false);
-  });
-
-  it('shoud add examples when requested', async () => {
-    const tree = await setup();
-    ngAddGenerator(tree, { project: 'test', createExamples: true });
-    expect(tree.exists('apps/test/src/testronaut-examples')).toBe(true);
-    expect(infoLogger).toHaveBeenCalledWith(
-      `Testronaut successfully activated for project test.${EOL}Study the examples in apps/test/src/testronaut-examples.${EOL}Lift off!`
-    );
-  });
+  }
 });
