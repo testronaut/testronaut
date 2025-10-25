@@ -50,14 +50,17 @@ export async function ngAddGenerator(
       return;
     }
 
-    build.configurations['testronaut'] = {
-      optimization: false,
-      extractLicenses: false,
-      sourceMap: true,
-      browser: 'testronaut/main.ts',
+    const testronautConfig = {
+      ...(build.configurations['development'] ?? {}),
       index: 'testronaut/index.html',
       tsConfig: 'testronaut/tsconfig.json',
+      optimization: false,
+      extractLicenses: false,
     };
+    testronautConfig[`${'main' in testronautConfig ? 'main' : 'browser'}`] =
+      'testronaut/main.ts';
+
+    build.configurations['testronaut'] = testronautConfig;
 
     serve.configurations['testronaut'] = {
       buildTarget: `${projectName}:build:testronaut`,
@@ -201,7 +204,7 @@ function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
 
   const projectName = getProjectName(tree, projects, options.project);
   const config = projects[projectName];
-  const projectRoot = config.sourceRoot;
+  const projectRoot = throwIfNullish(config.sourceRoot);
 
   if (!(config.targets?.['serve'] && config.targets?.['build'])) {
     throw new Error(
@@ -216,3 +219,17 @@ function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
 }
 
 export default convertNxGenerator(ngAddGenerator);
+
+export function throwIfNullish<T>(
+  value: T | undefined,
+  message = 'Value is nullish'
+): T {
+  if (value === undefined || value === null) {
+    throw new Error(message, { cause: value });
+  }
+  return value;
+}
+
+export function assertNotNullish<T>(value: T | undefined): asserts value is T {
+  throwIfNullish(value);
+}

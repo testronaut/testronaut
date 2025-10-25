@@ -3,13 +3,13 @@ import {
   addProjectConfiguration,
   logger,
   ProjectConfiguration,
+  readProjectConfiguration as readProjectConfigurationNx,
   Tree,
   updateProjectConfiguration,
-  readProjectConfiguration as readProjectConfigurationNx,
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import { ArchitectConfiguration, ngAddGenerator } from './init';
 import { EOL } from 'os';
+import { ArchitectConfiguration, ngAddGenerator, throwIfNullish } from './init';
 import { angularJsonTemplate } from './init-angular';
 
 describe('ng-add generator', () => {
@@ -153,7 +153,9 @@ describe('ng-add generator', () => {
         const config = readProjectConfiguration(tree, 'test');
         const targets = getTargets(config);
 
-        expect(targets?.['build']?.configurations?.['testronaut']).toEqual({
+        expect(
+          targets?.['build']?.configurations?.['testronaut']
+        ).toMatchObject({
           optimization: false,
           extractLicenses: false,
           sourceMap: true,
@@ -260,7 +262,9 @@ describe('ng-add generator', () => {
 
         const config = readProjectConfiguration(tree, 'memory');
         const targets = getTargets(config);
-        expect(targets?.['build']?.configurations?.['testronaut']).toEqual({
+        expect(
+          targets?.['build']?.configurations?.['testronaut']
+        ).toMatchObject({
           optimization: false,
           extractLicenses: false,
           sourceMap: true,
@@ -322,6 +326,31 @@ describe('ng-add generator', () => {
         expect(infoLogger).toHaveBeenCalledWith(
           `Testronaut successfully activated for project test.${EOL}Study the examples in ${folder}.${EOL}Lift off!`
         );
+      });
+
+      it('should use the main property instead of browser property if it exists', async () => {
+        const tree = await setup();
+        const config = readProjectConfiguration(tree, 'test');
+        const targets = getTargets(config);
+
+        const developmentConfig = throwIfNullish(
+          targets?.['build']?.configurations?.['development']
+        );
+        developmentConfig.main = 'main.ts';
+        delete developmentConfig.browser;
+
+        updateProject(tree, 'test', config);
+
+        ngAddGenerator(tree, { project: 'test' });
+        const updatedTargets = getTargets(
+          readProjectConfiguration(tree, 'test')
+        );
+        expect(
+          updatedTargets?.['build']?.configurations?.['testronaut']?.main
+        ).toBe('testronaut/main.ts');
+        expect(
+          updatedTargets?.['build']?.configurations?.['testronaut']?.browser
+        ).toBeUndefined();
       });
     });
   }
