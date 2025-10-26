@@ -1,67 +1,96 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Unified script for testing Angular CLI integration
-# This script can be run both locally and in GitHub Actions
-# It tests the full Angular CLI workflow: create project + ng add @testronaut/angular
+# Main script for running integration tests
+# This script runs both Angular CLI and Nx workspace/standalone integration tests
+#
+# Usage:
+#   ./scripts/run-integration-tests.sh                    # Run both tests
+#   ./scripts/run-integration-tests.sh cli-standalone     # Run only Angular CLI test
+#   ./scripts/run-integration-tests.sh cli-standalone nx-workspace  # Run multiple tests
 
-CLI_STANDALONE_PROJECT_NAME="cli-standalone"
+
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
 INTEGRATION_TESTS_DIR="$ROOT_DIR/integration-tests"
-TEST_PROJECT_DIR="$INTEGRATION_TESTS_DIR/$CLI_STANDALONE_PROJECT_NAME"
-
-echo "Cleaning up integration test project..."
+# Cleanup function
+echo "Cleaning up integration test projects..."
 if [ -d "$INTEGRATION_TESTS_DIR" ]; then
   rm -rf "$INTEGRATION_TESTS_DIR"
 fi
+echo "Integration test projects cleaned up"
 
+# Parse command line arguments
+RUN_CLI_STANDALONE=false
+RUN_CLI_WORKSPACE=false
+RUN_NX_WORKSPACE=false
+
+# If no arguments provided, run both tests
+if [ $# -eq 0 ]; then
+  RUN_CLI_STANDALONE=true
+  RUN_CLI_WORKSPACE=true
+  RUN_NX_WORKSPACE=true
+else
+  # Parse positional arguments
+  for arg in "$@"; do
+    case $arg in
+      cli-standalone)
+        RUN_CLI_STANDALONE=true
+        ;;
+      cli-workspace)
+        RUN_CLI_WORKSPACE=true
+        ;;
+      nx-workspace)
+        RUN_NX_WORKSPACE=true
+        ;;
+    esac
+  done
+fi
 
 cd "$ROOT_DIR"
 
-echo "Starting Angular CLI integration test..."
-
-# Step 1: Build packages
 echo "Building packages..."
-if ! pnpm nx run-many -t build --projects=core,angular --no-tui; then
-    echo "ERROR: Failed to build packages"
-    exit 1
-fi
+pnpm nx run-many -t build --projects=core,angular --no-tui
 echo "Packages built successfully"
 
-# Step 2: Create integration tests directory
 echo "Creating integration tests directory..."
 mkdir -p "$INTEGRATION_TESTS_DIR"
-cd "$INTEGRATION_TESTS_DIR"
 
-# Step 3: Create fresh Angular project
-echo "Creating fresh Angular project with pnpm create @angular@latest..."
-if ! pnpm create @angular@latest $CLI_STANDALONE_PROJECT_NAME --defaults; then
-    echo "ERROR: Failed to create Angular project"
-    exit 1
+if [ "$RUN_CLI_STANDALONE" = "true" ]; then
+  echo "Starting Angular CLI integration test..."
+  cd "$INTEGRATION_TESTS_DIR"
+  pnpm create @angular@latest cli-standalone --defaults
+
+  cd "cli-standalone"
+  pnpm add file:"$ROOT_DIR/packages/core" file:"$ROOT_DIR/packages/angular"
+  pnpm ng add @testronaut/angular --create-examples
+  pnpm playwright test -c playwright-testronaut.config.mts
+  echo "All Angular CLI integration tests passed!"
 fi
-echo "Angular project created successfully"
 
-cd "$TEST_PROJECT_DIR"
+if [ "$RUN_CLI_WORKSPACE" = "true" ]; then
+  echo "Starting Angular workspace integration test..."
+  cd "$INTEGRATION_TESTS_DIR"
+  pnpm create @angular@latest cli-workspace --create-application=false --defaults
 
-# Step 4: Install local packages as proper npm packages
-echo "Installing local @testronaut packages..."
-if ! pnpm add file:"$ROOT_DIR/packages/core" file:"$ROOT_DIR/packages/angular"; then
-    echo "ERROR: Failed to install local packages"
-    exit 1
+  cd "cli-workspace"
+  pnpm ng g app test --defaults
+  pnpm add file:"$ROOT_DIR/packages/core" file:"$ROOT_DIR/packages/angular"
+  pnpm ng add @testronaut/angular --create-examples
+  pnpm playwright test -c projects/test/playwright-testronaut.config.mts
+  echo "All Angular CLI workspace integration tests passed!"
 fi
-echo "Local packages installed"
 
-# Step 5: Test ng add command
-echo "Running ng add @testronaut/angular..."
-pnpm ng add @testronaut/angular --create-examples
-echo "ng add command completed successfully"
+if [ "$RUN_NX_WORKSPACE" = "true" ]; then
+  echo "Starting Nx workspace integration test..."
 
-# Step 6: Test testronaut build
-echo "Testing testronaut build configuration..."
-if ! pnpm playwright test -c playwright-testronaut.config.mts ; then
-    echo "ERROR: testronaut build configuration failed"
-    exit 1
+  cd "$INTEGRATION_TESTS_DIR"
+  pnpm create nx-workspace@latest nx-workspace --preset angular-monorepo --app-name test --e2e-test-runner none --unit-test-runner none --no-ssr --bundler esbuild --style css --ai-agents cursor --ci skip
+  cd "nx-workspace"
+  pnpm add file:"$ROOT_DIR/packages/core" file:"$ROOT_DIR/packages/angular"
+  pnpm nx g @testronaut/angular:init --create-examples
+  pnpm playwright test -c apps/test/playwright-testronaut.config.mts
+
+  echo "All Nx workspace integration tests passed!"
 fi
-echo "testronaut build successful"
 
-echo "All Angular CLI integration tests passed!"
+echo "All integration tests completed!"

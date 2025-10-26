@@ -10,7 +10,156 @@ import {
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { EOL } from 'os';
 import { ArchitectConfiguration, ngAddGenerator, throwIfNullish } from './init';
-import { angularJsonTemplate } from './init-angular';
+import { angularJsonTemplate as angularJsonTemplateStandalone } from './init-angular';
+import { angularJsonTemplate as angularJsonTemplateStandaloneWorkspace } from './init-angular-workspace';
+
+// function used for debugging purposes
+function _printTree(tree: Tree, folder = '', indent = 0) {
+  for (const child of tree.children(folder)) {
+    const childName = `${folder}/${child}`;
+    console.log(' '.repeat(indent) + child);
+    _printTree(tree, childName, indent + 2);
+  }
+}
+
+/**
+ * Basic Functions
+ */
+
+const createProject = async (tree: Tree, name: string) => {
+  await applicationGenerator(tree, {
+    directory: `apps/${name}`,
+    name,
+    e2eTestRunner: E2eTestRunner.None,
+  });
+};
+
+async function setupForNx(projectName = 'test') {
+  const tree = createTreeWithEmptyWorkspace();
+  await createProject(tree, projectName);
+
+  return tree;
+}
+
+async function setupForAngularCli(projectName = 'test', workspace = false) {
+  const tree = createTreeWithEmptyWorkspace();
+  // we are creating a partial config which contains the relevant part for testronaut
+  const angularJson = structuredClone(
+    workspace
+      ? angularJsonTemplateStandaloneWorkspace
+      : angularJsonTemplateStandalone
+  ) as {
+    projects: Record<string, unknown>;
+  };
+  angularJson.projects[projectName] = angularJson.projects['eternal'];
+  delete angularJson.projects['eternal'];
+
+  tree.write('angular.json', JSON.stringify(angularJson, null, 2));
+
+  return tree;
+}
+
+/**
+ * Parameters for Tests
+ */
+
+type TestParameters = {
+  name: string;
+  isAngularCli: boolean;
+  isWorkspace: boolean;
+  setup: (projectName?: string, workspace?: boolean) => Promise<Tree>;
+  readProjectConfiguration: (
+    tree: Tree,
+    projectName: string
+  ) => ProjectConfiguration;
+  getTargets: (config: ProjectConfiguration) => ArchitectConfiguration;
+  addProject: (tree: Tree, projectName: string, isWorkspace: boolean) => void;
+  updateProject: (
+    tree: Tree,
+    projectName: string,
+    config: ProjectConfiguration
+  ) => void;
+};
+
+const parametersForAngularCliStandalone: TestParameters = {
+  name: 'Angular CLI Standalone',
+  isAngularCli: true,
+  isWorkspace: false,
+  setup: setupForAngularCli,
+  readProjectConfiguration: (tree: Tree, projectName: string) => {
+    const config = tree.read('angular.json', 'utf8') as string;
+    const parseConfig = JSON.parse(config) as {
+      projects: Record<string, ProjectConfiguration>;
+    };
+    return parseConfig.projects[projectName];
+  },
+  getTargets(config: ProjectConfiguration) {
+    return (config as unknown as { architect: ArchitectConfiguration })
+      .architect;
+  },
+  addProject(tree: Tree, projectName: string, isWorkspace: boolean) {
+    const originalConfig = JSON.parse(
+      tree.read('angular.json', 'utf8') as string
+    );
+
+    const angularJsonTemplate = isWorkspace
+      ? angularJsonTemplateStandaloneWorkspace
+      : angularJsonTemplateStandalone;
+    const newProject = structuredClone(angularJsonTemplate.projects['eternal']);
+    tree.write(
+      'angular.json',
+      JSON.stringify(
+        {
+          ...originalConfig,
+          projects: {
+            ...originalConfig.projects,
+            [projectName]: newProject,
+          },
+        },
+        null,
+        2
+      )
+    );
+  },
+  updateProject(tree: Tree, projectName: string, config: ProjectConfiguration) {
+    const originalConfig = JSON.parse(
+      tree.read('angular.json', 'utf8') as string
+    );
+    const modifiedConfig = {
+      ...originalConfig,
+      projects: {
+        ...originalConfig.projects,
+        [projectName]: config,
+      },
+    };
+    tree.write('angular.json', JSON.stringify(modifiedConfig, null, 2));
+  },
+};
+
+const parametersForAngularCliWorkspace: TestParameters = {
+  ...parametersForAngularCliStandalone,
+  name: 'Angular CLI Workspace',
+  isWorkspace: true,
+};
+
+const parametersForNx: TestParameters = {
+  name: 'Nx',
+  isAngularCli: false,
+  isWorkspace: true,
+  setup: setupForNx,
+  readProjectConfiguration: (tree: Tree, projectName: string) =>
+    readProjectConfigurationNx(tree, projectName),
+  getTargets: (config: ProjectConfiguration) => config.targets,
+  addProject(tree: Tree, projectName: string, _isWorkspace: boolean) {
+    addProjectConfiguration(tree, projectName, {
+      projectType: 'application',
+      root: `apps/${projectName}`,
+    });
+  },
+  updateProject(tree: Tree, projectName: string, config: ProjectConfiguration) {
+    updateProjectConfiguration(tree, projectName, config);
+  },
+};
 
 describe('ng-add generator', () => {
   const errorLogger = vitest.spyOn(logger, 'error');
@@ -21,130 +170,19 @@ describe('ng-add generator', () => {
     infoLogger.mockClear();
   });
 
-  // function used for debugging purposes
-  function _printTree(tree: Tree, folder = '', indent = 0) {
-    for (const child of tree.children(folder)) {
-      const childName = `${folder}/${child}`;
-      console.log(' '.repeat(indent) + child);
-      _printTree(tree, childName, indent + 2);
-    }
-  }
-
-  const createProject = async (tree: Tree, name: string) => {
-    await applicationGenerator(tree, {
-      directory: `apps/${name}`,
-      name,
-      e2eTestRunner: E2eTestRunner.None,
-    });
-  };
-
-  async function setupForNx(projectName = 'test') {
-    const tree = createTreeWithEmptyWorkspace();
-    await createProject(tree, projectName);
-
-    return tree;
-  }
-
-  async function setupForAngularCli(projectName = 'test') {
-    const tree = createTreeWithEmptyWorkspace();
-    // we are creating a partial config which contains the relevant part for testronaut
-    const angularJson = structuredClone(angularJsonTemplate) as {
-      projects: Record<string, unknown>;
-    };
-    angularJson.projects[projectName] = angularJson.projects['eternal'];
-    delete angularJson.projects['eternal'];
-
-    tree.write('angular.json', JSON.stringify(angularJson, null, 2));
-
-    return tree;
-  }
-
   for (const {
     name,
     isAngularCli,
+    isWorkspace,
     setup,
     readProjectConfiguration,
     getTargets,
     addProject,
     updateProject,
   } of [
-    {
-      name: 'Nx',
-      isAngularCli: false,
-      setup: setupForNx,
-      readProjectConfiguration: (tree: Tree, projectName: string) =>
-        readProjectConfigurationNx(tree, projectName),
-      getTargets: (config: ProjectConfiguration) => config.targets,
-      addProject(tree: Tree, projectName: string) {
-        addProjectConfiguration(tree, projectName, {
-          projectType: 'application',
-          root: `apps/${projectName}`,
-        });
-      },
-      updateProject(
-        tree: Tree,
-        projectName: string,
-        config: ProjectConfiguration
-      ) {
-        updateProjectConfiguration(tree, projectName, config);
-      },
-    },
-    {
-      name: 'Angular CLI',
-      isAngularCli: true,
-      setup: setupForAngularCli,
-      readProjectConfiguration: (tree: Tree, projectName: string) => {
-        const config = tree.read('angular.json', 'utf8') as string;
-        const parseConfig = JSON.parse(config) as {
-          projects: Record<string, ProjectConfiguration>;
-        };
-        return parseConfig.projects[projectName];
-      },
-      getTargets(config: ProjectConfiguration) {
-        return (config as unknown as { architect: ArchitectConfiguration })
-          .architect;
-      },
-      addProject(tree: Tree, projectName: string) {
-        const originalConfig = JSON.parse(
-          tree.read('angular.json', 'utf8') as string
-        );
-
-        const newProject = structuredClone(
-          angularJsonTemplate.projects['eternal']
-        );
-        tree.write(
-          'angular.json',
-          JSON.stringify(
-            {
-              ...originalConfig,
-              projects: {
-                ...originalConfig.projects,
-                [projectName]: newProject,
-              },
-            },
-            null,
-            2
-          )
-        );
-      },
-      updateProject(
-        tree: Tree,
-        projectName: string,
-        config: ProjectConfiguration
-      ) {
-        const originalConfig = JSON.parse(
-          tree.read('angular.json', 'utf8') as string
-        );
-        const modifiedConfig = {
-          ...originalConfig,
-          projects: {
-            ...originalConfig.projects,
-            [projectName]: config,
-          },
-        };
-        tree.write('angular.json', JSON.stringify(modifiedConfig, null, 2));
-      },
-    },
+    parametersForAngularCliStandalone,
+    parametersForAngularCliWorkspace,
+    parametersForNx,
   ]) {
     describe(name, () => {
       it('should add the testronaut config to the build and ', async () => {
@@ -186,7 +224,7 @@ describe('ng-add generator', () => {
       it('should log an error if the project is not found', async () => {
         const tree = await setup();
 
-        addProject(tree, 'bar');
+        addProject(tree, 'bar', isWorkspace);
 
         ngAddGenerator(tree, { project: 'foo' });
         expect(errorLogger).toHaveBeenCalledWith(
@@ -254,9 +292,9 @@ describe('ng-add generator', () => {
 
       it('picks the first project if no project is provided', async () => {
         const tree = await setup('memory');
-        await addProject(tree, 'test1');
-        await addProject(tree, 'test2');
-        await addProject(tree, 'test3');
+        await addProject(tree, 'test1', isWorkspace);
+        await addProject(tree, 'test2', isWorkspace);
+        await addProject(tree, 'test3', isWorkspace);
 
         ngAddGenerator(tree, { project: '' });
 
