@@ -52,13 +52,14 @@ export async function ngAddGenerator(
 
     const testronautConfig = {
       ...(build.configurations['development'] ?? {}),
-      index: 'testronaut/index.html',
-      tsConfig: 'testronaut/tsconfig.json',
+      index: `${root ? `${root}/` : ''}testronaut/index.html`,
+      tsConfig: `${root ? `${root}/` : ''}testronaut/tsconfig.json`,
       optimization: false,
       extractLicenses: false,
     };
-    testronautConfig[`${'main' in testronautConfig ? 'main' : 'browser'}`] =
-      'testronaut/main.ts';
+    testronautConfig[`${'main' in testronautConfig ? 'main' : 'browser'}`] = `${
+      root ? `${root}/` : ''
+    }testronaut/main.ts`;
 
     build.configurations['testronaut'] = testronautConfig;
 

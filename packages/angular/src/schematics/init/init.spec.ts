@@ -23,7 +23,7 @@ function _printTree(tree: Tree, folder = '', indent = 0) {
 }
 
 /**
- * Basic Functions
+ * Utility Functions
  */
 
 const createProject = async (tree: Tree, name: string) => {
@@ -64,6 +64,18 @@ async function setupForAngularCli(projectName: string, workspace: boolean) {
   tree.write('angular.json', JSON.stringify(angularJson, null, 2));
 
   return tree;
+}
+
+function getFolder(
+  isAngularCli: boolean,
+  isWorkspace: boolean,
+  projectName: string
+) {
+  return isAngularCli
+    ? isWorkspace
+      ? `projects/${projectName}/`
+      : ''
+    : `apps/${projectName}/`;
 }
 
 /**
@@ -192,11 +204,13 @@ describe('ng-add generator', () => {
     parametersForNx,
   ]) {
     describe(name, () => {
-      it('should add the testronaut config to the build and ', async () => {
+      it('should add the testronaut config to the build and serve targets', async () => {
         const tree = await setup('test', isWorkspace);
         await ngAddGenerator(tree, { project: 'test' });
         const config = readProjectConfiguration(tree, 'test');
         const targets = getTargets(config);
+
+        const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
         expect(
           targets?.['build']?.configurations?.['testronaut']
@@ -204,9 +218,9 @@ describe('ng-add generator', () => {
           optimization: false,
           extractLicenses: false,
           sourceMap: true,
-          browser: 'testronaut/main.ts',
-          index: 'testronaut/index.html',
-          tsConfig: 'testronaut/tsconfig.json',
+          browser: `${folder}testronaut/main.ts`,
+          index: `${folder}testronaut/index.html`,
+          tsConfig: `${folder}testronaut/tsconfig.json`,
         });
 
         expect(targets?.['serve']?.configurations?.['testronaut']).toEqual({
@@ -307,15 +321,16 @@ describe('ng-add generator', () => {
 
         const config = readProjectConfiguration(tree, 'memory');
         const targets = getTargets(config);
+        const folder = getFolder(isAngularCli, isWorkspace, 'memory');
         expect(
           targets?.['build']?.configurations?.['testronaut']
         ).toMatchObject({
           optimization: false,
           extractLicenses: false,
           sourceMap: true,
-          browser: 'testronaut/main.ts',
-          index: 'testronaut/index.html',
-          tsConfig: 'testronaut/tsconfig.json',
+          browser: `${folder}testronaut/main.ts`,
+          index: `${folder}testronaut/index.html`,
+          tsConfig: `${folder}testronaut/tsconfig.json`,
         });
 
         expect(targets?.['serve']?.configurations?.['testronaut']).toEqual({
@@ -332,12 +347,7 @@ describe('ng-add generator', () => {
       it('should add the testronaut files to the project', async () => {
         const tree = await setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test' });
-
-        const folder = isAngularCli
-          ? isWorkspace
-            ? 'projects/test'
-            : ''
-          : 'apps/test';
+        const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
         [
           'main.ts',
@@ -347,12 +357,12 @@ describe('ng-add generator', () => {
           'generated/index.ts',
         ].forEach((file) => {
           expect(
-            tree.exists(`${folder}/testronaut/${file}`),
+            tree.exists(`${folder}testronaut/${file}`),
             `File ${file} should exist in ${folder}`
           ).toBe(true);
         });
 
-        expect(tree.exists(`${folder}/playwright-testronaut.config.mts`)).toBe(
+        expect(tree.exists(`${folder}playwright-testronaut.config.mts`)).toBe(
           true
         );
       });
@@ -360,11 +370,11 @@ describe('ng-add generator', () => {
       it('should not add the examples by default', async () => {
         const tree = await setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test' });
-
-        const folder = `${
-          isAngularCli ? (isWorkspace ? 'projects/test' : '') : 'apps/test'
-        }/src/testronaut-examples`;
-
+        const folder = `${getFolder(
+          isAngularCli,
+          isWorkspace,
+          'test'
+        )}/src/testronaut-examples`;
         expect(tree.exists(folder)).toBe(false);
       });
 
@@ -372,9 +382,12 @@ describe('ng-add generator', () => {
         const tree = await setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test', createExamples: true });
 
-        const folder = `${
-          isAngularCli ? (isWorkspace ? 'projects/test/' : '') : 'apps/test/'
-        }src/testronaut-examples`;
+        const folder = `${getFolder(
+          isAngularCli,
+          isWorkspace,
+          'test'
+        )}src/testronaut-examples`;
+
         expect(tree.exists(folder)).toBe(true);
         expect(infoLogger).toHaveBeenCalledWith(
           `Testronaut successfully activated for project test.${EOL}Study the examples in ${folder}.${EOL}Lift off!`
@@ -385,9 +398,11 @@ describe('ng-add generator', () => {
         const tree = await setup('maps', isWorkspace);
         ngAddGenerator(tree, { project: 'maps', createExamples: true });
 
-        const configPath = `${
-          isAngularCli ? (isWorkspace ? 'projects/maps' : '') : 'apps/maps'
-        }/playwright-testronaut.config.mts`;
+        const configPath = `${getFolder(
+          isAngularCli,
+          isWorkspace,
+          'maps'
+        )}playwright-testronaut.config.mts`;
 
         const config = tree.read(configPath, 'utf8') || '';
 
@@ -406,9 +421,11 @@ describe('ng-add generator', () => {
           tree.write(lockFile, '');
           ngAddGenerator(tree, { project: 'test' });
 
-          const configPath = `${
-            isAngularCli ? (isWorkspace ? 'projects/test' : '') : 'apps/test'
-          }/playwright-testronaut.config.mts`;
+          const configPath = `${getFolder(
+            isAngularCli,
+            isWorkspace,
+            'test'
+          )}playwright-testronaut.config.mts`;
           const config = tree.read(configPath, 'utf8') || '';
 
           expect(config).toMatchSnapshot(
@@ -421,6 +438,7 @@ describe('ng-add generator', () => {
         const tree = await setup('test', isWorkspace);
         const config = readProjectConfiguration(tree, 'test');
         const targets = getTargets(config);
+        const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
         const developmentConfig = throwIfNullish(
           targets?.['build']?.configurations?.['development']
@@ -436,7 +454,7 @@ describe('ng-add generator', () => {
         );
         expect(
           updatedTargets?.['build']?.configurations?.['testronaut']?.main
-        ).toBe('testronaut/main.ts');
+        ).toBe(`${folder}testronaut/main.ts`);
         expect(
           updatedTargets?.['build']?.configurations?.['testronaut']?.browser
         ).toBeUndefined();
