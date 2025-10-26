@@ -8,7 +8,7 @@ export const angularJsonTemplate = {
     eternal: {
       projectType: 'application',
       root: 'projects/test',
-      sourceRoot: 'src',
+      sourceRoot: 'projects/test/src',
       prefix: 'app',
       architect: {
         build: {

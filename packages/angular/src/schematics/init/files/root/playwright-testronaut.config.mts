@@ -15,7 +15,7 @@ const config = defineConfig(
     configPath: new URL(import.meta.url).pathname,
     testServer: {
       command:
-        'pnpm ng serve --configuration testronaut --port {port} --live-reload false',
+        '<%= packageManager %> <%= ngCommand %> serve <%= projectName %> --configuration testronaut --port {port} --live-reload false',
     },
   }),
   {

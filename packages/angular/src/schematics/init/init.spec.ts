@@ -34,14 +34,14 @@ const createProject = async (tree: Tree, name: string) => {
   });
 };
 
-async function setupForNx(projectName = 'test') {
+async function setupForNx(projectName: string) {
   const tree = createTreeWithEmptyWorkspace();
   await createProject(tree, projectName);
 
   return tree;
 }
 
-async function setupForAngularCli(projectName = 'test', workspace = false) {
+async function setupForAngularCli(projectName: string, workspace: boolean) {
   const tree = createTreeWithEmptyWorkspace();
   // we are creating a partial config which contains the relevant part for testronaut
   const angularJson = structuredClone(
@@ -52,6 +52,13 @@ async function setupForAngularCli(projectName = 'test', workspace = false) {
     projects: Record<string, unknown>;
   };
   angularJson.projects[projectName] = angularJson.projects['eternal'];
+  const config = angularJson.projects[projectName] as {
+    root: string;
+    sourceRoot: string;
+  };
+  config.root = config.root.replace('test', projectName);
+  config.sourceRoot = config.sourceRoot.replace('test', projectName);
+  angularJson.projects[projectName] = config;
   delete angularJson.projects['eternal'];
 
   tree.write('angular.json', JSON.stringify(angularJson, null, 2));
@@ -67,7 +74,7 @@ type TestParameters = {
   name: string;
   isAngularCli: boolean;
   isWorkspace: boolean;
-  setup: (projectName?: string, workspace?: boolean) => Promise<Tree>;
+  setup: (projectName: string, workspace: boolean) => Promise<Tree>;
   readProjectConfiguration: (
     tree: Tree,
     projectName: string
@@ -186,7 +193,7 @@ describe('ng-add generator', () => {
   ]) {
     describe(name, () => {
       it('should add the testronaut config to the build and ', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
         await ngAddGenerator(tree, { project: 'test' });
         const config = readProjectConfiguration(tree, 'test');
         const targets = getTargets(config);
@@ -222,7 +229,7 @@ describe('ng-add generator', () => {
       });
 
       it('should log an error if the project is not found', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
 
         addProject(tree, 'bar', isWorkspace);
 
@@ -233,7 +240,7 @@ describe('ng-add generator', () => {
       });
 
       it('should not modify the configuration if testronaut is already present in build', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
         const config = readProjectConfiguration(tree, 'test');
         const targets = getTargets(config);
         assert(targets?.['build']?.configurations);
@@ -262,7 +269,7 @@ describe('ng-add generator', () => {
       });
 
       it('should not modify the configuration if testronaut is already present in serve', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
         const config = readProjectConfiguration(tree, 'test');
         const targets = getTargets(config);
         assert(targets?.['serve']?.configurations);
@@ -291,7 +298,7 @@ describe('ng-add generator', () => {
       });
 
       it('picks the first project if no project is provided', async () => {
-        const tree = await setup('memory');
+        const tree = await setup('memory', isWorkspace);
         await addProject(tree, 'test1', isWorkspace);
         await addProject(tree, 'test2', isWorkspace);
         await addProject(tree, 'test3', isWorkspace);
@@ -323,10 +330,14 @@ describe('ng-add generator', () => {
       });
 
       it('should add the testronaut files to the project', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test' });
 
-        const folder = `${isAngularCli ? '' : 'apps/test'}`;
+        const folder = isAngularCli
+          ? isWorkspace
+            ? 'projects/test'
+            : ''
+          : 'apps/test';
 
         [
           'main.ts',
@@ -347,35 +358,67 @@ describe('ng-add generator', () => {
       });
 
       it('should not add the examples by default', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test' });
 
         const folder = `${
-          isAngularCli ? '' : 'apps/test/src'
-        }/testronaut-examples`;
+          isAngularCli ? (isWorkspace ? 'projects/test' : '') : 'apps/test'
+        }/src/testronaut-examples`;
+
         expect(tree.exists(folder)).toBe(false);
-        // ensures not all files are copied, so we need to check the directory
-        expect(
-          tree.exists(
-            `${isAngularCli ? 'src' : 'apps/test/src'}/testronaut-examples`
-          )
-        ).toBe(false);
       });
 
       it('shoud add examples when requested', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test', createExamples: true });
+
         const folder = `${
-          isAngularCli ? 'src' : 'apps/test/src'
-        }/testronaut-examples`;
+          isAngularCli ? (isWorkspace ? 'projects/test/' : '') : 'apps/test/'
+        }src/testronaut-examples`;
         expect(tree.exists(folder)).toBe(true);
         expect(infoLogger).toHaveBeenCalledWith(
           `Testronaut successfully activated for project test.${EOL}Study the examples in ${folder}.${EOL}Lift off!`
         );
       });
 
+      it("should start the test server by using the project's name", async () => {
+        const tree = await setup('maps', isWorkspace);
+        ngAddGenerator(tree, { project: 'maps', createExamples: true });
+
+        const configPath = `${
+          isAngularCli ? (isWorkspace ? 'projects/maps' : '') : 'apps/maps'
+        }/playwright-testronaut.config.mts`;
+
+        const config = tree.read(configPath, 'utf8') || '';
+
+        expect(config).toMatchSnapshot(
+          `playwright-testronaut.config.mts for ${name}`
+        );
+      });
+
+      for (const lockFile of [
+        'package-lock.json',
+        'yarn.lock',
+        'pnpm-lock.yaml',
+      ]) {
+        it(`should use the pre-configured package manager for the test server via the lock file: ${lockFile}`, async () => {
+          const tree = await setup('test', isWorkspace);
+          tree.write(lockFile, '');
+          ngAddGenerator(tree, { project: 'test' });
+
+          const configPath = `${
+            isAngularCli ? (isWorkspace ? 'projects/test' : '') : 'apps/test'
+          }/playwright-testronaut.config.mts`;
+          const config = tree.read(configPath, 'utf8') || '';
+
+          expect(config).toMatchSnapshot(
+            `playwright-testronaut.config.mts for ${name} with ${lockFile}`
+          );
+        });
+      }
+
       it('should use the main property instead of browser property if it exists', async () => {
-        const tree = await setup();
+        const tree = await setup('test', isWorkspace);
         const config = readProjectConfiguration(tree, 'test');
         const targets = getTargets(config);
 
