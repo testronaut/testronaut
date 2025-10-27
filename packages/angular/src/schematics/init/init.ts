@@ -23,7 +23,7 @@ export async function ngAddGenerator(
   options: NgAddGeneratorSchema
 ) {
   try {
-    const isAngularCli = tree.exists('angular.json') ? true : false;
+    const isAngularCli = !tree.exists('nx.json');
 
     const { build, serve, projectName, config, sourceRoot, root } = isAngularCli
       ? getElementsForAngularCli(tree, options)
@@ -100,7 +100,7 @@ export async function ngAddGenerator(
           .exec,
         tsConfigExtends: `${new Array(directoryLevels)
           .fill('..')
-          .join('/')}/tsconfig.json`,
+          .join('/')}/tsconfig${isAngularCli ? '' : '.base'}.json`,
       }
     );
 

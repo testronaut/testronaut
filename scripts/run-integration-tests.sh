@@ -29,7 +29,7 @@ ln -sf "$TMP_DIR" .integration-tests
 echo "Temporary directory created at $TMP_DIR"
 echo "Note: Directory will remain on error for inspection"
 
-INTEGRATION_TESTS_DIR=".integration-tests"
+INTEGRATION_TESTS_DIR=$TMP_DIR
 
 # Parse command line arguments
 RUN_CLI_STANDALONE=false
@@ -74,6 +74,7 @@ if [ "$RUN_CLI_STANDALONE" = "true" ]; then
 
   cd "cli-standalone"
   pnpm add file:"$ROOT_DIR/packages/core" file:"$ROOT_DIR/packages/angular"
+  pnpm add -D @playwright/test
   pnpm ng add @testronaut/angular --create-examples
   pnpm playwright test -c playwright-testronaut.config.mts
   echo "All Angular CLI integration tests passed!"
@@ -87,6 +88,7 @@ if [ "$RUN_CLI_WORKSPACE" = "true" ]; then
   cd "cli-workspace"
   pnpm ng g app test --defaults
   pnpm add file:"$ROOT_DIR/packages/core" file:"$ROOT_DIR/packages/angular"
+  pnpm add -D @playwright/test
   pnpm ng add @testronaut/angular --create-examples
   pnpm playwright test -c projects/test/playwright-testronaut.config.mts
   echo "All Angular CLI workspace integration tests passed!"
@@ -99,6 +101,7 @@ if [ "$RUN_NX_WORKSPACE" = "true" ]; then
   pnpm create nx-workspace@latest nx-workspace --preset angular-monorepo --app-name test --e2e-test-runner none --unit-test-runner none --no-ssr --bundler esbuild --style css --ai-agents cursor --ci skip
   cd "nx-workspace"
   pnpm add file:"$ROOT_DIR/packages/core" file:"$ROOT_DIR/packages/angular"
+  pnpm add -D @playwright/test
   pnpm nx g @testronaut/angular:init --create-examples
   pnpm playwright test -c apps/test/playwright-testronaut.config.mts
 

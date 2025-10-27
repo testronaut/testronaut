@@ -43,6 +43,7 @@ async function setupForNx(projectName: string) {
 
 async function setupForAngularCli(projectName: string, workspace: boolean) {
   const tree = createTreeWithEmptyWorkspace();
+  tree.delete('nx.json');
   // we are creating a partial config which contains the relevant part for testronaut
   const angularJson = structuredClone(
     workspace
@@ -469,7 +470,9 @@ describe('ng-add generator', () => {
         );
 
         expect(tsconfig.extends).toBe(
-          isWorkspace ? '../../../tsconfig.json' : '../tsconfig.json'
+          isWorkspace
+            ? `../../../tsconfig${isAngularCli ? '' : '.base'}.json`
+            : `../tsconfig${isAngularCli ? '' : '.base'}.json`
         );
       });
     });
