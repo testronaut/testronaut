@@ -11,13 +11,25 @@ set -euo pipefail
 
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)"
-INTEGRATION_TESTS_DIR="$ROOT_DIR/integration-tests"
-# Cleanup function
-echo "Cleaning up integration test projects..."
-if [ -d "$INTEGRATION_TESTS_DIR" ]; then
-  rm -rf "$INTEGRATION_TESTS_DIR"
+
+# Cleanup any previous runs at the beginning
+echo "Cleaning up any previous integration test projects..."
+if [ -L ".integration-tests" ]; then
+  OLD_TMP_DIR=$(readlink .integration-tests)
+  rm ".integration-tests"
+  if [ -d "$OLD_TMP_DIR" ]; then
+    rm -rf "$OLD_TMP_DIR"
+  fi
 fi
-echo "Integration test projects cleaned up"
+echo "Previous test projects cleaned up"
+
+# Create temporary directory and symlink
+export TMP_DIR=$(mktemp -d)
+ln -sf "$TMP_DIR" .integration-tests
+echo "Temporary directory created at $TMP_DIR"
+echo "Note: Directory will remain on error for inspection"
+
+INTEGRATION_TESTS_DIR=".integration-tests"
 
 # Parse command line arguments
 RUN_CLI_STANDALONE=false
