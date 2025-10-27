@@ -88,6 +88,7 @@ export async function ngAddGenerator(
       );
     }
 
+    const directoryLevels = (root ? root.split('/').length : 0) + 1;
     generateFiles(
       tree,
       path.join(__dirname, 'files/root'),
@@ -97,6 +98,9 @@ export async function ngAddGenerator(
         ngCommand: isAngularCli ? 'ng' : 'nx',
         packageManager: getPackageManagerCommand(detectPackageManager(tree))
           .exec,
+        tsConfigExtends: `${new Array(directoryLevels)
+          .fill('..')
+          .join('/')}/tsconfig.json`,
       }
     );
 

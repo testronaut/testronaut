@@ -459,6 +459,19 @@ describe('ng-add generator', () => {
           updatedTargets?.['build']?.configurations?.['testronaut']?.browser
         ).toBeUndefined();
       });
+
+      it(`should have a tsconfig which imports from the project's tsconfig.json`, async () => {
+        const tree = await setup('test', isWorkspace);
+        ngAddGenerator(tree, { project: 'test' });
+        const folder = getFolder(isAngularCli, isWorkspace, 'test');
+        const tsconfig = JSON.parse(
+          tree.read(`${folder}testronaut/tsconfig.json`, 'utf8') || ''
+        );
+
+        expect(tsconfig.extends).toBe(
+          isWorkspace ? '../../../tsconfig.json' : '../tsconfig.json'
+        );
+      });
     });
   }
 });
