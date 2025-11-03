@@ -41,12 +41,12 @@ export function ensurePlaywrightIsInstalled(tree: Tree): void {
 }
 
 /**
- * Extracts the required Playwright version from @testronaut/core's peerDependencies.
+ * Extracts the required Playwright version from @testronaut/angular's peerDependencies.
  * Uses semver to parse the version range and extract the upper bound or base version.
  */
 function getRequiredPlaywrightRange(tree: Tree) {
   const corePackage = JSON.parse(
-    tree.read('node_modules/@testronaut/core/package.json', 'utf-8') || ''
+    tree.read('node_modules/@testronaut/angular/package.json', 'utf-8') || ''
   ) as { peerDependencies: Record<string, string> };
   const playwrightRange = corePackage.peerDependencies['@playwright/test'];
   if (!playwrightRange) {

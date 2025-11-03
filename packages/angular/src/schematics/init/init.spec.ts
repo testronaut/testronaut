@@ -40,7 +40,7 @@ function writeTestronautCorePlaywrightVersion(
   requiredPlaywrightVersion = '>=1.36.0 <=1.56.0'
 ) {
   tree.write(
-    'node_modules/@testronaut/core/package.json',
+    'node_modules/@testronaut/angular/package.json',
     JSON.stringify({
       peerDependencies: { '@playwright/test': requiredPlaywrightVersion },
     })
