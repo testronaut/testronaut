@@ -1,4 +1,4 @@
-import { parseMaxSupportedVersion } from './lib/ensure-playwright-is-installed';
+import { parseMaxSupportedVersion } from './init';
 
 describe('parseMaxSupportedVersion', () => {
   describe('valid range format', () => {
