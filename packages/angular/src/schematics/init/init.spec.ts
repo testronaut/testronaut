@@ -231,22 +231,22 @@ describe('ng-add generator', () => {
   beforeEach(() => {
     vitest.clearAllMocks();
   });
-
-  for (const {
-    name,
-    isAngularCli,
-    isWorkspace,
-    setup,
-    readProjectConfiguration,
-    getTargets,
-    addProject,
-    updateProject,
-  } of [
+  describe.each([
     parametersForAngularCliStandalone,
     parametersForAngularCliWorkspace,
     parametersForNx,
-  ]) {
-    describe(name, () => {
+  ])(
+    '$name',
+    ({
+      name,
+      isAngularCli,
+      isWorkspace,
+      setup,
+      readProjectConfiguration,
+      getTargets,
+      addProject,
+      updateProject,
+    }) => {
       it('should add the testronaut config to the build and serve targets', async () => {
         const tree = await setup('test', isWorkspace);
         await ngAddGenerator(tree, { project: 'test' });
@@ -454,12 +454,9 @@ describe('ng-add generator', () => {
         );
       });
 
-      for (const lockFile of [
-        'package-lock.json',
-        'yarn.lock',
-        'pnpm-lock.yaml',
-      ]) {
-        it(`should use the pre-configured package manager for the test server via the lock file: ${lockFile}`, async () => {
+      it.each(['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'])(
+        `should use the pre-configured package manager for the test server via the lock file: %s`,
+        async (lockFile) => {
           const tree = await setup('test', isWorkspace);
           tree.write(lockFile, '');
           ngAddGenerator(tree, { project: 'test' });
@@ -474,8 +471,8 @@ describe('ng-add generator', () => {
           expect(config).toMatchSnapshot(
             `playwright-testronaut.config.mts for ${name} with ${lockFile}`
           );
-        });
-      }
+        }
+      );
 
       it('should use the main property instead of browser property if it exists', async () => {
         const tree = await setup('test', isWorkspace);
@@ -553,6 +550,6 @@ describe('ng-add generator', () => {
           );
         });
       });
-    });
-  }
+    }
+  );
 });

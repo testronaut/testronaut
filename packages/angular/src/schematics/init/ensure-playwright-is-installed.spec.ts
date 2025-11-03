@@ -28,10 +28,8 @@ describe('parseMaxSupportedVersion', () => {
       ['should reject x-range (1.56.x)', '1.56.x'],
     ];
 
-    for (const [description, input] of invalidCases) {
-      it(description, () => {
-        expect(() => parseMaxSupportedVersion(input)).toThrow();
-      });
-    }
+    it.each(invalidCases)('%s', (_, input) => {
+      expect(() => parseMaxSupportedVersion(input)).toThrow();
+    });
   });
 });
