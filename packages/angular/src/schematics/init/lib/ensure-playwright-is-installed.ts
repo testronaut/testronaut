@@ -45,6 +45,33 @@ export function ensurePlaywrightIsInstalled(tree: Tree): void {
  * Uses semver to parse the version range and extract the upper bound or base version.
  */
 function getRequiredPlaywrightRange(tree: Tree) {
+  /**
+   * TODO:
+   * Although `core` already has a dependency on Playwright, we define it again
+   * in the Angular package. Since Playwright in `core` is declared as a peer
+   * dependency, we currently need to:
+   *  1. Install `core` first to find out which Playwright version is required.
+   *  2. Then trigger another install for Playwright itself.
+   *
+   * A possible fix would be to move `core` from a peer dependency to a regular
+   * dependency in Angular’s `package.json`. However, this doesn’t currently work,
+   * because the peer dependency uses a `workspace` reference, which prevents it
+   * from being installed as a regular dependency.
+   *
+   * As far as I remember, we used the workspace reference trick to support both
+   * CommonJS and ES modules in `core`. That’s also why the `dist` folder is
+   * embedded. CommonJS support was required so users could provide a
+   * `playwright.config.ts` file.
+   *
+   * Since we’ve decided that using a single Playwright config file is out of
+   * scope, and we’ll go with a second Playwright config instead, we can drop
+   * CommonJS support.
+   *
+   * That means we can revert to the original setup — directory structure,
+   * packaging, etc. — and move `core` to a regular dependency in Angular’s
+   * `package.json`. Once that’s done, Playwright will be installed automatically,
+   * and we can remove the redundant dependency from Angular.
+   */
   const corePackage = JSON.parse(
     tree.read('node_modules/@testronaut/angular/package.json', 'utf-8') || ''
   ) as { peerDependencies: Record<string, string> };
