@@ -12,13 +12,15 @@
   ],
   "dependencies": {
     "@nx/devkit": "21.5.3",
+    "@testronaut/core": "workspace:*",
+    "@types/semver": "^7.5.0",
+    "semver": "^7.6.0",
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
     "@angular/core": "^20.0.0",
     "@angular/compiler": "^20.0.0",
-    "@angular/platform-browser": "^20.0.0",
-    "@testronaut/core": "workspace:*"
+    "@angular/platform-browser": "^20.0.0"
   },
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

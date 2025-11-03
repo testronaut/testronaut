@@ -12,6 +12,7 @@ import { EOL } from 'os';
 import { ArchitectConfiguration, ngAddGenerator, throwIfNullish } from './init';
 import { angularJsonTemplate as angularJsonTemplateStandalone } from './init-angular';
 import { angularJsonTemplate as angularJsonTemplateStandaloneWorkspace } from './init-angular-workspace';
+import * as devkit from '@nx/devkit';
 
 // function used for debugging purposes
 function _printTree(tree: Tree, folder = '', indent = 0) {
@@ -34,14 +35,42 @@ const createProject = async (tree: Tree, name: string) => {
   });
 };
 
-async function setupForNx(projectName: string) {
+function writeTestronautCorePlaywrightVersion(
+  tree: Tree,
+  requiredPlaywrightVersion = '>=1.36.0 <=1.56.0'
+) {
+  tree.write(
+    'node_modules/@testronaut/core/package.json',
+    JSON.stringify({
+      peerDependencies: { '@playwright/test': requiredPlaywrightVersion },
+    })
+  );
+}
+
+function fakeInstalledPlaywright(tree: Tree, version = '1.56.0') {
+  tree.write(
+    'node_modules/@playwright/test/package.json',
+    JSON.stringify({ version })
+  );
+}
+
+async function setupForNx(
+  projectName: string,
+  workspace: boolean,
+  requiredPlaywrightVersion?: string
+) {
   const tree = createTreeWithEmptyWorkspace();
   await createProject(tree, projectName);
+  writeTestronautCorePlaywrightVersion(tree, requiredPlaywrightVersion);
 
   return tree;
 }
 
-async function setupForAngularCli(projectName: string, workspace: boolean) {
+async function setupForAngularCli(
+  projectName: string,
+  workspace: boolean,
+  requiredPlaywrightVersion?: string
+) {
   const tree = createTreeWithEmptyWorkspace();
   tree.delete('nx.json');
   // we are creating a partial config which contains the relevant part for testronaut
@@ -63,6 +92,7 @@ async function setupForAngularCli(projectName: string, workspace: boolean) {
   delete angularJson.projects['eternal'];
 
   tree.write('angular.json', JSON.stringify(angularJson, null, 2));
+  writeTestronautCorePlaywrightVersion(tree, requiredPlaywrightVersion);
 
   return tree;
 }
@@ -87,7 +117,11 @@ type TestParameters = {
   name: string;
   isAngularCli: boolean;
   isWorkspace: boolean;
-  setup: (projectName: string, workspace: boolean) => Promise<Tree>;
+  setup: (
+    projectName: string,
+    workspace: boolean,
+    requiredPlaywrightVersion?: string
+  ) => Promise<Tree>;
   readProjectConfiguration: (
     tree: Tree,
     projectName: string
@@ -184,10 +218,18 @@ const parametersForNx: TestParameters = {
 describe('ng-add generator', () => {
   const errorLogger = vitest.spyOn(logger, 'error');
   const infoLogger = vitest.spyOn(logger, 'info');
+  const warnLogger = vitest.spyOn(logger, 'warn');
+  const packageInstallTask = vitest.spyOn(devkit, 'installPackagesTask');
+
+  beforeAll(() => {
+    packageInstallTask.mockImplementation(() => true);
+    errorLogger.mockReturnValue(void true);
+    infoLogger.mockReturnValue(void true);
+    warnLogger.mockReturnValue(void true);
+  });
 
   beforeEach(() => {
-    errorLogger.mockClear();
-    infoLogger.mockClear();
+    vitest.clearAllMocks();
   });
 
   for (const {
@@ -474,6 +516,42 @@ describe('ng-add generator', () => {
             ? `../../../tsconfig${isAngularCli ? '' : '.base'}.json`
             : `../tsconfig${isAngularCli ? '' : '.base'}.json`
         );
+      });
+
+      describe('playwright installation', () => {
+        it('should install playwright', async () => {
+          const tree = await setup('test', isWorkspace);
+          ngAddGenerator(tree, { project: 'test' });
+
+          expect(packageInstallTask).toHaveBeenCalled();
+        });
+
+        it('should not install playwright, if it is already available', async () => {
+          const tree = await setup('test', isWorkspace);
+          fakeInstalledPlaywright(tree);
+          ngAddGenerator(tree, { project: 'test' });
+          expect(packageInstallTask).not.toHaveBeenCalled();
+        });
+
+        it('should print a warning if the installed playwright version is too low', async () => {
+          const tree = await setup('test', isWorkspace, '>=1.36.0 <=1.56.0');
+          fakeInstalledPlaywright(tree, '1.35');
+          ngAddGenerator(tree, { project: 'test' });
+          expect(packageInstallTask).not.toHaveBeenCalled();
+          expect(warnLogger).toHaveBeenCalledWith(
+            'Installed Playwright version (1.35) may not be compatible with Testronaut. Recommended version: 1.56.0. Consider changing your Playwright version to avoid issues.'
+          );
+        });
+
+        it('should print a warning if the installed palywright version is too low', async () => {
+          const tree = await setup('test', isWorkspace, '>=1.10.0 <=1.20.0');
+          fakeInstalledPlaywright(tree, '1.30');
+          ngAddGenerator(tree, { project: 'test' });
+          expect(packageInstallTask).not.toHaveBeenCalled();
+          expect(warnLogger).toHaveBeenCalledWith(
+            'Installed Playwright version (1.30) may not be compatible with Testronaut. Recommended version: 1.20.0. Consider changing your Playwright version to avoid issues.'
+          );
+        });
       });
     });
   }

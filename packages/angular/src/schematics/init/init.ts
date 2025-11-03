@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { EOL } from 'os';
+import { ensurePlaywrightIsInstalled } from './lib/ensure-playwright-is-installed';
 
 // Angular CLI specific configurtion
 export type ArchitectConfiguration = ProjectConfiguration['targets'];
@@ -117,6 +118,8 @@ export async function ngAddGenerator(
 
     // see https://github.com/npm/npm/issues/3763
     tree.write(path.join(root, 'testronaut', '.gitignore'), 'generated' + EOL);
+
+    ensurePlaywrightIsInstalled(tree);
 
     logger.info(
       getSuccessMessage(
