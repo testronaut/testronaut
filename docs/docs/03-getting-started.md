@@ -117,7 +117,8 @@ Update `angular.json` _(or `project.json` if you are using Nx)_ by adding a `tes
   "serve": {
     "configurations": {
       "testronaut": {
-        "buildTarget": "demos-angular:build:testronaut"
+        "buildTarget": "demos-angular:build:testronaut",
+        "prebundle": false
       }
     }
   },
