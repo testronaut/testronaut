@@ -79,7 +79,7 @@ setUpTestronautAngular();
     "types": []
   },
   "files": ["main.ts"],
-  "include": ["**/*.d.ts"]
+  "include": ["**/*.d.ts", "../src/**/*.ts"]
 }
 ```
 
