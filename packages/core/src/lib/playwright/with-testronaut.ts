@@ -1,6 +1,6 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 import { spawnSync } from 'node:child_process';
-import { dirname, join } from 'node:path/posix';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ExtractionWriter } from '../extraction-writer/extraction-writer';
 import type { FileSystem } from '../infra/file-system';

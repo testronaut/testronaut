@@ -1,4 +1,4 @@
-import { join, relative } from 'node:path/posix';
+import { join, relative } from 'node:path';
 import * as ts from 'typescript';
 
 import {
@@ -12,7 +12,7 @@ import {
   generateImportDeclaration,
 } from './ast-factory';
 import { FileOps } from './file-ops';
-import { adjustImportPath } from './path-utils';
+import { adjustImportPath, toPosixPath } from './path-utils';
 
 export class ExtractionWriter {
   readonly #config: ExtractionWriterConfig;
@@ -82,7 +82,7 @@ ${this.#generateExtractedFunctionsFile({
    * e.g. `globalThis['hash123'] = () => import('./src/my-component.spec.ts');`
    */
   #generateEntrypointGlobal({ hash, path }: { hash: string; path: string }) {
-    return `globalThis['${hash}'] = () => import('./${path}');`;
+    return `globalThis['${hash}'] = () => import('./${toPosixPath(path)}');`;
   }
 
   /**
