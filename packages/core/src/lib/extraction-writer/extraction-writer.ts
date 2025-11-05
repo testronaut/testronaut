@@ -67,12 +67,13 @@ ${this.#generateExtractedFunctionsFile({
       { overwrite: true }
     );
 
+    const posixRelativePath = toPosixPath(relativePath);
     await this.#fileOps.upsertLine({
       path: this.#entryPointPath,
-      match: relativePath,
+      match: posixRelativePath,
       replacement: this.#generateEntrypointGlobal({
         hash: fileAnalysis.hash,
-        path: relativePath,
+        path: posixRelativePath,
       }),
     });
   }
@@ -82,7 +83,7 @@ ${this.#generateExtractedFunctionsFile({
    * e.g. `globalThis['hash123'] = () => import('./src/my-component.spec.ts');`
    */
   #generateEntrypointGlobal({ hash, path }: { hash: string; path: string }) {
-    return `globalThis['${hash}'] = () => import('./${toPosixPath(path)}');`;
+    return `globalThis['${hash}'] = () => import('./${path}');`;
   }
 
   /**
