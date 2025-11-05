@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path/posix';
+import { dirname } from 'node:path';
 
 /**
  * TODO: replace this with `FileOps` from https://github.com/testronaut/testronaut/pull/4
