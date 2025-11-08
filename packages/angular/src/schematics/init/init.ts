@@ -10,6 +10,7 @@ import {
   readJson,
   Tree,
   updateProjectConfiguration,
+  ProjectsConfigurations,
 } from '@nx/devkit';
 import { type NgAddGeneratorSchema } from './schema';
 import * as path from 'path';
@@ -54,8 +55,12 @@ export async function ngAddGenerator(
       return;
     }
 
-    const testronautConfig = {
-      ...(build.configurations['development'] ?? {}),
+    const devConfig = (build.configurations['development'] || {}) as Record<
+      string,
+      unknown
+    >;
+    const testronautConfig: Record<string, unknown> = {
+      ...devConfig,
       index: `${root ? `${root}/` : ''}testronaut/index.html`,
       tsConfig: `${root ? `${root}/` : ''}testronaut/tsconfig.json`,
       optimization: false,
@@ -75,7 +80,7 @@ export async function ngAddGenerator(
     if (isAngularCli) {
       const originalConfig = JSON.parse(
         tree.read('angular.json', 'utf8') as string
-      );
+      ) as ProjectsConfigurations;
       const modifiedConfig = {
         ...originalConfig,
         projects: {
@@ -141,7 +146,6 @@ export async function ngAddGenerator(
 }
 
 function getProjectName(
-  tree: Tree,
   projects: Record<string, unknown>,
   providedProjectName: string | undefined
 ) {
@@ -189,12 +193,19 @@ function getSuccessMessage(
 
 function getElementsForAngularCli(tree: Tree, options: NgAddGeneratorSchema) {
   type ArchitectConfiguration = ProjectConfiguration['targets'];
-  const projects: Record<
-    string,
-    { architect: ArchitectConfiguration; sourceRoot: string; root: string }
-  > = JSON.parse(tree.read('angular.json', 'utf8') as string)['projects'];
+  const angularConfig = JSON.parse(tree.read('angular.json', 'utf8') || '') as {
+    projects: Record<
+      string,
+      {
+        architect: ArchitectConfiguration;
+        sourceRoot: string;
+        root: string;
+      }
+    >;
+  };
+  const projects = angularConfig.projects;
 
-  const projectName = getProjectName(tree, projects, options.project);
+  const projectName = getProjectName(projects, options.project);
   const config = projects[projectName];
   const sourceRoot = config.sourceRoot;
   const root = config.root;
@@ -216,7 +227,7 @@ function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
     getProjects(tree).entries()
   );
 
-  const projectName = getProjectName(tree, projects, options.project);
+  const projectName = getProjectName(projects, options.project);
   const config = projects[projectName];
   const sourceRoot = throwIfNullish(config.sourceRoot);
   const root = throwIfNullish(config.root);
@@ -372,12 +383,10 @@ export function parseMaxSupportedVersion(versionRange: string) {
  */
 function getInstalledPlaywrightVersion(tree: Tree): string | undefined {
   if (tree.exists('node_modules/@playwright/test')) {
-    const packageJson = readJson(
+    const packageJson: { version: string } = readJson(
       tree,
       'node_modules/@playwright/test/package.json'
-    ) as {
-      version: string;
-    };
+    );
     return packageJson.version;
   }
 
