@@ -8,7 +8,7 @@ Better code than words, here is a simple example of an Angular Testronaut test:
 import { test, expect } from '@testronaut/angular';
 import { Basket } from './basket.ng';
 
-test('should be able to login', async ({ page, mount }) => {
+test('should render clear basket button', async ({ page, mount }) => {
   await mount(Basket);
   await expect(page.getByRole('button', { name: 'Clear basket' })).toBeVisible();
 });
