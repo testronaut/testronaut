@@ -13,7 +13,7 @@
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.36.0"
+    "@playwright/test": ">=1.36.0 <=1.56.0"
   },
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",

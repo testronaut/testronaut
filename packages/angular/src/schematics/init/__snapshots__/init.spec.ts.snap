@@ -1,0 +1,421 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ng-add generator > 'Angular CLI Standalone' > should start the test server by using the project's name > playwright-testronaut.config.mts for Angular CLI Standalone 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'npx ng serve maps --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Angular CLI Standalone' > should use the pre-configured package manager for the test server via the lock file: package-lock.json > playwright-testronaut.config.mts for Angular CLI Standalone with package-lock.json 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'npx ng serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Angular CLI Standalone' > should use the pre-configured package manager for the test server via the lock file: pnpm-lock.yaml > playwright-testronaut.config.mts for Angular CLI Standalone with pnpm-lock.yaml 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'pnpm exec ng serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Angular CLI Standalone' > should use the pre-configured package manager for the test server via the lock file: yarn.lock > playwright-testronaut.config.mts for Angular CLI Standalone with yarn.lock 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'yarn ng serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Angular CLI Workspace' > should start the test server by using the project's name > playwright-testronaut.config.mts for Angular CLI Workspace 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'npx ng serve maps --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Angular CLI Workspace' > should use the pre-configured package manager for the test server via the lock file: package-lock.json > playwright-testronaut.config.mts for Angular CLI Workspace with package-lock.json 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'npx ng serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Angular CLI Workspace' > should use the pre-configured package manager for the test server via the lock file: pnpm-lock.yaml > playwright-testronaut.config.mts for Angular CLI Workspace with pnpm-lock.yaml 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'pnpm exec ng serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Angular CLI Workspace' > should use the pre-configured package manager for the test server via the lock file: yarn.lock > playwright-testronaut.config.mts for Angular CLI Workspace with yarn.lock 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'yarn ng serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Nx' > should start the test server by using the project's name > playwright-testronaut.config.mts for Nx 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'npx nx serve maps --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Nx' > should use the pre-configured package manager for the test server via the lock file: package-lock.json > playwright-testronaut.config.mts for Nx with package-lock.json 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'npx nx serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Nx' > should use the pre-configured package manager for the test server via the lock file: pnpm-lock.yaml > playwright-testronaut.config.mts for Nx with pnpm-lock.yaml 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'pnpm exec nx serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
+
+exports[`ng-add generator > 'Nx' > should use the pre-configured package manager for the test server via the lock file: yarn.lock > playwright-testronaut.config.mts for Nx with yarn.lock 1`] = `
+"import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
+
+/**
+ * Read environment variables from file.
+ * https://github.com/motdotla/dotenv
+ */
+// require('dotenv').config();
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config = defineConfig(
+  withTestronautAngular({
+    configPath: new URL(import.meta.url).pathname,
+    testServer: {
+      command:
+        'yarn nx serve test --configuration testronaut --port {port} --live-reload false',
+    },
+  }),
+  {
+    projects: [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
+    ],
+  }
+);
+
+export default config;
+"
+`;
