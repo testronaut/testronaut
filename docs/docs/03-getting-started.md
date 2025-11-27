@@ -18,30 +18,60 @@ This test will work just like any other Playwright test, but the `Basket` compon
 
 ## Setup
 
-Here is how you can get this to work. _(It's a bit boilerplat-y for now, but we're working on a better experience for the next release)_
+Since we recommend using `pnpm` as package manager, all the examples use pnpm. Testronaut also works `npm` and `yarn`, though.
 
-### 1. Install Playwright and Testronaut
+### Schematics
+
+The recommended way to get started is by using schematics. It will also generate example tests, to get you started as quickly as possible.
+
+If you're running the Angular CLI, simply execute:
+
+```bash
+pnpm ng add @testronaut/angular
+```
+
+If you're using Nx instead, install the package and initialize it with:
+
+```bash
+pnpm i @testronaut/angular
+pnpm nx g @testronaut/angular:init
+```
+
+### Manual Setup
+
+If you prefer not to use schematics, you can also set up Testronaut manually.
+
+The following instructions apply to an Angular CLI application.  
+If you're using Nx, place the files inside your app folder, for example: `apps/my-app`.
+
+#### 1. Install Playwright and Testronaut
 
 ```sh
 pnpm add -D @playwright/test @testronaut/angular @testronaut/core
+
 # or use npm if you prefer when things are slow so that you can grab some coffee and relax ☕️
 npm add -D @playwright/test @testronaut/angular @testronaut/core
 ```
 
-### 2. Create Test Server files
+#### 2. Create Test Server files
 
 ```sh
 mkdir -p testronaut
 
 cp src/index.html testronaut/
+```
 
-cat > testronaut/main.ts <<EOF
+**testronaut/main.ts**
+
+```ts
 import { setUpTestronautAngular } from '@testronaut/angular/browser';
 import './generated';
 setUpTestronautAngular();
-EOF
+```
 
-cat > testronaut/tsconfig.json <<EOF
+**testronaut/tsconfig.json**
+
+```json
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
@@ -49,14 +79,23 @@ cat > testronaut/tsconfig.json <<EOF
     "types": []
   },
   "files": ["main.ts"],
-  "include": ["**/*.d.ts"]
+  "include": ["**/*.d.ts", "../src/**/*.ts"]
 }
-EOF
-
-echo generated > testronaut/.gitignore
 ```
 
-### 3. Configure Test Server
+**testronaut/.gitignore**
+
+```
+generated
+```
+
+**testronaut/generated/index.ts**
+
+```ts
+// This is just an empty file
+```
+
+#### 3. Configure Test Server
 
 Update `angular.json` _(or `project.json` if you are using Nx)_ by adding a `testronaut` configuration:
 
@@ -78,7 +117,8 @@ Update `angular.json` _(or `project.json` if you are using Nx)_ by adding a `tes
   "serve": {
     "configurations": {
       "testronaut": {
-        "buildTarget": "demos-angular:build:testronaut"
+        "buildTarget": "demos-angular:build:testronaut",
+        "prebundle": false
       }
     }
   },
@@ -86,39 +126,30 @@ Update `angular.json` _(or `project.json` if you are using Nx)_ by adding a `tes
 }
 ```
 
-### 4. Configure Playwright
+#### 4. Configure Playwright
 
-Create a `playwright-testronaut.config.ts` file:
+Create a `playwright-testronaut.config.mts` file:
 
 ```ts
-import { defineConfig, devices, withTestronautAngular } from '@testronaut/angular';
-import { fileURLToPath } from 'node:url';
+import { defineConfig, devices } from '@playwright/test';
+import { withTestronautAngular } from '@testronaut/angular';
 
-const __filename = fileURLToPath(import.meta.url);
-
-export default defineConfig(
+const config = defineConfig(
   withTestronautAngular({
-    configPath: __filename,
+    configPath: new URL(import.meta.url).pathname,
     testServer: {
-      command: 'ng serve --configuration testronaut --port {port} --live-reload false',
+      command: 'pnpm ng serve --configuration testronaut --port {port} --live-reload false',
     },
   }),
   {
-    testDir: '.',
-    /* Fail the build on CI if you accidentally left test.only in the source code. */
-    forbidOnly: !!process.env['CI'],
-    /* Retry on CI only */
-    retries: process.env['CI'] ? 2 : 0,
-    reporter: 'html',
-    use: {
-      trace: 'on-first-retry',
-    },
-
     projects: [
-      { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-      { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-      { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+      },
     ],
   }
 );
+
+export default config;
 ```
