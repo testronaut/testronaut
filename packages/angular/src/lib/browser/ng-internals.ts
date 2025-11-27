@@ -1,9 +1,9 @@
 import { Type } from '@angular/core';
-import { OutputTypes } from '../common';
+import { OutputValueMap } from '../common';
 
 export function getComponentOutputs<CMP_TYPE extends Type<unknown>>(
   cmp: CMP_TYPE
-): Array<keyof OutputTypes<InstanceType<CMP_TYPE>>> {
+): Array<keyof OutputValueMap<InstanceType<CMP_TYPE>>> {
   const unveiledCmp = cmp as unknown as {
     ɵcmp?: { outputs: Record<string, unknown> };
   };

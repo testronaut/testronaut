@@ -13,8 +13,10 @@ import {
 import {
   BrowserMount,
   OUTPUT_BUS_VARIABLE_NAME,
-  OutputEvent,
-  OutputTypes,
+  OutputBusEvent,
+  OutputValueMap,
+  AsyncFactory,
+  ValueOrAsyncFactory,
 } from '../common';
 import { TestronautAngularNotSetUpError } from '../playwright/testronaut-angular-not-set-up.error';
 import { getComponentOutputs } from './ng-internals';
@@ -22,12 +24,16 @@ import { getComponentOutputs } from './ng-internals';
 export const mount = async <CMP_TYPE extends Type<unknown>>(
   ...args: Parameters<BrowserMount<CMP_TYPE>>
 ): ReturnType<BrowserMount<CMP_TYPE>> => {
-  const [cmp, { inputs = {} } = {}] = args;
+  const [cmpOrAsyncFactory, { inputs = {} } = {}] = args;
+
+  const cmp = isAsyncFactory(cmpOrAsyncFactory)
+    ? await cmpOrAsyncFactory()
+    : cmpOrAsyncFactory;
 
   assertIsSetUp();
   const g = globalThis as unknown as {
     [OUTPUT_BUS_VARIABLE_NAME]: (
-      outputEvent: OutputEvent<InstanceType<typeof cmp>>
+      outputEvent: OutputBusEvent<InstanceType<typeof cmp>>
     ) => void;
   };
 
@@ -77,10 +83,16 @@ function assertIsSetUp() {
   }
 }
 
-function subscribeToOutput<CMP, PROP extends keyof OutputTypes<CMP>>(
+function isAsyncFactory<T>(
+  value: ValueOrAsyncFactory<T>
+): value is AsyncFactory<T> {
+  return typeof value === 'function' && value.prototype === undefined;
+}
+
+function subscribeToOutput<CMP, PROP extends keyof OutputValueMap<CMP>>(
   componentInstance: CMP,
   outputName: PROP,
-  callback: (value: OutputTypes<CMP>[PROP]) => void
+  callback: (value: OutputValueMap<CMP>[PROP]) => void
 ) {
   (componentInstance[outputName] as OutputRef<CMP[PROP]>)?.subscribe(
     callback as (value: CMP[PROP]) => void

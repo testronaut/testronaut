@@ -2,10 +2,12 @@ import type { Type } from '@angular/core';
 import { test as base, type Page } from '@testronaut/core';
 import {
   BrowserMount,
+  ComponentOutput,
   Inputs,
   OUTPUT_BUS_VARIABLE_NAME,
-  OutputEvent,
-  OutputTypes,
+  OutputBusEvent,
+  OutputValueMap,
+  ValueOrAsyncFactory,
 } from '../common';
 
 export { expect } from '@testronaut/core';
@@ -83,7 +85,7 @@ async function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
   outputNames,
 }: {
   page: Page;
-  outputNames: Array<keyof OutputTypes<InstanceType<CMP_TYPE>>>;
+  outputNames: Array<keyof OutputValueMap<InstanceType<CMP_TYPE>>>;
 }) {
   const outputsCalls = Object.fromEntries(
     outputNames.map((name) => [name, { calls: [] }])
@@ -91,14 +93,9 @@ async function listenToOutputBus<CMP_TYPE extends Type<unknown>>({
 
   await page.exposeFunction(
     OUTPUT_BUS_VARIABLE_NAME,
-    (outputEvent: OutputEvent<InstanceType<CMP_TYPE>>) => {
+    (outputEvent: OutputBusEvent<InstanceType<CMP_TYPE>>) => {
       const output = outputsCalls[outputEvent.outputName];
-      output.calls = [
-        ...output.calls,
-        outputEvent.value as OutputTypes<
-          InstanceType<CMP_TYPE>
-        >[typeof outputEvent.outputName],
-      ];
+      output.calls = [...output.calls, outputEvent.value];
     }
   );
 
@@ -119,13 +116,13 @@ type MountParameters<CMP_TYPE extends Type<unknown>> =
   | MountParametersNamed<CMP_TYPE>;
 
 type MountParametersAnonymous<CMP_TYPE extends Type<unknown>> = [
-  cmp: CMP_TYPE,
+  cmp: ValueOrAsyncFactory<CMP_TYPE>,
   opts?: MountOpts<InstanceType<CMP_TYPE>>
 ];
 
 type MountParametersNamed<CMP_TYPE extends Type<unknown>> = [
   name: string,
-  cmp: CMP_TYPE,
+  cmp: ValueOrAsyncFactory<CMP_TYPE>,
   opts?: MountOpts<InstanceType<CMP_TYPE>>
 ];
 
@@ -138,11 +135,7 @@ export interface MountResult<CMP> {
 }
 
 export type Outputs<CMP> = {
-  [PROP in keyof CMP]: CMP[PROP] extends Subscribable<infer VALUE>
+  [PROP in keyof CMP]: CMP[PROP] extends ComponentOutput<infer VALUE>
     ? { calls: VALUE[] }
     : never;
-};
-
-type Subscribable<T> = {
-  subscribe: (fn: (value: T) => void) => unknown;
 };

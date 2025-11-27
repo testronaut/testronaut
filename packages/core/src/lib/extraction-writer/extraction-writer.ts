@@ -56,6 +56,11 @@ export class ExtractionWriter {
     const relativePath = relative(this.#config.projectRoot, fileAnalysis.path);
     const destFilePath = join(this.#extractionPath, relativePath);
 
+    fileAnalysis = this.#adjustDynamicImportsPaths({
+      fileAnalysis,
+      destFilePath,
+    });
+
     await this.#fileSystem.writeFile(
       destFilePath,
       `\
@@ -160,6 +165,43 @@ ${this.#generateExtractedFunctionsFile({
         identifiers: importIdentifiers.map((ident) => ident.name),
       })
     );
+  }
+
+  /**
+   * Adjusts the dynamic imports paths to be relative to the extracted function.
+   */
+  #adjustDynamicImportsPaths({
+    fileAnalysis,
+    destFilePath,
+  }: {
+    fileAnalysis: FileAnalysis;
+    destFilePath: string;
+  }) {
+    const extractedFunctions = fileAnalysis.extractedFunctions.map(
+      (extractedFunction) => {
+        let code = extractedFunction.code;
+        for (const dynamicImport of extractedFunction.dynamicImports) {
+          code = code.replace(
+            `import('${dynamicImport}')`,
+            `import('${adjustImportPath({
+              srcFilePath: fileAnalysis.path,
+              destFilePath,
+              importPath: dynamicImport,
+            })}')`
+          );
+        }
+
+        return {
+          ...extractedFunction,
+          code,
+        };
+      }
+    );
+
+    return {
+      ...fileAnalysis,
+      extractedFunctions,
+    };
   }
 
   /**
