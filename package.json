@@ -6,7 +6,8 @@
   "scripts": {
     "prepare": "husky",
     "lift-off": "nx e2e demos-angular",
-    "reset": "nx run reset && nx reset"
+    "reset": "nx run reset && nx reset",
+    "check:playwright-version-sync": "node scripts/check-playwright-version-sync.mjs"
   },
   "private": true,
   "dependencies": {

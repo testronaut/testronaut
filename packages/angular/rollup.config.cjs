@@ -51,6 +51,11 @@ function findGeneratorAssets() {
         glob: 'schema.d.ts',
         output: `src/schematics/${d.name}`,
       },
+      {
+        input: `${baseDir}/${d.name}`,
+        glob: 'playwright-version.json',
+        output: `src/schematics/${d.name}`,
+      },
     ];
 
     // Glob option does not preserve the directory structure, so we need to get all the files recursively

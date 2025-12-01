@@ -9,7 +9,12 @@ import {
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { EOL } from 'os';
-import { ArchitectConfiguration, ngAddGenerator, throwIfNullish } from './init';
+import {
+  ArchitectConfiguration,
+  ngAddGenerator,
+  throwIfNullish,
+  PLAYWRIGHT_VERSION_RANGE,
+} from './init';
 import { angularJsonTemplate as angularJsonTemplateStandalone } from './init-angular';
 import { angularJsonTemplate as angularJsonTemplateStandaloneWorkspace } from './init-angular-workspace';
 import * as devkit from '@nx/devkit';
@@ -35,19 +40,10 @@ const createProject = async (tree: Tree, name: string) => {
   });
 };
 
-function writeTestronautCorePlaywrightVersion(
+function fakeInstalledPlaywright(
   tree: Tree,
-  requiredPlaywrightVersion = '>=1.36.0 <=1.56.0'
+  version = PLAYWRIGHT_VERSION_RANGE.upper
 ) {
-  tree.write(
-    'node_modules/@testronaut/angular/package.json',
-    JSON.stringify({
-      peerDependencies: { '@playwright/test': requiredPlaywrightVersion },
-    })
-  );
-}
-
-function fakeInstalledPlaywright(tree: Tree, version = '1.56.0') {
   tree.write(
     'node_modules/@playwright/test/package.json',
     JSON.stringify({ version })
@@ -56,20 +52,17 @@ function fakeInstalledPlaywright(tree: Tree, version = '1.56.0') {
 
 async function setupForNx(
   projectName: string,
-  workspace: boolean,
-  requiredPlaywrightVersion?: string
+  workspace: boolean
 ) {
   const tree = createTreeWithEmptyWorkspace();
   await createProject(tree, projectName);
-  writeTestronautCorePlaywrightVersion(tree, requiredPlaywrightVersion);
 
   return tree;
 }
 
 async function setupForAngularCli(
   projectName: string,
-  workspace: boolean,
-  requiredPlaywrightVersion?: string
+  workspace: boolean
 ) {
   const tree = createTreeWithEmptyWorkspace();
   tree.delete('nx.json');
@@ -92,7 +85,6 @@ async function setupForAngularCli(
   delete angularJson.projects['eternal'];
 
   tree.write('angular.json', JSON.stringify(angularJson, null, 2));
-  writeTestronautCorePlaywrightVersion(tree, requiredPlaywrightVersion);
 
   return tree;
 }
@@ -119,8 +111,7 @@ type TestParameters = {
   isWorkspace: boolean;
   setup: (
     projectName: string,
-    workspace: boolean,
-    requiredPlaywrightVersion?: string
+    workspace: boolean
   ) => Promise<Tree>;
   readProjectConfiguration: (
     tree: Tree,
@@ -531,22 +522,22 @@ describe('ng-add generator', () => {
         });
 
         it('should print a warning if the installed playwright version is too low', async () => {
-          const tree = await setup('test', isWorkspace, '>=1.36.0 <=1.56.0');
+          const tree = await setup('test', isWorkspace);
           fakeInstalledPlaywright(tree, '1.35');
           ngAddGenerator(tree, { project: 'test' });
           expect(packageInstallTask).not.toHaveBeenCalled();
           expect(warnLogger).toHaveBeenCalledWith(
-            'Installed Playwright version (1.35) may not be compatible with Testronaut. Recommended version: 1.56.0. Consider changing your Playwright version to avoid issues.'
+            `Installed Playwright version (1.35) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`
           );
         });
 
-        it('should print a warning if the installed palywright version is too low', async () => {
-          const tree = await setup('test', isWorkspace, '>=1.10.0 <=1.20.0');
-          fakeInstalledPlaywright(tree, '1.30');
+        it('should print a warning if the installed playwright version is above the supported range', async () => {
+          const tree = await setup('test', isWorkspace);
+          fakeInstalledPlaywright(tree, '1.70.0');
           ngAddGenerator(tree, { project: 'test' });
           expect(packageInstallTask).not.toHaveBeenCalled();
           expect(warnLogger).toHaveBeenCalledWith(
-            'Installed Playwright version (1.30) may not be compatible with Testronaut. Recommended version: 1.20.0. Consider changing your Playwright version to avoid issues.'
+            `Installed Playwright version (1.70.0) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`
           );
         });
       });

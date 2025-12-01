@@ -23,6 +23,7 @@
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx",
     "src/**/*.d.ts",
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/schematics/init/playwright-version.json"
   ]
 }
