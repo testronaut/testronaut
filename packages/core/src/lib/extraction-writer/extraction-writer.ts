@@ -1,4 +1,4 @@
-import { join, relative } from 'node:path/posix';
+import { join, relative } from 'node:path';
 import * as ts from 'typescript';
 
 import {
@@ -12,7 +12,7 @@ import {
   generateImportDeclaration,
 } from './ast-factory';
 import { FileOps } from './file-ops';
-import { adjustImportPath } from './path-utils';
+import { adjustImportPath, toPosixPath } from './path-utils';
 
 export class ExtractionWriter {
   readonly #config: ExtractionWriterConfig;
@@ -67,12 +67,13 @@ ${this.#generateExtractedFunctionsFile({
       { overwrite: true }
     );
 
+    const posixRelativePath = toPosixPath(relativePath);
     await this.#fileOps.upsertLine({
       path: this.#entryPointPath,
-      match: relativePath,
+      match: posixRelativePath,
       replacement: this.#generateEntrypointGlobal({
         hash: fileAnalysis.hash,
-        path: relativePath,
+        path: posixRelativePath,
       }),
     });
   }

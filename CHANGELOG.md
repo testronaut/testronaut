@@ -1,3 +1,23 @@
+## 0.0.11 (2025-11-05)
+
+### 🩹 Fixes
+
+- **core:** clear import map on windows too ([#83](https://github.com/testronaut/testronaut/pull/83))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
+## 0.0.10 (2025-11-05)
+
+### 🩹 Fixes
+
+- **core:** 🐞 fix windows support ([#81](https://github.com/testronaut/testronaut/pull/81))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.9 (2025-10-15)
 
 ### 🩹 Fixes

@@ -4,7 +4,7 @@ import {
   type FileSystem,
   type WriteFileOptions,
 } from './file-system';
-import { dirname } from 'node:path/posix';
+import { dirname } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 export class FileSystemImpl implements FileSystem {
