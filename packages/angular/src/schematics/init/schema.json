@@ -17,7 +17,7 @@
       "type": "boolean",
       "description": "Should we create some example tests?",
       "default": false,
-      "x-prompt": "Should we create some example tests? (highly recommended)"
+      "x-prompt": "Should we create some example tests?"
     }
   }
 }
