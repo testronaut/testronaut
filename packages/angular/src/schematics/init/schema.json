@@ -13,7 +13,7 @@
       },
       "default": ""
     },
-    "createExamples": {
+    "withExamples": {
       "type": "boolean",
       "description": "Should we create some example tests?",
       "default": false,
