@@ -120,7 +120,7 @@ export async function ngAddGenerator(
 
     const examplesDir = path.join(sourceRoot, 'testronaut-examples');
 
-    if (options.createExamples) {
+    if (options.withExamples) {
       generateFiles(
         tree,
         path.join(__dirname, 'files/source-root', 'testronaut-examples'),
@@ -137,7 +137,7 @@ export async function ngAddGenerator(
     logger.info(
       getSuccessMessage(
         options.project,
-        Boolean(options.createExamples),
+        Boolean(options.withExamples),
         examplesDir
       )
     );
