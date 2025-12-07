@@ -3,23 +3,22 @@ import {
   convertNxGenerator,
   generateFiles,
   getPackageManagerCommand,
-  getProjects,
   installPackagesTask,
   logger,
   ProjectConfiguration,
   readJson,
-  Tree,
-  updateProjectConfiguration,
-  ProjectsConfigurations,
+  Tree
 } from '@nx/devkit';
-import { type NgAddGeneratorSchema } from './schema';
+import { EOL } from 'os';
 import * as path from 'path';
+import * as semver from 'semver';
 import { fileURLToPath } from 'url';
+import { detectPackageManager } from '../util/detect-package-manager';
+import { createDevkit } from '../util/devkit';
+import * as playwrightVersionJson from './playwright-version.json';
+import { type NgAddGeneratorSchema } from './schema';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import { EOL } from 'os';
-import * as semver from 'semver';
-import * as playwrightVersionJson from './playwright-version.json';
 
 export const PLAYWRIGHT_VERSION_RANGE = playwrightVersionJson as {
   lower: string;
@@ -33,11 +32,9 @@ export async function ngAddGenerator(
   options: NgAddGeneratorSchema
 ) {
   try {
-    const isAngularCli = !tree.exists('nx.json');
+    const devkit = createDevkit(tree);
 
-    const { build, serve, projectName, config, sourceRoot, root } = isAngularCli
-      ? getElementsForAngularCli(tree, options)
-      : getElementsForNx(tree, options);
+    const { build, serve, projectName, config, sourceRoot, root } = devkit.getElements(tree, options);
 
     if (!build.configurations) {
       build.configurations = {};
@@ -82,25 +79,7 @@ export async function ngAddGenerator(
       prebundle: false,
     };
 
-    if (isAngularCli) {
-      const originalConfig = JSON.parse(
-        tree.read('angular.json', 'utf8') as string
-      ) as ProjectsConfigurations;
-      const modifiedConfig = {
-        ...originalConfig,
-        projects: {
-          ...originalConfig.projects,
-          [projectName]: config,
-        },
-      };
-      tree.write('angular.json', JSON.stringify(modifiedConfig, null, 2));
-    } else {
-      updateProjectConfiguration(
-        tree,
-        projectName,
-        config as ProjectConfiguration
-      );
-    }
+    devkit.updateProjectConfiguration(tree, projectName, config);
 
     const directoryLevels = (root ? root.split('/').length : 0) + 1;
     generateFiles(
@@ -109,12 +88,12 @@ export async function ngAddGenerator(
       path.join(root, '.'),
       {
         projectName,
-        ngCommand: isAngularCli ? 'ng' : 'nx',
+        ngCommand: devkit.cmd,
         packageManager: getPackageManagerCommand(detectPackageManager(tree))
           .exec,
         tsConfigExtends: `${new Array(directoryLevels)
           .fill('..')
-          .join('/')}/tsconfig${isAngularCli ? '' : '.base'}.json`,
+          .join('/')}/${devkit.tsConfigName}`,
       }
     );
 
@@ -150,29 +129,7 @@ export async function ngAddGenerator(
   }
 }
 
-function getProjectName(
-  projects: Record<string, unknown>,
-  providedProjectName: string | undefined
-) {
-  if (Object.keys(projects).length === 0) {
-    throw new Error('No projects found in workspace');
-  }
 
-  const projectNames = Object.keys(projects);
-
-  if (providedProjectName) {
-    if (projectNames.includes(providedProjectName)) {
-      return providedProjectName;
-    }
-    throw new Error(
-      `Project '${providedProjectName}' not found. Available projects: ${projectNames
-        .map((name) => `'${name}'`)
-        .join(', ')}`
-    );
-  }
-
-  return projectNames[0];
-}
 
 function getSuccessMessage(
   projectName: string,
@@ -196,94 +153,6 @@ function getSuccessMessage(
   return message;
 }
 
-function getElementsForAngularCli(tree: Tree, options: NgAddGeneratorSchema) {
-  type ArchitectConfiguration = ProjectConfiguration['targets'];
-  const angularConfig = JSON.parse(tree.read('angular.json', 'utf8') || '') as {
-    projects: Record<
-      string,
-      {
-        architect: ArchitectConfiguration;
-        sourceRoot: string;
-        root: string;
-      }
-    >;
-  };
-  const projects = angularConfig.projects;
-
-  const projectName = getProjectName(projects, options.project);
-  const config = projects[projectName];
-  const sourceRoot = config.sourceRoot;
-  const root = config.root;
-
-  if (!(config.architect?.['serve'] && config.architect?.['build'])) {
-    throw new Error(
-      `Project ${projectName} is missing serve and/or build targets`
-    );
-  }
-
-  const build = config.architect['build'];
-  const serve = config.architect['serve'];
-
-  return { build, serve, projectName, config, sourceRoot, root };
-}
-
-function getElementsForNx(tree: Tree, options: NgAddGeneratorSchema) {
-  const projects: Record<string, ProjectConfiguration> = Object.fromEntries(
-    getProjects(tree).entries()
-  );
-
-  const projectName = getProjectName(projects, options.project);
-  const config = projects[projectName];
-  const sourceRoot = throwIfNullish(config.sourceRoot);
-  const root = throwIfNullish(config.root);
-
-  if (!(config.targets?.['serve'] && config.targets?.['build'])) {
-    throw new Error(
-      `Project ${config.name} is missing serve and/or build targets`
-    );
-  }
-
-  const build = config.targets['build'];
-  const serve = config.targets['serve'];
-
-  return { build, serve, projectName, config, sourceRoot, root };
-}
-
-export default convertNxGenerator(ngAddGenerator);
-
-export function throwIfNullish<T>(
-  value: T | undefined,
-  message = 'Value is nullish'
-): T {
-  if (value === undefined || value === null) {
-    throw new Error(message);
-  }
-  return value;
-}
-
-export function assertNotNullish<T>(value: T | undefined): asserts value is T {
-  throwIfNullish(value);
-}
-
-/**
- * Copy from https://github.com/nrwl/nx/blob/master/packages/create-nx-workspace/src/utils/package-manager.ts#L21
- * Cannot use original from nx because we need to access the try and not the local file system for testing.
- */
-
-export function detectPackageManager(
-  tree: Tree
-): 'bun' | 'yarn' | 'pnpm' | 'npm' {
-  if (tree.exists('bun.lockb') || tree.exists('bun.lock')) {
-    return 'bun';
-  }
-  if (tree.exists('yarn.lock')) {
-    return 'yarn';
-  }
-  if (tree.exists('pnpm-lock.yaml')) {
-    return 'pnpm';
-  }
-  return 'npm';
-}
 
 /**
  * Ensures Playwright is installed with a compatible version.
@@ -367,3 +236,5 @@ function isVersionCompatible(
 ): boolean {
   return semver.satisfies(installedVersion, `>=${lower} <=${upper}`);
 }
+  
+export default convertNxGenerator(ngAddGenerator);

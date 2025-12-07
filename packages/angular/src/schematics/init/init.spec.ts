@@ -12,12 +12,12 @@ import { EOL } from 'os';
 import {
   ArchitectConfiguration,
   ngAddGenerator,
-  throwIfNullish,
   PLAYWRIGHT_VERSION_RANGE,
 } from './init';
 import { angularJsonTemplate as angularJsonTemplateStandalone } from './init-angular';
 import { angularJsonTemplate as angularJsonTemplateStandaloneWorkspace } from './init-angular-workspace';
 import * as devkit from '@nx/devkit';
+import { throwIfNullish } from '../util/throw-if-nullish';
 
 // function used for debugging purposes
 function _printTree(tree: Tree, folder = '', indent = 0) {
@@ -414,7 +414,7 @@ describe('ng-add generator', () => {
 
       it('shoud add examples when requested', async () => {
         const tree = await setup('test', isWorkspace);
-        ngAddGenerator(tree, { project: 'test', createExamples: true });
+        ngAddGenerator(tree, { project: 'test', withExamples: true });
 
         const folder = `${getFolder(
           isAngularCli,
