@@ -50,20 +50,14 @@ function fakeInstalledPlaywright(
   );
 }
 
-async function setupForNx(
-  projectName: string,
-  workspace: boolean
-) {
+async function setupForNx(projectName: string) {
   const tree = createTreeWithEmptyWorkspace();
   await createProject(tree, projectName);
 
   return tree;
 }
 
-async function setupForAngularCli(
-  projectName: string,
-  workspace: boolean
-) {
+async function setupForAngularCli(projectName: string, workspace: boolean) {
   const tree = createTreeWithEmptyWorkspace();
   tree.delete('nx.json');
   // we are creating a partial config which contains the relevant part for testronaut
@@ -109,10 +103,7 @@ type TestParameters = {
   name: string;
   isAngularCli: boolean;
   isWorkspace: boolean;
-  setup: (
-    projectName: string,
-    workspace: boolean
-  ) => Promise<Tree>;
+  setup: (projectName: string, workspace: boolean) => Promise<Tree>;
   readProjectConfiguration: (
     tree: Tree,
     projectName: string
@@ -430,7 +421,7 @@ describe('ng-add generator', () => {
 
       it("should start the test server by using the project's name", async () => {
         const tree = await setup('maps', isWorkspace);
-        ngAddGenerator(tree, { project: 'maps', createExamples: true });
+        ngAddGenerator(tree, { project: 'maps', withExamples: true });
 
         const configPath = `${getFolder(
           isAngularCli,
