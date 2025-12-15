@@ -7,34 +7,38 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const corePackageJsonPath = path.resolve(
-  __dirname,
-  '../packages/core/package.json'
-);
 const playwrightVersionJsonPath = path.resolve(
   __dirname,
   '../packages/angular/src/schematics/init/playwright-version.json'
 );
-
-const corePackageJson = readJson(corePackageJsonPath);
-const playwrightRange = corePackageJson?.peerDependencies?.['@playwright/test'];
-
-if (!playwrightRange) {
-  console.error(
-    'Could not find @playwright/test peer dependency in @testronaut/core package.json.'
-  );
-  process.exit(1);
-}
-
-const coreUpperBound = extractUpperBoundFromRange(playwrightRange);
 const playwrightVersionJson = readJson(playwrightVersionJsonPath);
 const schematicUpperBound = playwrightVersionJson.upper;
 
-if (coreUpperBound !== schematicUpperBound) {
-  console.error(
-    `Playwright version mismatch detected. @testronaut/core requires <=${coreUpperBound}, but schematic hard-codes ${schematicUpperBound}.`
+for (const libName of ['core', 'angular']) {
+  const libPackageJsonPath = path.resolve(
+    __dirname,
+    `../packages/${libName}/package.json`
   );
-  process.exit(1);
+
+  const libPackageJson = readJson(libPackageJsonPath);
+  const playwrightRange =
+    libPackageJson?.peerDependencies?.['@playwright/test'];
+
+  if (!playwrightRange) {
+    console.error(
+      `Could not find @playwright/test peer dependency in @testronaut/${libName} package.json.`
+    );
+    process.exit(1);
+  }
+
+  const libUpperBound = extractUpperBoundFromRange(playwrightRange);
+
+  if (libUpperBound !== schematicUpperBound) {
+    console.error(
+      `Playwright version mismatch detected. @testronaut/${libName} requires <=${libUpperBound}, but schematic hard-codes ${schematicUpperBound}.`
+    );
+    process.exit(1);
+  }
 }
 
 console.log(
