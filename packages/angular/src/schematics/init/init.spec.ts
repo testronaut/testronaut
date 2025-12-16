@@ -32,13 +32,13 @@ function _printTree(tree: Tree, folder = '', indent = 0) {
  * Utility Functions
  */
 
-const createProject = async (tree: Tree, name: string) => {
+async function createProject(tree: Tree, name: string) {
   await applicationGenerator(tree, {
     directory: `apps/${name}`,
     name,
     e2eTestRunner: E2eTestRunner.None,
   });
-};
+}
 
 function fakeInstalledPlaywright(
   tree: Tree,
@@ -261,7 +261,7 @@ describe('ng-add generator', () => {
 
       it('should log an error if there are no projects', async () => {
         const tree = createTreeWithEmptyWorkspace();
-        ngAddGenerator(tree, { project: 'test' });
+        await ngAddGenerator(tree, { project: 'test' });
         expect(errorLogger).toHaveBeenCalledWith(
           'Testronaut failed to activate: No projects found in workspace'
         );
@@ -342,7 +342,7 @@ describe('ng-add generator', () => {
         await addProject(tree, 'test2', isWorkspace);
         await addProject(tree, 'test3', isWorkspace);
 
-        ngAddGenerator(tree, { project: '' });
+        await ngAddGenerator(tree, { project: '' });
 
         const config = readProjectConfiguration(tree, 'memory');
         const targets = getTargets(config);
@@ -371,7 +371,7 @@ describe('ng-add generator', () => {
 
       it('should add the testronaut files to the project', async () => {
         const tree = await setup('test', isWorkspace);
-        ngAddGenerator(tree, { project: 'test' });
+        await ngAddGenerator(tree, { project: 'test' });
         const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
         [
@@ -462,15 +462,15 @@ describe('ng-add generator', () => {
         const targets = getTargets(config);
         const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
-        const developmentConfig = throwIfNullish(
-          targets?.['build']?.configurations?.['development']
+        const options = throwIfNullish<Record<string, string>>(
+          targets?.['build']?.options
         );
-        developmentConfig.main = 'main.ts';
-        delete developmentConfig.browser;
+        options['main'] = 'main.ts';
+        delete options['browser'];
 
         updateProject(tree, 'test', config);
 
-        ngAddGenerator(tree, { project: 'test' });
+        await ngAddGenerator(tree, { project: 'test' });
         const updatedTargets = getTargets(
           readProjectConfiguration(tree, 'test')
         );

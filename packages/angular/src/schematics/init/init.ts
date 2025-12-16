@@ -7,7 +7,7 @@ import {
   logger,
   ProjectConfiguration,
   readJson,
-  Tree
+  Tree,
 } from '@nx/devkit';
 import { EOL } from 'os';
 import * as path from 'path';
@@ -17,6 +17,7 @@ import { detectPackageManager } from '../util/detect-package-manager';
 import { createDevkit } from '../util/devkit';
 import * as playwrightVersionJson from './playwright-version.json';
 import { type NgAddGeneratorSchema } from './schema';
+import { assertNotNullish } from '../util/assert-not-nullish';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -34,7 +35,8 @@ export async function ngAddGenerator(
   try {
     const devkit = createDevkit(tree);
 
-    const { build, serve, projectName, config, sourceRoot, root } = devkit.getElements(tree, options);
+    const { build, serve, projectName, config, sourceRoot, root } =
+      devkit.getElements(tree, options);
 
     if (!build.configurations) {
       build.configurations = {};
@@ -57,21 +59,24 @@ export async function ngAddGenerator(
       return;
     }
 
-    const devConfig = (build.configurations['development'] || {}) as Record<
-      string,
-      unknown
-    >;
+    assertNotNullish(build.options);
+    const entryPoint =
+      'browser' in build.options
+        ? { browser: build.options.browser }
+        : { main: build.options.main };
+
+    const prefix = root ? `${root}/` : '';
     const testronautConfig: Record<string, unknown> = {
-      ...devConfig,
-      index: `${root ? `${root}/` : ''}testronaut/index.html`,
-      tsConfig: `${root ? `${root}/` : ''}testronaut/tsconfig.json`,
+      ...entryPoint,
+      index: `${prefix}testronaut/index.html`,
+      tsConfig: `${prefix}testronaut/tsconfig.json`,
+      sourceMap: true,
       optimization: false,
       extractLicenses: false,
     };
     testronautConfig[`${'main' in testronautConfig ? 'main' : 'browser'}`] = `${
       root ? `${root}/` : ''
     }testronaut/main.ts`;
-
     build.configurations['testronaut'] = testronautConfig;
 
     serve.configurations['testronaut'] = {
@@ -91,9 +96,9 @@ export async function ngAddGenerator(
         ngCommand: devkit.cmd,
         packageManager: getPackageManagerCommand(detectPackageManager(tree))
           .exec,
-        tsConfigExtends: `${new Array(directoryLevels)
-          .fill('..')
-          .join('/')}/${devkit.tsConfigName}`,
+        tsConfigExtends: `${new Array(directoryLevels).fill('..').join('/')}/${
+          devkit.tsConfigName
+        }`,
       }
     );
 
@@ -129,8 +134,6 @@ export async function ngAddGenerator(
   }
 }
 
-
-
 function getSuccessMessage(
   projectName: string,
   withExamples: boolean,
@@ -152,7 +155,6 @@ function getSuccessMessage(
 
   return message;
 }
-
 
 /**
  * Ensures Playwright is installed with a compatible version.
@@ -236,5 +238,5 @@ function isVersionCompatible(
 ): boolean {
   return semver.satisfies(installedVersion, `>=${lower} <=${upper}`);
 }
-  
+
 export default convertNxGenerator(ngAddGenerator);

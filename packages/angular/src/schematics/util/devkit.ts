@@ -45,12 +45,16 @@ function createAngularCliAdapter(): Devkit {
         );
       }
 
-      const build = config.architect['build'];
+      const build = config.architect['build'] as BuildTargetConfiguration;
       const serve = config.architect['serve'];
 
       return { build, serve, projectName, config, sourceRoot, root };
     },
-    updateProjectConfiguration(tree: Tree, projectName: string, config: ProjectConfiguration) {
+    updateProjectConfiguration(
+      tree: Tree,
+      projectName: string,
+      config: ProjectConfiguration
+    ) {
       const originalConfig = JSON.parse(
         tree.read('angular.json', 'utf8') as string
       ) as ProjectsConfigurations;
@@ -64,7 +68,7 @@ function createAngularCliAdapter(): Devkit {
       tree.write('angular.json', JSON.stringify(modifiedConfig, null, 2));
     },
     cmd: 'ng',
-    tsConfigName: 'tsconfig.json'
+    tsConfigName: 'tsconfig.json',
   };
 }
 
@@ -86,31 +90,43 @@ function createNxAdapter(): Devkit {
         );
       }
 
-      const build = config.targets['build'];
+      const build = config.targets['build'] as BuildTargetConfiguration;
       const serve = config.targets['serve'];
 
       return { build, serve, projectName, config, sourceRoot, root };
     },
-    updateProjectConfiguration(tree: Tree, projectName: string, config: ProjectConfiguration) {
+    updateProjectConfiguration(
+      tree: Tree,
+      projectName: string,
+      config: ProjectConfiguration
+    ) {
       updateProjectConfiguration(tree, projectName, config);
     },
     cmd: 'nx',
-    tsConfigName: 'tsconfig.base.json'
+    tsConfigName: 'tsconfig.base.json',
   };
 }
 
 type Devkit = {
   getElements(tree: Tree, options: NgAddGeneratorSchema): GetElementsResult;
-  updateProjectConfiguration(tree: Tree, projectName: string, config: ProjectConfiguration): void;
+  updateProjectConfiguration(
+    tree: Tree,
+    projectName: string,
+    config: ProjectConfiguration
+  ): void;
   cmd: string;
-  tsConfigName: string
-}
+  tsConfigName: string;
+};
+
+type BuildTargetConfiguration = TargetConfiguration<
+  { browser: string } | { main: string }
+>;
 
 type GetElementsResult = {
   projectName: string;
   config: ProjectConfiguration;
   sourceRoot: string;
   root: string;
-  build: TargetConfiguration;
+  build: BuildTargetConfiguration;
   serve: TargetConfiguration;
-}
+};
