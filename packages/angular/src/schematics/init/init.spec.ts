@@ -1,23 +1,18 @@
-import { applicationGenerator, E2eTestRunner } from '@nx/angular/generators';
+import * as devkit from '@nx/devkit';
 import {
-  addProjectConfiguration,
   logger,
-  ProjectConfiguration,
-  readProjectConfiguration as readProjectConfigurationNx,
-  Tree,
-  updateProjectConfiguration,
+  Tree
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { EOL } from 'os';
-import {
-  ArchitectConfiguration,
-  ngAddGenerator,
-  PLAYWRIGHT_VERSION_RANGE,
-} from './init';
-import { angularJsonTemplate as angularJsonTemplateStandalone } from './init-angular';
-import { angularJsonTemplate as angularJsonTemplateStandaloneWorkspace } from './init-angular-workspace';
-import * as devkit from '@nx/devkit';
 import { throwIfNullish } from '../util/throw-if-nullish';
+import {
+  ngAddGenerator,
+  PLAYWRIGHT_VERSION_RANGE
+} from './init';
+import { NxTestDevkit } from './test/nx-test-devkit';
+import { TestDevKit } from './test/test-devkit';
+import { AngularCliTestDevkit } from './test/angular-cli-test-devkit';
 
 // function used for debugging purposes
 function _printTree(tree: Tree, folder = '', indent = 0) {
@@ -28,17 +23,7 @@ function _printTree(tree: Tree, folder = '', indent = 0) {
   }
 }
 
-/**
- * Utility Functions
- */
 
-async function createProject(tree: Tree, name: string) {
-  await applicationGenerator(tree, {
-    directory: `apps/${name}`,
-    name,
-    e2eTestRunner: E2eTestRunner.None,
-  });
-}
 
 function fakeInstalledPlaywright(
   tree: Tree,
@@ -48,39 +33,6 @@ function fakeInstalledPlaywright(
     'node_modules/@playwright/test/package.json',
     JSON.stringify({ version })
   );
-}
-
-async function setupForNx(projectName: string) {
-  const tree = createTreeWithEmptyWorkspace();
-  await createProject(tree, projectName);
-
-  return tree;
-}
-
-async function setupForAngularCli(projectName: string, workspace: boolean) {
-  const tree = createTreeWithEmptyWorkspace();
-  tree.delete('nx.json');
-  // we are creating a partial config which contains the relevant part for testronaut
-  const angularJson = structuredClone(
-    workspace
-      ? angularJsonTemplateStandaloneWorkspace
-      : angularJsonTemplateStandalone
-  ) as {
-    projects: Record<string, unknown>;
-  };
-  angularJson.projects[projectName] = angularJson.projects['eternal'];
-  const config = angularJson.projects[projectName] as {
-    root: string;
-    sourceRoot: string;
-  };
-  config.root = config.root.replace('test', projectName);
-  config.sourceRoot = config.sourceRoot.replace('test', projectName);
-  angularJson.projects[projectName] = config;
-  delete angularJson.projects['eternal'];
-
-  tree.write('angular.json', JSON.stringify(angularJson, null, 2));
-
-  return tree;
 }
 
 function getFolder(
@@ -95,106 +47,36 @@ function getFolder(
     : `apps/${projectName}/`;
 }
 
+
 /**
  * Parameters for Tests
  */
-
 type TestParameters = {
   name: string;
   isAngularCli: boolean;
   isWorkspace: boolean;
-  setup: (projectName: string, workspace: boolean) => Promise<Tree>;
-  readProjectConfiguration: (
-    tree: Tree,
-    projectName: string
-  ) => ProjectConfiguration;
-  getTargets: (config: ProjectConfiguration) => ArchitectConfiguration;
-  addProject: (tree: Tree, projectName: string, isWorkspace: boolean) => void;
-  updateProject: (
-    tree: Tree,
-    projectName: string,
-    config: ProjectConfiguration
-  ) => void;
+  devkit: TestDevKit;
 };
 
 const parametersForAngularCliStandalone: TestParameters = {
   name: 'Angular CLI Standalone',
   isAngularCli: true,
   isWorkspace: false,
-  setup: setupForAngularCli,
-  readProjectConfiguration: (tree: Tree, projectName: string) => {
-    const config = tree.read('angular.json', 'utf8') as string;
-    const parseConfig = JSON.parse(config) as {
-      projects: Record<string, ProjectConfiguration>;
-    };
-    return parseConfig.projects[projectName];
-  },
-  getTargets(config: ProjectConfiguration) {
-    return (config as unknown as { architect: ArchitectConfiguration })
-      .architect;
-  },
-  addProject(tree: Tree, projectName: string, isWorkspace: boolean) {
-    const originalConfig = JSON.parse(
-      tree.read('angular.json', 'utf8') as string
-    );
-
-    const angularJsonTemplate = isWorkspace
-      ? angularJsonTemplateStandaloneWorkspace
-      : angularJsonTemplateStandalone;
-    const newProject = structuredClone(angularJsonTemplate.projects['eternal']);
-    tree.write(
-      'angular.json',
-      JSON.stringify(
-        {
-          ...originalConfig,
-          projects: {
-            ...originalConfig.projects,
-            [projectName]: newProject,
-          },
-        },
-        null,
-        2
-      )
-    );
-  },
-  updateProject(tree: Tree, projectName: string, config: ProjectConfiguration) {
-    const originalConfig = JSON.parse(
-      tree.read('angular.json', 'utf8') as string
-    );
-    const modifiedConfig = {
-      ...originalConfig,
-      projects: {
-        ...originalConfig.projects,
-        [projectName]: config,
-      },
-    };
-    tree.write('angular.json', JSON.stringify(modifiedConfig, null, 2));
-  },
+  devkit: new AngularCliTestDevkit(false),
 };
 
 const parametersForAngularCliWorkspace: TestParameters = {
   ...parametersForAngularCliStandalone,
   name: 'Angular CLI Workspace',
   isWorkspace: true,
+  devkit: new AngularCliTestDevkit(true),
 };
 
 const parametersForNx: TestParameters = {
   name: 'Nx',
   isAngularCli: false,
   isWorkspace: true,
-  setup: setupForNx,
-  readProjectConfiguration: (tree: Tree, projectName: string) =>
-    readProjectConfigurationNx(tree, projectName),
-  getTargets: (config: ProjectConfiguration) => config.targets,
-  addProject(tree: Tree, projectName: string, _isWorkspace: boolean) {
-    addProjectConfiguration(tree, projectName, {
-      projectType: 'application',
-      root: `apps/${projectName}`,
-    });
-  },
-  updateProject(tree: Tree, projectName: string, config: ProjectConfiguration) {
-    updateProjectConfiguration(tree, projectName, config);
-  },
+  devkit: new NxTestDevkit(),
 };
 
 describe('ng-add generator', () => {
@@ -223,17 +105,13 @@ describe('ng-add generator', () => {
       name,
       isAngularCli,
       isWorkspace,
-      setup,
-      readProjectConfiguration,
-      getTargets,
-      addProject,
-      updateProject,
+      devkit,
     }) => {
       it('should add the testronaut config to the build and serve targets', async () => {
-        const tree = await setup('test', isWorkspace);
+        const tree = await devkit.setup('test', isWorkspace);
         await ngAddGenerator(tree, { project: 'test' });
-        const config = readProjectConfiguration(tree, 'test');
-        const targets = getTargets(config);
+        const config = devkit.readProjectConfiguration(tree, 'test');
+        const targets = devkit.getTargets(config);
 
         const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
@@ -268,9 +146,9 @@ describe('ng-add generator', () => {
       });
 
       it('should log an error if the project is not found', async () => {
-        const tree = await setup('test', isWorkspace);
+        const tree = await devkit.setup('test', isWorkspace);
 
-        addProject(tree, 'bar', isWorkspace);
+        devkit.addProject(tree, 'bar', isWorkspace);
 
         ngAddGenerator(tree, { project: 'foo' });
         expect(errorLogger).toHaveBeenCalledWith(
@@ -279,18 +157,18 @@ describe('ng-add generator', () => {
       });
 
       it('should not modify the configuration if testronaut is already present in build', async () => {
-        const tree = await setup('test', isWorkspace);
-        const config = readProjectConfiguration(tree, 'test');
-        const targets = getTargets(config);
+        const tree = await devkit.setup('test', isWorkspace);
+        const config = devkit.readProjectConfiguration(tree, 'test');
+      const targets = devkit.getTargets(config);
         assert(targets?.['build']?.configurations);
         targets['build'].configurations['testronaut'] = {
           foo: 'bar',
         };
-        updateProject(tree, 'test', config);
+        devkit.updateProjectConfiguration(tree, 'test', config);
 
         ngAddGenerator(tree, { project: 'test' });
-        const updatedConfig = readProjectConfiguration(tree, 'test');
-        const updatedTargets = getTargets(updatedConfig);
+        const updatedConfig = devkit.readProjectConfiguration(tree, 'test');
+        const updatedTargets = devkit.getTargets(updatedConfig);
         expect(
           updatedTargets?.['build']?.configurations?.['testronaut']
         ).toEqual({
@@ -308,18 +186,18 @@ describe('ng-add generator', () => {
       });
 
       it('should not modify the configuration if testronaut is already present in serve', async () => {
-        const tree = await setup('test', isWorkspace);
-        const config = readProjectConfiguration(tree, 'test');
-        const targets = getTargets(config);
+        const tree = await devkit.setup('test', isWorkspace);
+        const config = devkit.readProjectConfiguration(tree, 'test');
+        const targets = devkit.getTargets(config);
         assert(targets?.['serve']?.configurations);
         targets['serve'].configurations['testronaut'] = {
           foo: 'bar',
         };
-        updateProject(tree, 'test', config);
+        devkit.updateProjectConfiguration(tree, 'test', config);
 
         ngAddGenerator(tree, { project: 'test' });
-        const newConfig = readProjectConfiguration(tree, 'test');
-        const updatedTargets = getTargets(newConfig);
+        const newConfig = devkit.readProjectConfiguration(tree, 'test');
+        const updatedTargets = devkit.getTargets(newConfig);
 
         expect(
           updatedTargets?.['build']?.configurations?.['testronaut']
@@ -337,15 +215,15 @@ describe('ng-add generator', () => {
       });
 
       it('picks the first project if no project is provided', async () => {
-        const tree = await setup('memory', isWorkspace);
-        await addProject(tree, 'test1', isWorkspace);
-        await addProject(tree, 'test2', isWorkspace);
-        await addProject(tree, 'test3', isWorkspace);
+        const tree = await devkit.setup('memory', isWorkspace);
+        await devkit.addProject(tree, 'test1', isWorkspace);
+        await devkit.addProject(tree, 'test2', isWorkspace);
+        await devkit.addProject(tree, 'test3', isWorkspace);
 
         await ngAddGenerator(tree, { project: '' });
 
-        const config = readProjectConfiguration(tree, 'memory');
-        const targets = getTargets(config);
+        const config = devkit.readProjectConfiguration(tree, 'memory');
+        const targets = devkit.getTargets(config);
         const folder = getFolder(isAngularCli, isWorkspace, 'memory');
         expect(
           targets?.['build']?.configurations?.['testronaut']
@@ -370,7 +248,7 @@ describe('ng-add generator', () => {
       });
 
       it('should add the testronaut files to the project', async () => {
-        const tree = await setup('test', isWorkspace);
+        const tree = await devkit.setup('test', isWorkspace);
         await ngAddGenerator(tree, { project: 'test' });
         const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
@@ -393,7 +271,7 @@ describe('ng-add generator', () => {
       });
 
       it('should not add the examples by default', async () => {
-        const tree = await setup('test', isWorkspace);
+        const tree = await devkit.setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test' });
         const folder = `${getFolder(
           isAngularCli,
@@ -404,7 +282,7 @@ describe('ng-add generator', () => {
       });
 
       it('shoud add examples when requested', async () => {
-        const tree = await setup('test', isWorkspace);
+        const tree = await devkit.setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test', withExamples: true });
 
         const folder = `${getFolder(
@@ -420,7 +298,7 @@ describe('ng-add generator', () => {
       });
 
       it("should start the test server by using the project's name", async () => {
-        const tree = await setup('maps', isWorkspace);
+        const tree = await devkit.setup('maps', isWorkspace);
         ngAddGenerator(tree, { project: 'maps', withExamples: true });
 
         const configPath = `${getFolder(
@@ -439,7 +317,7 @@ describe('ng-add generator', () => {
       it.each(['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'])(
         `should use the pre-configured package manager for the test server via the lock file: %s`,
         async (lockFile) => {
-          const tree = await setup('test', isWorkspace);
+          const tree = await devkit.setup('test', isWorkspace);
           tree.write(lockFile, '');
           ngAddGenerator(tree, { project: 'test' });
 
@@ -457,9 +335,9 @@ describe('ng-add generator', () => {
       );
 
       it('should use the main property instead of browser property if it exists', async () => {
-        const tree = await setup('test', isWorkspace);
-        const config = readProjectConfiguration(tree, 'test');
-        const targets = getTargets(config);
+        const tree = await devkit.setup('test', isWorkspace);
+        const config = devkit.readProjectConfiguration(tree, 'test');
+        const targets = devkit.getTargets(config);
         const folder = getFolder(isAngularCli, isWorkspace, 'test');
 
         const options = throwIfNullish<Record<string, string>>(
@@ -468,11 +346,11 @@ describe('ng-add generator', () => {
         options['main'] = 'main.ts';
         delete options['browser'];
 
-        updateProject(tree, 'test', config);
+        devkit.updateProjectConfiguration(tree, 'test', config);
 
         await ngAddGenerator(tree, { project: 'test' });
-        const updatedTargets = getTargets(
-          readProjectConfiguration(tree, 'test')
+        const updatedTargets = devkit.getTargets(
+          devkit.readProjectConfiguration(tree, 'test')
         );
         expect(
           updatedTargets?.['build']?.configurations?.['testronaut']?.main
@@ -483,7 +361,7 @@ describe('ng-add generator', () => {
       });
 
       it(`should have a tsconfig which imports from the project's tsconfig.json`, async () => {
-        const tree = await setup('test', isWorkspace);
+        const tree = await devkit.setup('test', isWorkspace);
         ngAddGenerator(tree, { project: 'test' });
         const folder = getFolder(isAngularCli, isWorkspace, 'test');
         const tsconfig = JSON.parse(
@@ -499,21 +377,21 @@ describe('ng-add generator', () => {
 
       describe('playwright installation', () => {
         it('should install playwright', async () => {
-          const tree = await setup('test', isWorkspace);
+          const tree = await devkit.setup('test', isWorkspace);
           ngAddGenerator(tree, { project: 'test' });
 
           expect(packageInstallTask).toHaveBeenCalled();
         });
 
         it('should not install playwright, if it is already available', async () => {
-          const tree = await setup('test', isWorkspace);
+          const tree = await devkit.setup('test', isWorkspace);
           fakeInstalledPlaywright(tree);
           ngAddGenerator(tree, { project: 'test' });
           expect(packageInstallTask).not.toHaveBeenCalled();
         });
 
         it('should print a warning if the installed playwright version is too low', async () => {
-          const tree = await setup('test', isWorkspace);
+          const tree = await devkit.setup('test', isWorkspace);
           fakeInstalledPlaywright(tree, '1.35');
           ngAddGenerator(tree, { project: 'test' });
           expect(packageInstallTask).not.toHaveBeenCalled();
@@ -523,7 +401,7 @@ describe('ng-add generator', () => {
         });
 
         it('should print a warning if the installed playwright version is above the supported range', async () => {
-          const tree = await setup('test', isWorkspace);
+          const tree = await devkit.setup('test', isWorkspace);
           fakeInstalledPlaywright(tree, '1.70.0');
           ngAddGenerator(tree, { project: 'test' });
           expect(packageInstallTask).not.toHaveBeenCalled();
