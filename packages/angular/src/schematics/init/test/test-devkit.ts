@@ -1,5 +1,5 @@
 import { ProjectConfiguration, Tree } from '@nx/devkit';
-import { Devkit } from 'src/schematics/util/devkit';
+import { Devkit } from '../../util/devkit';
 import { ArchitectConfiguration } from '../init';
 
 export interface TestDevKit extends Devkit {

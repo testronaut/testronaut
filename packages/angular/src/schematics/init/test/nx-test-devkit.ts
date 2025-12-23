@@ -5,7 +5,7 @@ import {
   Tree,
 } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import { NxDevkit } from 'src/schematics/util/devkit';
+import { NxDevkit } from '../../util/devkit';
 import { ProjectConfiguration } from '@nx/devkit';
 import { createProject } from './util';
 

@@ -1,6 +1,6 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { TestDevKit } from './test-devkit';
-import { AngularCliDevkit } from 'src/schematics/util/devkit';
+import { AngularCliDevkit } from '../../util/devkit';
 import { ProjectConfiguration, Tree } from '@nx/devkit';
 import { ArchitectConfiguration } from '../init';
 
