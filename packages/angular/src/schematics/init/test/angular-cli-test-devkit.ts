@@ -2,7 +2,7 @@ import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { TestDevKit } from './test-devkit';
 import { AngularCliDevkit } from '../../util/devkit';
 import { ProjectConfiguration, Tree } from '@nx/devkit';
-import { ArchitectConfiguration } from '../init';
+import { ArchitectConfiguration } from '../index';
 
 import { angularJsonTemplate as angularJsonTemplateStandalone } from './init-angular';
 import { angularJsonTemplate as angularJsonTemplateStandaloneWorkspace } from './init-angular-workspace';

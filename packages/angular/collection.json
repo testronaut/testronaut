@@ -4,13 +4,13 @@
   "version": "0.0.1",
   "schematics": {
     "ng-add": {
-      "factory": "./dist/src/schematics/init/init",
-      "schema": "./dist/src/schematics/init/schema.json",
+      "factory": "./dist/schematics/init/index.mjs",
+      "schema": "./dist/schematics/init/schema.json",
       "description": "ng-add generator"
     },
     "init": {
-      "factory": "./dist/src/schematics/init/init",
-      "schema": "./dist/src/schematics/init/schema.json",
+      "factory": "./dist/schematics/init/index.mjs",
+      "schema": "./dist/schematics/init/schema.json",
       "description": "init generator"
     }
   }

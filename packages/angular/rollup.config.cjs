@@ -3,36 +3,15 @@ const {
 } = require('../build-utils/create-rollup-config.cjs');
 const path = require('path');
 const fs = require('fs');
-const { execSync } = require('child_process');
 
-const baseConfig = createRollupConfig({
-  main: './src/index.ts',
-  additionalEntryPoints: ['./src/browser.ts'],
+module.exports = createRollupConfig({
   assets: findGeneratorAssets(),
+  input: {
+    browser: './src/browser.ts',
+    'schematics/init/index': './src/schematics/init/index.ts',
+  },
+  main: './src/index.ts',
 });
-
-module.exports = {
-  ...baseConfig,
-  plugins: [
-    ...(baseConfig.plugins || []),
-    {
-      name: 'post-build-generators',
-      writeBundle() {
-        console.log('Compiling generators to CommonJS...');
-        try {
-          execSync('pnpm tsc --project tsconfig.generators.json', {
-            stdio: 'inherit',
-            cwd: __dirname,
-          });
-          console.log('✓ Generator compilation complete!');
-        } catch (error) {
-          console.error('Generator compilation failed:', error.message);
-          process.exit(1);
-        }
-      },
-    },
-  ],
-};
 
 function findGeneratorAssets() {
   const baseDir = path.join(__dirname, 'src', 'schematics');
@@ -40,32 +19,29 @@ function findGeneratorAssets() {
     .readdirSync(baseDir, { withFileTypes: true })
     .filter((d) => d.isDirectory());
   const assets = generatorDirs.flatMap((d) => {
+    const output = `schematics/${d.name}`;
     const files = [
       {
         input: `${baseDir}/${d.name}`,
         glob: 'schema.json',
-        output: `src/schematics/${d.name}`,
+        output,
       },
       {
         input: `${baseDir}/${d.name}`,
         glob: 'schema.d.ts',
-        output: `src/schematics/${d.name}`,
+        output,
       },
       {
         input: `${baseDir}/${d.name}`,
         glob: 'playwright-version.json',
-        output: `src/schematics/${d.name}`,
+        output,
       },
     ];
 
     // Glob option does not preserve the directory structure, so we need to get all the files recursively
     const filesDir = path.join(baseDir, d.name, 'files');
     if (fs.existsSync(filesDir)) {
-      const allFiles = getAllFilesRecursively(
-        filesDir,
-        '',
-        `src/schematics/${d.name}/files`
-      );
+      const allFiles = getAllFilesRecursively(filesDir, '', `${output}/files`);
       const fileAssets = allFiles.map((file) => ({
         input: path.dirname(file.input),
         glob: file.filename,

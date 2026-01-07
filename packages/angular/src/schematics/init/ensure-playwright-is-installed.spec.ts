@@ -1,4 +1,4 @@
-import { parseMaxSupportedVersion } from './init';
+import { parseMaxSupportedVersion } from './index';
 
 describe('parseMaxSupportedVersion', () => {
   describe('valid range format', () => {

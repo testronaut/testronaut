@@ -4,5 +4,7 @@ const {
 
 module.exports = createRollupConfig({
   main: './src/index.ts',
-  additionalEntryPoints: ['./src/devkit.ts'],
+  input: {
+    devkit: './src/devkit.ts',
+  },
 });

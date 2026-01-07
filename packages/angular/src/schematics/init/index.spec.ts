@@ -3,7 +3,7 @@ import { logger, Tree } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { EOL } from 'os';
 import { throwIfNullish } from '../util/throw-if-nullish';
-import { ngAddGenerator, PLAYWRIGHT_VERSION_RANGE } from './init';
+import { ngAddGenerator, PLAYWRIGHT_VERSION_RANGE } from './index';
 import { NxTestDevkit } from './test/nx-test-devkit';
 import { AngularCliTestDevkit } from './test/angular-cli-test-devkit';
 

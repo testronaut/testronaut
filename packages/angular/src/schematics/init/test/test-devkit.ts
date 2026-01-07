@@ -1,6 +1,6 @@
 import { ProjectConfiguration, Tree } from '@nx/devkit';
 import { Devkit } from '../../util/devkit';
-import { ArchitectConfiguration } from '../init';
+import { ArchitectConfiguration } from '../index';
 
 export interface TestDevKit extends Devkit {
   isWorkspace: boolean;

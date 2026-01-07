@@ -17,6 +17,7 @@
     "src/**/*.spec.js",
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx",
+    "src/schematics/**/*.json",
     "src/schematics/**/*.ts"
   ],
   "references": [
