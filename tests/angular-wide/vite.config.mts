@@ -11,6 +11,8 @@ export default mergeConfig(
   }),
   defineVitestConfig({
     test: {
+      /* Use forks to allow chdir. */
+      pool: 'forks',
       typecheck: {
         enabled: true,
         tsconfig: 'tsconfig.spec.json',
