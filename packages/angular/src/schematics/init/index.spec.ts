@@ -3,7 +3,7 @@ import { logger, Tree } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { EOL } from 'os';
 import { throwIfNullish } from '../util/throw-if-nullish';
-import { ngAddGenerator, PLAYWRIGHT_VERSION_RANGE } from './index';
+import { initGenerator, PLAYWRIGHT_VERSION_RANGE } from './index';
 import { NxTestDevkit } from './test/nx-test-devkit';
 import { AngularCliTestDevkit } from './test/angular-cli-test-devkit';
 
@@ -44,7 +44,7 @@ describe('ng-add generator', () => {
       { timeout: 10_000 },
       async () => {
         const tree = await devkit.setup('test');
-        await ngAddGenerator(tree, { project: 'test' });
+        await initGenerator(tree, { project: 'test' });
         const config = devkit.readProjectConfiguration(tree, 'test');
         const targets = devkit.getTargets(config);
 
@@ -75,7 +75,7 @@ describe('ng-add generator', () => {
 
     it('should log an error if there are no projects', async () => {
       const tree = createTreeWithEmptyWorkspace();
-      await ngAddGenerator(tree, { project: 'test' });
+      await initGenerator(tree, { project: 'test' });
       expect(errorLogger).toHaveBeenCalledWith(
         'Testronaut failed to activate: No projects found in workspace'
       );
@@ -86,7 +86,7 @@ describe('ng-add generator', () => {
 
       devkit.addProject(tree, 'bar');
 
-      ngAddGenerator(tree, { project: 'foo' });
+      initGenerator(tree, { project: 'foo' });
       expect(errorLogger).toHaveBeenCalledWith(
         "Testronaut failed to activate: Project 'foo' not found. Available projects: 'test', 'bar'"
       );
@@ -102,7 +102,7 @@ describe('ng-add generator', () => {
       };
       devkit.updateProjectConfiguration(tree, 'test', config);
 
-      ngAddGenerator(tree, { project: 'test' });
+      initGenerator(tree, { project: 'test' });
       const updatedConfig = devkit.readProjectConfiguration(tree, 'test');
       const updatedTargets = devkit.getTargets(updatedConfig);
       expect(updatedTargets?.['build']?.configurations?.['testronaut']).toEqual(
@@ -131,7 +131,7 @@ describe('ng-add generator', () => {
       };
       devkit.updateProjectConfiguration(tree, 'test', config);
 
-      ngAddGenerator(tree, { project: 'test' });
+      initGenerator(tree, { project: 'test' });
       const newConfig = devkit.readProjectConfiguration(tree, 'test');
       const updatedTargets = devkit.getTargets(newConfig);
 
@@ -156,7 +156,7 @@ describe('ng-add generator', () => {
       devkit.addProject(tree, 'test2');
       devkit.addProject(tree, 'test3');
 
-      await ngAddGenerator(tree, { project: '' });
+      await initGenerator(tree, { project: '' });
 
       const config = devkit.readProjectConfiguration(tree, 'memory');
       const targets = devkit.getTargets(config);
@@ -183,7 +183,7 @@ describe('ng-add generator', () => {
 
     it('should add the testronaut files to the project', async () => {
       const tree = await devkit.setup('test');
-      await ngAddGenerator(tree, { project: 'test' });
+      await initGenerator(tree, { project: 'test' });
       const folder = devkit.getFolder('test');
 
       [
@@ -206,14 +206,14 @@ describe('ng-add generator', () => {
 
     it('should not add the examples by default', async () => {
       const tree = await devkit.setup('test');
-      ngAddGenerator(tree, { project: 'test' });
+      initGenerator(tree, { project: 'test' });
       const folder = `${devkit.getFolder('test')}/src/testronaut-examples`;
       expect(tree.exists(folder)).toBe(false);
     });
 
     it('shoud add examples when requested', async () => {
       const tree = await devkit.setup('test');
-      ngAddGenerator(tree, { project: 'test', withExamples: true });
+      initGenerator(tree, { project: 'test', withExamples: true });
 
       const folder = `${devkit.getFolder('test')}src/testronaut-examples`;
 
@@ -225,7 +225,7 @@ describe('ng-add generator', () => {
 
     it("should start the test server by using the project's name", async () => {
       const tree = await devkit.setup('maps');
-      ngAddGenerator(tree, { project: 'maps', withExamples: true });
+      initGenerator(tree, { project: 'maps', withExamples: true });
 
       const configPath = `${devkit.getFolder(
         'maps'
@@ -243,7 +243,7 @@ describe('ng-add generator', () => {
       async (lockFile) => {
         const tree = await devkit.setup('test');
         tree.write(lockFile, '');
-        ngAddGenerator(tree, { project: 'test' });
+        initGenerator(tree, { project: 'test' });
 
         const configPath = `${devkit.getFolder(
           'test'
@@ -270,7 +270,7 @@ describe('ng-add generator', () => {
 
       devkit.updateProjectConfiguration(tree, 'test', config);
 
-      await ngAddGenerator(tree, { project: 'test' });
+      await initGenerator(tree, { project: 'test' });
       const updatedTargets = devkit.getTargets(
         devkit.readProjectConfiguration(tree, 'test')
       );
@@ -284,7 +284,7 @@ describe('ng-add generator', () => {
 
     it(`should have a tsconfig which imports from the project's tsconfig.json`, async () => {
       const tree = await devkit.setup('test');
-      ngAddGenerator(tree, { project: 'test' });
+      initGenerator(tree, { project: 'test' });
       const folder = devkit.getFolder('test');
       const tsconfig = JSON.parse(
         tree.read(`${folder}testronaut/tsconfig.json`, 'utf8') || ''
@@ -300,7 +300,7 @@ describe('ng-add generator', () => {
     describe('playwright installation', () => {
       it('should install playwright', async () => {
         const tree = await devkit.setup('test');
-        ngAddGenerator(tree, { project: 'test' });
+        initGenerator(tree, { project: 'test' });
 
         expect(packageInstallTask).toHaveBeenCalled();
       });
@@ -308,14 +308,14 @@ describe('ng-add generator', () => {
       it('should not install playwright, if it is already available', async () => {
         const tree = await devkit.setup('test');
         fakeInstalledPlaywright(tree);
-        ngAddGenerator(tree, { project: 'test' });
+        initGenerator(tree, { project: 'test' });
         expect(packageInstallTask).not.toHaveBeenCalled();
       });
 
       it('should print a warning if the installed playwright version is too low', async () => {
         const tree = await devkit.setup('test');
         fakeInstalledPlaywright(tree, '1.35');
-        ngAddGenerator(tree, { project: 'test' });
+        initGenerator(tree, { project: 'test' });
         expect(packageInstallTask).not.toHaveBeenCalled();
         expect(warnLogger).toHaveBeenCalledWith(
           `Installed Playwright version (1.35) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`
@@ -325,7 +325,7 @@ describe('ng-add generator', () => {
       it('should print a warning if the installed playwright version is above the supported range', async () => {
         const tree = await devkit.setup('test');
         fakeInstalledPlaywright(tree, '1.70.0');
-        ngAddGenerator(tree, { project: 'test' });
+        initGenerator(tree, { project: 'test' });
         expect(packageInstallTask).not.toHaveBeenCalled();
         expect(warnLogger).toHaveBeenCalledWith(
           `Installed Playwright version (1.70.0) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`

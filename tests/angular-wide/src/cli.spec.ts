@@ -1,5 +1,6 @@
 import { workspaceRoot } from '@nx/devkit';
 import { spawn } from 'node:child_process';
+import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -14,6 +15,7 @@ test('ng add @testronaut/angular (standalone)', async () => {
   cd('./my-app');
 
   await $`pnpm ng add @testronaut/angular --with-examples`;
+  /* No clue why we need this. Install should be done automatically. */
   await $`pnpm install`;
 
   const { exitCode, stdout } =
@@ -31,6 +33,7 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
 
   await $`pnpm ng generate application my-app --defaults`;
   await $`pnpm ng add @testronaut/angular --with-examples --project my-app`;
+  /* No clue why we need this. Install should be done automatically. */
   await $`pnpm install`;
 
   const { exitCode, stdout } =
@@ -39,14 +42,31 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
   expect.soft(stdout).toContain('3 passed');
 });
 
-test.only('nx add @testronaut/angular', async () => {
-  await setUp();
+test('nx add @testronaut/angular', async () => {
+  const { tmpDir } = await setUp();
 
   await $`pnpm create nx-workspace@latest my-nx-workspace --preset angular-monorepo --app-name my-app --e2e-test-runner none --unit-test-runner none --no-ssr --bundler esbuild --style css --ai-agents cursor --ci skip`;
 
   cd('./my-nx-workspace');
 
-  await $`pnpm nx add @testronaut/angular --with-examples`;
+  /* By default, we do not install any examples, and we can't forward the --with-examples flag to nx add. */
+  await $`pnpm nx add @testronaut/angular`;
+  /* No clue why we need this. Install should be done automatically. */
+  await $`pnpm install`;
+
+  /* Let's just copy some examples manually. */
+  mkdirSync(join(tmpDir, 'my-nx-workspace/apps/my-app/src/components'), {
+    recursive: true,
+  });
+  for (const fileName of ['1-basic.pw.ts', 'components/1-click-me.ts']) {
+    copyFileSync(
+      join(
+        workspaceRoot,
+        `packages/angular/src/schematics/init/files/source-root/testronaut-examples/${fileName}`
+      ),
+      join(tmpDir, 'my-nx-workspace/apps/my-app/src/', fileName)
+    );
+  }
 
   const { exitCode, stdout } =
     await $`pnpm playwright test -c apps/my-app/playwright-testronaut.config.mts`;
@@ -55,8 +75,16 @@ test.only('nx add @testronaut/angular', async () => {
 });
 
 async function setUp() {
+  /* Set this to true for debugging.*/
+  $.verbose = false;
+
   const verdaccioPort = 4873;
   const registryUrl = `http://localhost:${verdaccioPort}`;
+
+  /* Clean up Verdaccio local registry before starting Verdaccio
+   * to avoid pollution from previously published packages. */
+  cd(workspaceRoot);
+  await $`rm -rf tmp/local-registry`;
 
   /* Start verdaccio server.
    * We are using the CLI instead of `runServer` because for some reason,
@@ -70,25 +98,32 @@ async function setUp() {
       '--listen',
       verdaccioPort.toString(),
     ],
-    {
-      stdio: 'pipe',
-      cwd: workspaceRoot,
-    }
+    { stdio: 'pipe', cwd: workspaceRoot }
   );
-  onTestFinished(() => {
+  onTestFinished(async () => {
     verdaccioProcess.kill();
   });
 
   $.env = { ...process.env, NPM_CONFIG_REGISTRY: registryUrl };
 
-  cd(workspaceRoot);
-
   /* Publish packages to verdaccio. */
+  await $`pnpm nx release version --git-commit=false patch`;
+  /* Revert CHANGELOG.md to reduce risk of committing it. */
+  await $`git checkout CHANGELOG.md`;
+
+  /* Set up fake auth token for verdaccio in workspace root then publish packages. */
+  const npmrcPath = join(workspaceRoot, '.npmrc');
+  writeFileSync(
+    npmrcPath,
+    `//localhost:${verdaccioPort}/:_authToken="fake-token"\n`
+  );
   await $`pnpm nx release publish`;
+  unlinkSync(npmrcPath);
 
   /* Create and dive into a temporary workspace directory. */
-  const tmpWorkspaceDir = await mkdtemp(
-    join(tmpdir(), 'testronaut-angular-wide-')
-  );
-  cd(tmpWorkspaceDir);
+  const tmpDir = await mkdtemp(join(tmpdir(), 'testronaut-angular-wide-'));
+
+  cd(tmpDir);
+
+  return { tmpDir };
 }

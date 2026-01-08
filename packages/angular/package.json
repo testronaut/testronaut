@@ -8,7 +8,8 @@
     "dist/",
     "README.md",
     "LICENSE",
-    "collection.json"
+    "collection.json",
+    "generators.json"
   ],
   "dependencies": {
     "@nx/devkit": "21.5.3",
@@ -36,5 +37,6 @@
       "default": "./dist/browser.mjs"
     }
   },
+  "generators": "./generators.json",
   "schematics": "./collection.json"
 }

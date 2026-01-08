@@ -28,10 +28,7 @@ export const PLAYWRIGHT_VERSION_RANGE = playwrightVersionJson as {
 // Angular CLI specific configurtion
 export type ArchitectConfiguration = ProjectConfiguration['targets'];
 
-export async function ngAddGenerator(
-  tree: Tree,
-  options: NgAddGeneratorSchema
-) {
+export async function initGenerator(tree: Tree, options: NgAddGeneratorSchema) {
   try {
     const devkit = createDevkit(tree);
 
@@ -242,4 +239,6 @@ function isVersionCompatible(
   return semver.satisfies(installedVersion, `>=${lower} <=${upper}`);
 }
 
-export default convertNxGenerator(ngAddGenerator);
+export default initGenerator;
+
+export const initSchematic = convertNxGenerator(initGenerator);
