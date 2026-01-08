@@ -1,8 +1,8 @@
 import { workspaceRoot } from '@nx/devkit';
+import { spawn } from 'node:child_process';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runServer } from 'verdaccio';
 import { onTestFinished, test } from 'vitest';
 import { $, cd } from 'zx';
 
@@ -39,7 +39,7 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
   expect.soft(stdout).toContain('3 passed');
 });
 
-test.todo('nx add @testronaut/angular', async () => {
+test.only('nx add @testronaut/angular', async () => {
   await setUp();
 
   await $`pnpm create nx-workspace@latest my-nx-workspace --preset angular-monorepo --app-name my-app --e2e-test-runner none --unit-test-runner none --no-ssr --bundler esbuild --style css --ai-agents cursor --ci skip`;
@@ -57,14 +57,31 @@ test.todo('nx add @testronaut/angular', async () => {
 async function setUp() {
   const verdaccioPort = 4873;
   const registryUrl = `http://localhost:${verdaccioPort}`;
+
+  /* Start verdaccio server.
+   * We are using the CLI instead of `runServer` because for some reason,
+   * we didn't manage to silence the Verdaccio logs even when setting the log level to `silent`. */
+  const verdaccioProcess = spawn(
+    'pnpm',
+    [
+      'verdaccio',
+      '--config',
+      './.verdaccio/config.yml',
+      '--listen',
+      verdaccioPort.toString(),
+    ],
+    {
+      stdio: 'pipe',
+      cwd: workspaceRoot,
+    }
+  );
+  onTestFinished(() => {
+    verdaccioProcess.kill();
+  });
+
   $.env = { ...process.env, NPM_CONFIG_REGISTRY: registryUrl };
 
   cd(workspaceRoot);
-
-  /* Start verdaccio server. */
-  const server = await runServer();
-  server.listen(verdaccioPort);
-  onTestFinished(() => server.close());
 
   /* Publish packages to verdaccio. */
   await $`pnpm nx release publish`;
