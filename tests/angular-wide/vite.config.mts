@@ -3,6 +3,11 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineConfig, mergeConfig } from 'vite';
 import { defineConfig as defineVitestConfig } from 'vitest/config';
 
+const allTestFiles = ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'];
+const wideTestFiles = [
+  'src/**/*.wide.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+];
+
 export default mergeConfig(
   defineConfig({
     root: __dirname,
@@ -22,12 +27,27 @@ export default mergeConfig(
       environment: 'node',
       include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       reporters: ['default'],
-      /* These wide tests are slow as we generate apps, install packages, etc... */
-      testTimeout: 120_000,
       coverage: {
         reportsDirectory: '../../coverage/packages/angular',
         provider: 'v8',
       },
+      projects: [
+        {
+          test: {
+            name: 'narrow',
+            include: allTestFiles,
+            exclude: wideTestFiles,
+          },
+        },
+        {
+          test: {
+            name: 'wide',
+            include: wideTestFiles,
+            /* These wide tests are slow as we generate apps, install packages, etc... */
+            testTimeout: 120_000,
+          },
+        },
+      ],
     },
   })
 );

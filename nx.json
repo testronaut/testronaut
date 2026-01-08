@@ -25,6 +25,10 @@
       "dependsOn": ["^build"]
     },
     "test": {
+      "options": {
+        "passWithNoTests": true,
+        "project": "!wide"
+      },
       "dependsOn": ["^build"]
     },
     "testronaut": {

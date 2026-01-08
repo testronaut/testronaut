@@ -43,7 +43,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
-      - run: pnpm exec nx affected -t build e2e lint test testronaut typecheck --exclude=tag:type:demo
+      - run: pnpm exec nx affected -t build e2e lint test test-wide testronaut typecheck --exclude=tag:type:demo
       - run: pnpm nx-cloud fix-ci
         if: always()
 
