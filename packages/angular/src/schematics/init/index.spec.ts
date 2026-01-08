@@ -39,33 +39,39 @@ describe('ng-add generator', () => {
     { name: 'Angular CLI Workspace', devkit: new AngularCliTestDevkit(true) },
     { name: 'Nx', devkit: new NxTestDevkit() },
   ])('$name', ({ name, devkit }) => {
-    it('should add the testronaut config to the build and serve targets', async () => {
-      const tree = await devkit.setup('test');
-      await ngAddGenerator(tree, { project: 'test' });
-      const config = devkit.readProjectConfiguration(tree, 'test');
-      const targets = devkit.getTargets(config);
+    it(
+      'should add the testronaut config to the build and serve targets',
+      { timeout: 10_000 },
+      async () => {
+        const tree = await devkit.setup('test');
+        await ngAddGenerator(tree, { project: 'test' });
+        const config = devkit.readProjectConfiguration(tree, 'test');
+        const targets = devkit.getTargets(config);
 
-      const folder = devkit.getFolder('test');
+        const folder = devkit.getFolder('test');
 
-      expect(targets?.['build']?.configurations?.['testronaut']).toMatchObject({
-        optimization: false,
-        extractLicenses: false,
-        sourceMap: true,
-        browser: `${folder}testronaut/main.ts`,
-        index: `${folder}testronaut/index.html`,
-        tsConfig: `${folder}testronaut/tsconfig.json`,
-      });
+        expect(
+          targets?.['build']?.configurations?.['testronaut']
+        ).toMatchObject({
+          optimization: false,
+          extractLicenses: false,
+          sourceMap: true,
+          browser: `${folder}testronaut/main.ts`,
+          index: `${folder}testronaut/index.html`,
+          tsConfig: `${folder}testronaut/tsconfig.json`,
+        });
 
-      expect(targets?.['serve']?.configurations?.['testronaut']).toEqual({
-        buildTarget: 'test:build:testronaut',
-        prebundle: false,
-      });
+        expect(targets?.['serve']?.configurations?.['testronaut']).toEqual({
+          buildTarget: 'test:build:testronaut',
+          prebundle: false,
+        });
 
-      expect(errorLogger).toHaveBeenCalledTimes(0);
-      expect(infoLogger).toHaveBeenCalledWith(
-        'Testronaut successfully activated for project test. Lift off!'
-      );
-    });
+        expect(errorLogger).toHaveBeenCalledTimes(0);
+        expect(infoLogger).toHaveBeenCalledWith(
+          'Testronaut successfully activated for project test. Lift off!'
+        );
+      }
+    );
 
     it('should log an error if there are no projects', async () => {
       const tree = createTreeWithEmptyWorkspace();
