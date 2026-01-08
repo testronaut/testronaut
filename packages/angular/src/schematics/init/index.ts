@@ -116,7 +116,7 @@ export async function ngAddGenerator(
     // see https://github.com/npm/npm/issues/3763
     tree.write(path.join(root, 'testronaut', '.gitignore'), 'generated' + EOL);
 
-    ensurePlaywrightIsInstalled(tree);
+    installDependencies(tree);
 
     logger.info(
       getSuccessMessage(
@@ -157,36 +157,39 @@ function getSuccessMessage(
 }
 
 /**
- * Ensures Playwright is installed with a compatible version.
- * Checks if it's already installed and warns if the version is incompatible.
+ * Installs @testronaut/angular and ensures Playwright are installed with a compatible version.
+ * Checks if Playwright is already installed and warns if the version is incompatible.
  * If not installed, adds it to package.json with the required version and
  * runs the install task of the existing package manager.
  */
-export function ensurePlaywrightIsInstalled(tree: Tree): void {
-  const requiredRange = getRequiredPlaywrightRange();
-  const installedVersion = getInstalledPlaywrightVersion(tree);
+export function installDependencies(tree: Tree): void {
+  const playwrightRequiredRange = getRequiredPlaywrightRange();
+  const playwrightInstalledVersion = getInstalledPlaywrightVersion(tree);
 
-  if (installedVersion) {
-    if (
-      !isVersionCompatible(
-        installedVersion,
-        requiredRange.upper,
-        requiredRange.lower
-      )
-    ) {
-      logger.warn(
-        `Installed Playwright version (${installedVersion}) may not be compatible with Testronaut. ` +
-          `Recommended version: ${requiredRange.upper}. Consider changing your Playwright version to avoid issues.`
-      );
-    }
-  } else {
-    addDependenciesToPackageJson(
-      tree,
-      {},
-      { '@playwright/test': requiredRange.upper }
+  if (
+    playwrightInstalledVersion &&
+    !isVersionCompatible(
+      playwrightInstalledVersion,
+      playwrightRequiredRange.upper,
+      playwrightRequiredRange.lower
+    )
+  ) {
+    logger.warn(
+      `Installed Playwright version (${playwrightInstalledVersion}) may not be compatible with Testronaut. ` +
+        `Recommended version: ${playwrightRequiredRange.upper}. Consider changing your Playwright version to avoid issues.`
     );
-    installPackagesTask(tree);
   }
+
+  addDependenciesToPackageJson(
+    tree,
+    {},
+    {
+      '@playwright/test': playwrightRequiredRange.upper,
+      // TODO: use version from config
+      '@testronaut/angular': 'latest',
+    }
+  );
+  installPackagesTask(tree);
 }
 
 /**

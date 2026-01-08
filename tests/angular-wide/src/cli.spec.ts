@@ -6,7 +6,7 @@ import { runServer } from 'verdaccio';
 import { onTestFinished, test } from 'vitest';
 import { $, cd } from 'zx';
 
-test.todo('ng add @testronaut/angular (standalone)', async () => {
+test('ng add @testronaut/angular (standalone)', async () => {
   await setUp();
 
   await $`pnpm create @angular@latest my-app --defaults`;
@@ -22,7 +22,7 @@ test.todo('ng add @testronaut/angular (standalone)', async () => {
   expect.soft(stdout).toContain('3 passed');
 });
 
-test.todo('ng add @testronaut/angular (CLI Workspace)', async () => {
+test('ng add @testronaut/angular (CLI Workspace)', async () => {
   await setUp();
 
   await $`pnpm create @angular@latest my-workspace --create-application=false --defaults`;
