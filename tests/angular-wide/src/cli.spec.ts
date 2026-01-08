@@ -14,7 +14,7 @@ test('ng add @testronaut/angular (standalone)', async () => {
 
   cd('./my-app');
 
-  await $`pnpm ng add @testronaut/angular --with-examples`;
+  await $`pnpm ng add @testronaut/angular  --no-interactive --with-examples`;
   /* No clue why we need this. Install should be done automatically. */
   await $`pnpm install`;
 
@@ -32,7 +32,7 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
   cd('./my-workspace');
 
   await $`pnpm ng generate application my-app --defaults`;
-  await $`pnpm ng add @testronaut/angular --with-examples --project my-app`;
+  await $`pnpm ng add @testronaut/angular --no-interactive --project my-app --with-examples`;
   /* No clue why we need this. Install should be done automatically. */
   await $`pnpm install`;
 
@@ -55,9 +55,7 @@ test('nx add @testronaut/angular', async () => {
   await $`pnpm install`;
 
   /* Let's just copy some examples manually. */
-  mkdirSync(join(tmpDir, 'my-nx-workspace/apps/my-app/src/components'), {
-    recursive: true,
-  });
+  mkdirSync(join(tmpDir, 'my-nx-workspace/apps/my-app/src/components'));
   for (const fileName of ['1-basic.pw.ts', 'components/1-click-me.ts']) {
     copyFileSync(
       join(
