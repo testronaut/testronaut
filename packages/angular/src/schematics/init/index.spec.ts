@@ -43,7 +43,7 @@ describe('ng-add generator', () => {
       { timeout: 10_000 },
       async () => {
         const tree = await devkit.setup('test');
-        await initGenerator(tree, { project: 'test' });
+        await initGenerator(tree, { project: 'test', nxAdapter: new NxAdapterFake() });
         const config = devkit.readProjectConfiguration(tree, 'test');
         const targets = devkit.getTargets(config);
 
