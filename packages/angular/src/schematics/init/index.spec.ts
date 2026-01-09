@@ -6,6 +6,7 @@ import { throwIfNullish } from '../util/throw-if-nullish';
 import { initGenerator, PLAYWRIGHT_VERSION_RANGE } from './index';
 import { NxTestDevkit } from './test/nx-test-devkit';
 import { AngularCliTestDevkit } from './test/angular-cli-test-devkit';
+import { NxAdapterFake } from '../util/nx-adapter.fake';
 
 function fakeInstalledPlaywright(
   tree: Tree,
@@ -300,23 +301,35 @@ describe('ng-add generator', () => {
     describe('playwright installation', () => {
       it('should install playwright', async () => {
         const tree = await devkit.setup('test');
-        initGenerator(tree, { project: 'test' });
+        const nxAdapter = new NxAdapterFake();
+        initGenerator(tree, { project: 'test', nxAdapter });
 
-        expect(packageInstallTask).toHaveBeenCalled();
+        expect(nxAdapter.intalledDevDependencies).toEqual({
+          '@playwright/test': PLAYWRIGHT_VERSION_RANGE.upper,
+          '@testronaut/angular': 'latest',
+        });
       });
 
       it('should not install playwright, if it is already available', async () => {
         const tree = await devkit.setup('test');
-        fakeInstalledPlaywright(tree);
-        initGenerator(tree, { project: 'test' });
-        expect(packageInstallTask).not.toHaveBeenCalled();
+        const nxAdapter = new NxAdapterFake();
+
+        fakeInstalledPlaywright(tree, PLAYWRIGHT_VERSION_RANGE.lower);
+        initGenerator(tree, { project: 'test', nxAdapter });
+        expect(nxAdapter.intalledDevDependencies).toEqual({
+          '@testronaut/angular': 'latest',
+        });
       });
 
       it('should print a warning if the installed playwright version is too low', async () => {
         const tree = await devkit.setup('test');
+        const nxAdapter = new NxAdapterFake();
+
         fakeInstalledPlaywright(tree, '1.35');
-        initGenerator(tree, { project: 'test' });
-        expect(packageInstallTask).not.toHaveBeenCalled();
+        initGenerator(tree, { project: 'test', nxAdapter });
+        expect(nxAdapter.intalledDevDependencies).toEqual({
+          '@testronaut/angular': 'latest',
+        });
         expect(warnLogger).toHaveBeenCalledWith(
           `Installed Playwright version (1.35) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`
         );
@@ -324,9 +337,13 @@ describe('ng-add generator', () => {
 
       it('should print a warning if the installed playwright version is above the supported range', async () => {
         const tree = await devkit.setup('test');
+        const nxAdapter = new NxAdapterFake();
+
         fakeInstalledPlaywright(tree, '1.70.0');
-        initGenerator(tree, { project: 'test' });
-        expect(packageInstallTask).not.toHaveBeenCalled();
+        initGenerator(tree, { project: 'test', nxAdapter });
+        expect(nxAdapter.intalledDevDependencies).toEqual({
+          '@testronaut/angular': 'latest',
+        });
         expect(warnLogger).toHaveBeenCalledWith(
           `Installed Playwright version (1.70.0) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`
         );

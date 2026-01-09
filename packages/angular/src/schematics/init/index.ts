@@ -1,9 +1,7 @@
 import {
-  addDependenciesToPackageJson,
   convertNxGenerator,
   generateFiles,
   getPackageManagerCommand,
-  installPackagesTask,
   logger,
   ProjectConfiguration,
   readJson,
@@ -13,11 +11,13 @@ import { EOL } from 'os';
 import * as path from 'path';
 import * as semver from 'semver';
 import { fileURLToPath } from 'url';
+import { assertNotNullish } from '../util/assert-not-nullish';
 import { detectPackageManager } from '../util/detect-package-manager';
 import { createDevkit } from '../util/devkit';
+import { NxAdapter } from '../util/nx-adapter';
 import * as playwrightVersionJson from './playwright-version.json';
 import { type NgAddGeneratorSchema } from './schema';
-import { assertNotNullish } from '../util/assert-not-nullish';
+import { Public } from '../util/typing';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -28,7 +28,11 @@ export const PLAYWRIGHT_VERSION_RANGE = playwrightVersionJson as {
 // Angular CLI specific configurtion
 export type ArchitectConfiguration = ProjectConfiguration['targets'];
 
-export async function initGenerator(tree: Tree, options: NgAddGeneratorSchema) {
+export async function initGenerator(
+  tree: Tree,
+  options: NgAddGeneratorSchema & { nxAdapter?: Public<NxAdapter> }
+) {
+  const nxAdapter = options.nxAdapter ?? new NxAdapter(tree);
   try {
     const devkit = createDevkit(tree);
 
@@ -113,7 +117,7 @@ export async function initGenerator(tree: Tree, options: NgAddGeneratorSchema) {
     // see https://github.com/npm/npm/issues/3763
     tree.write(path.join(root, 'testronaut', '.gitignore'), 'generated' + EOL);
 
-    installDependencies(tree);
+    installPlaywrightAndTestronaut(tree, nxAdapter);
 
     logger.info(
       getSuccessMessage(
@@ -159,7 +163,10 @@ function getSuccessMessage(
  * If not installed, adds it to package.json with the required version and
  * runs the install task of the existing package manager.
  */
-export function installDependencies(tree: Tree): void {
+export function installPlaywrightAndTestronaut(
+  tree: Tree,
+  nxAdapter: Public<NxAdapter>
+): void {
   const playwrightRequiredRange = getRequiredPlaywrightRange();
   const playwrightInstalledVersion = getInstalledPlaywrightVersion(tree);
 
@@ -177,16 +184,16 @@ export function installDependencies(tree: Tree): void {
     );
   }
 
-  addDependenciesToPackageJson(
-    tree,
-    {},
-    {
-      '@playwright/test': playwrightRequiredRange.upper,
-      // TODO: use version from config
-      '@testronaut/angular': 'latest',
-    }
-  );
-  installPackagesTask(tree);
+  if (!playwrightInstalledVersion) {
+    nxAdapter.addDevDependency(
+      '@playwright/test',
+      playwrightRequiredRange.upper
+    );
+  }
+
+  nxAdapter.addDevDependency('@testronaut/angular', 'latest');
+
+  nxAdapter.installDependencies();
 }
 
 /**

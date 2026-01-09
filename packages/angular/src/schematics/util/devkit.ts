@@ -10,15 +10,15 @@ import { NgAddGeneratorSchema } from '../init/schema';
 import { getProjectName } from './get-project-name';
 import { throwIfNullish } from './throw-if-nullish';
 
+/* TODO: Maybe rename this to something else
+ * so that we can rename the `NxAdapter` to `NxDevkitAdapter`. */
 export function createDevkit(tree: Tree): Devkit {
-  return tree.exists('angular.json')
-    ? new AngularCliDevkit()
-    : new NxDevkit();
+  return tree.exists('angular.json') ? new AngularCliDevkit() : new NxDevkit();
 }
 
 export class AngularCliDevkit implements Devkit {
-  cmd = 'ng'
-  tsConfigName = 'tsconfig.json'
+  cmd = 'ng';
+  tsConfigName = 'tsconfig.json';
 
   getElements(tree: Tree, options: NgAddGeneratorSchema) {
     type ArchitectConfiguration = ProjectConfiguration['targets'];
@@ -72,9 +72,8 @@ export class AngularCliDevkit implements Devkit {
 }
 
 export class NxDevkit implements Devkit {
-  
-  cmd = 'nx'
-  tsConfigName = 'tsconfig.base.json'
+  cmd = 'nx';
+  tsConfigName = 'tsconfig.base.json';
 
   getElements(tree: Tree, options: NgAddGeneratorSchema) {
     const projects: Record<string, ProjectConfiguration> = Object.fromEntries(
