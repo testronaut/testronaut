@@ -105,7 +105,7 @@ async function setUp() {
   return {
     pnpmAndPlaywrightInstall: async () => {
       await $`pnpm install --no-frozen-lockfile`;
-      await $`pnpm exec playwright install --with-deps --no-shell`;
+      await $`pnpm exec playwright install --with-deps --only-shell`;
     },
     tmpDir,
   };
