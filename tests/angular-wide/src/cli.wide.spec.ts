@@ -14,7 +14,7 @@ test('ng add @testronaut/angular (standalone)', async () => {
 
   cd('./my-app');
 
-  await $`pnpm ng add @testronaut/angular --no-interactive --with-examples`;
+  await $`pnpm ng add @testronaut/angular --no-interactive --skip-confirmation --with-examples`;
   /* No clue why we need this. Install should be done automatically. */
   await pnpmAndPlaywrightInstall();
 
@@ -35,7 +35,7 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
   /* Install manually, otherwise the app generator fails because of pnpm frozen lockfile behavior on CI. */
   await pnpmAndPlaywrightInstall();
 
-  await $`pnpm ng add @testronaut/angular --no-interactive --project my-app --with-examples`;
+  await $`pnpm ng add @testronaut/angular --no-interactive --skip-confirmation --project my-app --with-examples`;
   /* No clue why we need this. Install should be done automatically. */
   await pnpmAndPlaywrightInstall();
 
