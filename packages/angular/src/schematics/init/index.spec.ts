@@ -74,7 +74,7 @@ describe('ng-add generator', () => {
 
     it('should log an error if there are no projects', async () => {
       const tree = createTreeWithEmptyWorkspace();
-      await initGenerator(tree, { project: 'test' });
+      await initGenerator(tree, { project: 'test', nxAdapter: new NxAdapterFake() });
       expect(errorLogger).toHaveBeenCalledWith(
         'Testronaut failed to activate: No projects found in workspace'
       );
@@ -85,7 +85,7 @@ describe('ng-add generator', () => {
 
       devkit.addProject(tree, 'bar');
 
-      initGenerator(tree, { project: 'foo' });
+      initGenerator(tree, { project: 'foo', nxAdapter: new NxAdapterFake() });
       expect(errorLogger).toHaveBeenCalledWith(
         "Testronaut failed to activate: Project 'foo' not found. Available projects: 'test', 'bar'"
       );
@@ -155,7 +155,7 @@ describe('ng-add generator', () => {
       devkit.addProject(tree, 'test2');
       devkit.addProject(tree, 'test3');
 
-      await initGenerator(tree, { project: '' });
+      await initGenerator(tree, { project: '', nxAdapter: new NxAdapterFake() });
 
       const config = devkit.readProjectConfiguration(tree, 'memory');
       const targets = devkit.getTargets(config);
@@ -182,7 +182,7 @@ describe('ng-add generator', () => {
 
     it('should add the testronaut files to the project', async () => {
       const tree = await devkit.setup('test');
-      await initGenerator(tree, { project: 'test' });
+      await initGenerator(tree, { project: 'test', nxAdapter: new NxAdapterFake() });
       const folder = devkit.getFolder('test');
 
       [
@@ -205,14 +205,14 @@ describe('ng-add generator', () => {
 
     it('should not add the examples by default', async () => {
       const tree = await devkit.setup('test');
-      initGenerator(tree, { project: 'test' });
+      initGenerator(tree, { project: 'test', nxAdapter: new NxAdapterFake() });
       const folder = `${devkit.getFolder('test')}/src/testronaut-examples`;
       expect(tree.exists(folder)).toBe(false);
     });
 
     it('shoud add examples when requested', async () => {
       const tree = await devkit.setup('test');
-      initGenerator(tree, { project: 'test', withExamples: true });
+      initGenerator(tree, { project: 'test', withExamples: true, nxAdapter: new NxAdapterFake() });
 
       const folder = `${devkit.getFolder('test')}src/testronaut-examples`;
 
@@ -224,7 +224,7 @@ describe('ng-add generator', () => {
 
     it("should start the test server by using the project's name", async () => {
       const tree = await devkit.setup('maps');
-      initGenerator(tree, { project: 'maps', withExamples: true });
+      initGenerator(tree, { project: 'maps', withExamples: true, nxAdapter: new NxAdapterFake() });
 
       const configPath = `${devkit.getFolder(
         'maps'
@@ -283,7 +283,7 @@ describe('ng-add generator', () => {
 
     it(`should have a tsconfig which imports from the project's tsconfig.json`, async () => {
       const tree = await devkit.setup('test');
-      initGenerator(tree, { project: 'test' });
+      initGenerator(tree, { project: 'test',  nxAdapter: new NxAdapterFake() });
       const folder = devkit.getFolder('test');
       const tsconfig = JSON.parse(
         tree.read(`${folder}testronaut/tsconfig.json`, 'utf8') || ''
