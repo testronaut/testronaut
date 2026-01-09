@@ -8,7 +8,7 @@ import { expect, onTestFinished, test } from 'vitest';
 import { $, cd } from 'zx';
 
 test('ng add @testronaut/angular (standalone)', async () => {
-  const { pnpmInstall } = await setUp();
+  const { pnpmAndPlaywrightInstall } = await setUp();
 
   await $`pnpm create @angular@latest my-app --defaults`;
 
@@ -16,7 +16,7 @@ test('ng add @testronaut/angular (standalone)', async () => {
 
   await $`pnpm ng add @testronaut/angular --no-interactive --with-examples`;
   /* No clue why we need this. Install should be done automatically. */
-  await pnpmInstall();
+  await pnpmAndPlaywrightInstall();
 
   const { exitCode, stdout } =
     await $`pnpm playwright test -c playwright-testronaut.config.mts`;
@@ -25,7 +25,7 @@ test('ng add @testronaut/angular (standalone)', async () => {
 });
 
 test('ng add @testronaut/angular (CLI Workspace)', async () => {
-  const { pnpmInstall } = await setUp();
+  const { pnpmAndPlaywrightInstall } = await setUp();
 
   await $`pnpm create @angular@latest my-workspace --create-application=false --defaults`;
 
@@ -33,11 +33,11 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
 
   await $`pnpm ng generate application my-app --defaults --skip-install`;
   /* Install manually, otherwise the app generator fails because of pnpm frozen lockfile behavior on CI. */
-  await pnpmInstall();
+  await pnpmAndPlaywrightInstall();
 
   await $`pnpm ng add @testronaut/angular --no-interactive --project my-app --with-examples`;
   /* No clue why we need this. Install should be done automatically. */
-  await pnpmInstall();
+  await pnpmAndPlaywrightInstall();
 
   const { exitCode, stdout } =
     await $`pnpm playwright test -c projects/my-app/playwright-testronaut.config.mts`;
@@ -46,7 +46,7 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
 });
 
 test('nx add @testronaut/angular', async () => {
-  const { tmpDir, pnpmInstall } = await setUp();
+  const { tmpDir, pnpmAndPlaywrightInstall } = await setUp();
 
   await $`pnpm create nx-workspace@latest my-nx-workspace --preset angular-monorepo --app-name my-app --e2e-test-runner none --unit-test-runner none --no-ssr --bundler esbuild --style css --ai-agents cursor --ci skip`;
 
@@ -55,7 +55,7 @@ test('nx add @testronaut/angular', async () => {
   /* By default, we do not install any examples, and we can't forward the --with-examples flag to nx add. */
   await $`pnpm nx add @testronaut/angular`;
   /* No clue why we need this. Install should be done automatically. */
-  await pnpmInstall();
+  await pnpmAndPlaywrightInstall();
 
   /* Let's just copy some examples manually. */
   mkdirSync(join(tmpDir, 'my-nx-workspace/apps/my-app/src/components'));
@@ -103,7 +103,10 @@ async function setUp() {
   cd(tmpDir);
 
   return {
-    pnpmInstall: () => $`pnpm install --no-frozen-lockfile`,
+    pnpmAndPlaywrightInstall: async () => {
+      await $`pnpm install --no-frozen-lockfile`;
+      await $`pnpm exec playwright install --with-deps --no-shell`;
+    },
     tmpDir,
   };
 }
