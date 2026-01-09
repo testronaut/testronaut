@@ -4,7 +4,7 @@ import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test } from 'vitest';
 import { $, cd } from 'zx';
 
 test('ng add @testronaut/angular (standalone)', async () => {
@@ -84,6 +84,22 @@ async function setUp() {
   cd(workspaceRoot);
   await $`rm -rf tmp/local-registry`;
 
+  _startVerdaccio(verdaccioPort);
+
+  $.env = { ...process.env, NPM_CONFIG_REGISTRY: registryUrl };
+
+  /* Publish packages to verdaccio. */
+  await _publishPackages(registryUrl);
+
+  /* Create and dive into a temporary workspace directory. */
+  const tmpDir = await mkdtemp(join(tmpdir(), 'testronaut-angular-wide-'));
+
+  cd(tmpDir);
+
+  return { tmpDir };
+}
+
+function _startVerdaccio(verdaccioPort: number) {
   /* Start verdaccio server.
    * We are using the CLI instead of `runServer` because for some reason,
    * we didn't manage to silence the Verdaccio logs even when setting the log level to `silent`. */
@@ -101,27 +117,19 @@ async function setUp() {
   onTestFinished(async () => {
     verdaccioProcess.kill();
   });
+}
 
-  $.env = { ...process.env, NPM_CONFIG_REGISTRY: registryUrl };
-
-  /* Publish packages to verdaccio. */
+async function _publishPackages(registryUrl: string) {
   await $`pnpm nx release version --git-commit=false patch`;
-  /* Revert CHANGELOG.md to reduce risk of committing it. */
-  await $`git checkout CHANGELOG.md`;
 
   /* Set up fake auth token for verdaccio in workspace root then publish packages. */
   const npmrcPath = join(workspaceRoot, '.npmrc');
   writeFileSync(
     npmrcPath,
-    `//localhost:${verdaccioPort}/:_authToken="fake-token"\n`
+    `${registryUrl.replace('http:', '')}/:_authToken="fake-token"\n`
   );
   await $`pnpm nx release publish`;
   unlinkSync(npmrcPath);
-
-  /* Create and dive into a temporary workspace directory. */
-  const tmpDir = await mkdtemp(join(tmpdir(), 'testronaut-angular-wide-'));
-
-  cd(tmpDir);
-
-  return { tmpDir };
+  /* Revert CHANGELOG.md to reduce risk of committing it. */
+  await $`git checkout HEAD CHANGELOG.md packages/*/package.json`;
 }
