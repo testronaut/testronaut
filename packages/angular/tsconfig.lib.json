@@ -3,7 +3,7 @@
   "compilerOptions": {
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo"
   },
-  "include": ["src/**/*.ts", "*.d.ts"],
+  "include": ["package.json", "src/**/*.ts", "*.d.ts"],
   "exclude": [
     "vite.config.ts",
     "vite.config.mts",

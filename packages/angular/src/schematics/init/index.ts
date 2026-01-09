@@ -18,6 +18,8 @@ import { NxAdapter } from '../util/nx-adapter';
 import * as playwrightVersionJson from './playwright-version.json';
 import { type NgAddGeneratorSchema } from './schema';
 import { Public } from '../util/typing';
+import * as packageJson from '../../../package.json';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -191,7 +193,7 @@ export function installPlaywrightAndTestronaut(
     );
   }
 
-  nxAdapter.addDevDependency('@testronaut/angular', 'latest');
+  nxAdapter.addDevDependency('@testronaut/angular', packageJson.version);
 
   nxAdapter.installDependencies();
 }
