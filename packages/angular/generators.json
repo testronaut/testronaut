@@ -1,0 +1,19 @@
+{
+  "name": "testronaut",
+  "version": "0.1",
+  "extends": ["@schematics/angular", "@nx/workspace"],
+  "generators": {
+    "ng-add": {
+      "factory": "./dist/schematics/init/index.mjs",
+      "schema": "./dist/schematics/init/schema.json",
+      "description": "alias for init generator",
+      "hidden": true
+    },
+    "init": {
+      "factory": "./dist/schematics/init/index.mjs",
+      "schema": "./dist/schematics/init/schema.json",
+      "description": "init generator",
+      "hidden": true
+    }
+  }
+}

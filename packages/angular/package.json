@@ -7,16 +7,22 @@
     "*.d.ts",
     "dist/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "collection.json",
+    "generators.json"
   ],
   "dependencies": {
+    "@nx/devkit": "21.5.3",
+    "@testronaut/core": "workspace:*",
+    "@types/semver": "^7.5.0",
+    "semver": "^7.6.0",
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
     "@angular/core": "^20.0.0",
     "@angular/compiler": "^20.0.0",
     "@angular/platform-browser": "^20.0.0",
-    "@testronaut/core": "workspace:*"
+    "@playwright/test": ">=1.36.0 <=1.56.0"
   },
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -30,5 +36,7 @@
       "types": "./dist/browser.d.ts",
       "default": "./dist/browser.mjs"
     }
-  }
+  },
+  "generators": "./generators.json",
+  "schematics": "./collection.json"
 }

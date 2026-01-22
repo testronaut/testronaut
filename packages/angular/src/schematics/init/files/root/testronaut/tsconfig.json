@@ -1,0 +1,10 @@
+{
+  "extends": "<%= tsConfigExtends %>",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": [],
+    "moduleResolution": "bundler"
+  },
+  "files": ["main.ts"],
+  "include": ["**/*.ts"]
+}
