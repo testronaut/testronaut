@@ -92,12 +92,15 @@
       }
     },
     "test-wide": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": ["vitest --project wide", "playwright test"],
-        "cwd": "{projectRoot}",
-        "parallel": false
-      }
+      "dependsOn": ["test-wide-playwright", "test-wide-vitest"]
+    },
+    "test-wide-playwright": {
+      "command": "playwright test",
+      "cwd": "{projectRoot}"
+    },
+    "test-wide-vitest": {
+      "command": "vitest --project wide",
+      "cwd": "{projectRoot}"
     },
     "testronaut-commonjs": {
       "command": "{projectRoot}/test-commonjs-support.sh",
