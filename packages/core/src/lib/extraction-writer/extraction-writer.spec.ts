@@ -35,7 +35,26 @@ describe(ExtractionWriter.name, () => {
     ).not.toContain('INITIAL_CONTENT');
   });
 
-  it.todo('does not overwrite "index.ts" file if not older than 1 minute');
+  it.todo(
+    'does not overwrite "index.ts" file if not older than 1 minute',
+    async () => {
+      const { fileSystemFake, writer } = await setUpWriter();
+      const tenSecondsAgo = new Date(Date.now() - 10 * 1000);
+
+      fileSystemFake.configure({
+        '/my-project/generated/index.ts': {
+          content: 'const INITIAL_CONTENT = 42;',
+          lastModified: tenSecondsAgo,
+        },
+      });
+
+      writer.resetEntrypoint();
+
+      expect(
+        fileSystemFake.getFiles()['/my-project/generated/index.ts']
+      ).toContain('INITIAL_CONTENT');
+    }
+  );
 
   it('writes anonymous `runInBrowser` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
