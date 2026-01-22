@@ -96,11 +96,15 @@
     },
     "test-wide-playwright": {
       "command": "playwright test",
-      "cwd": "{projectRoot}"
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
     "test-wide-vitest": {
       "command": "vitest --project wide",
-      "cwd": "{projectRoot}"
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     },
     "testronaut-commonjs": {
       "command": "{projectRoot}/test-commonjs-support.sh",
