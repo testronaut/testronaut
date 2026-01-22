@@ -17,21 +17,25 @@ describe(ExtractionWriter.name, () => {
     });
   });
 
-  it('does overwrite "index.ts" file if it exists', async () => {
+  it('does overwrite "index.ts" file if older than 1 minute', async () => {
     const { fileSystemFake, writer } = await setUpWriter();
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
 
-    await fileSystemFake.writeFile(
-      '/my-project/generated/index.ts',
-      'const INITIAL_CONTENT = 42;'
-    );
+    fileSystemFake.configure({
+      '/my-project/generated/index.ts': {
+        content: 'const INITIAL_CONTENT = 42;',
+        lastModified: twoMinutesAgo,
+      },
+    });
 
     writer.resetEntrypoint();
 
-    expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/generated/index.ts':
-        expect.not.stringContaining('INITIAL_CONTENT'),
-    });
+    expect(
+      fileSystemFake.getFiles()['/my-project/generated/index.ts']
+    ).not.toContain('INITIAL_CONTENT');
   });
+
+  it.todo('does not overwrite "index.ts" file if not older than 1 minute');
 
   it('writes anonymous `runInBrowser` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
