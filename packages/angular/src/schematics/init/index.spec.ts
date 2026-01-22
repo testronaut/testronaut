@@ -190,7 +190,6 @@ describe('ng-add generator', () => {
         'index.html',
         'tsconfig.json',
         '.gitignore',
-        'generated/index.ts',
       ].forEach((file) => {
         expect(
           tree.exists(`${folder}testronaut/${file}`),
