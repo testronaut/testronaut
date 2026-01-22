@@ -92,16 +92,13 @@
       }
     },
     "test-wide": {
-      "dependsOn": ["test-wide-playwright", "test-wide-vitest"]
-    },
-    "test-wide-playwright": {
-      "command": "playwright test",
+      "command": "vitest --project wide",
       "options": {
         "cwd": "{projectRoot}"
       }
     },
-    "test-wide-vitest": {
-      "command": "vitest --project wide",
+    "testronaut": {
+      "command": "playwright test",
       "options": {
         "cwd": "{projectRoot}"
       }

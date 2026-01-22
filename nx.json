@@ -31,6 +31,9 @@
       },
       "dependsOn": ["^build"]
     },
+    "test-wide": {
+      "dependsOn": ["^build"]
+    },
     "testronaut": {
       "dependsOn": ["^build"]
     },
