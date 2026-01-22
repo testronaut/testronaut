@@ -28,7 +28,7 @@ describe(ExtractionWriter.name, () => {
       },
     });
 
-    writer.resetEntrypoint();
+    writer.resetEntrypointIfStale();
 
     expect(
       fileSystemFake.getFiles()['/my-project/generated/index.ts']
@@ -43,7 +43,7 @@ describe(ExtractionWriter.name, () => {
       'const INITIAL_CONTENT = 42;'
     );
 
-    writer.resetEntrypoint();
+    writer.resetEntrypointIfStale();
 
     expect(
       fileSystemFake.getFiles()['/my-project/generated/index.ts']
@@ -343,7 +343,7 @@ export const extractedFunctionsRecord = {
 async function setUpInitializedWriter() {
   const { writer, ...utils } = await setUpWriter();
 
-  writer.resetEntrypoint();
+  writer.resetEntrypointIfStale();
 
   return { writer, ...utils };
 }

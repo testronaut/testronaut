@@ -69,7 +69,7 @@ export function _internal_withTestronaut({
    * Note that `globalSetup` sounds like the right place, but it runs after the web servers starts
    * and it can be easily mistakenly overriden by the user.
    * Cf. https://github.com/microsoft/playwright/issues/19571#issuecomment-1358368164 */
-  extractionWriter.resetEntrypoint();
+  extractionWriter.resetEntrypointIfStale();
 
   return {
     testDir: 'src',

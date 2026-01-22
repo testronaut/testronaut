@@ -50,7 +50,7 @@ export class ExtractionWriter {
    * Sometimes these previous runs can import files that do not exist anymore —
    * e.g. a run from another branch importing a component that was removed.
    */
-  resetEntrypoint() {
+  resetEntrypointIfStale() {
     const lastModified = this.#fileSystem.maybeGetLastModifiedDate(
       this.#entryPointPath
     );
