@@ -5,6 +5,11 @@ export interface FileSystem {
   readFile(path: string): Promise<string>;
 
   /**
+   * Returns the last modified date of the file at the given path, or `undefined` if the file does not exist.
+   */
+  maybeGetLastModifiedDate(path: string): Date | undefined;
+
+  /**
    * @throws {FileExistsError} if file already exists at path.
    * This error is never thrown if `options.overwrite` is set to `true`.
    */

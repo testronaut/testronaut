@@ -6,16 +6,40 @@ import {
 } from './file-system';
 
 export class FileSystemFake implements FileSystem {
-  #files: Record<string, string> = {};
+  private _files: Record<string, FileEntry> = {};
+
+  /*
+   * Fake specific methods.
+   */
+
+  configure(files: Record<string, FileEntry>) {
+    this._files = files;
+  }
+
+  getFiles(): Record<string, string> {
+    const result: Record<string, string> = {};
+    for (const [path, file] of Object.entries(this._files)) {
+      result[path] = file.content;
+    }
+    return result;
+  }
+
+  /*
+   * FileSystem methods.
+   */
 
   async readFile(path: string): Promise<string> {
-    const content = this.#files[path];
+    const file = this._files[path];
 
-    if (content === undefined) {
+    if (file === undefined) {
       throw new FileDoesNotExistError(path);
     }
 
-    return content;
+    return file.content;
+  }
+
+  maybeGetLastModifiedDate(path: string): Date | undefined {
+    throw new Error('🚧 Work in progress!');
   }
 
   async writeFile(
@@ -31,14 +55,18 @@ export class FileSystemFake implements FileSystem {
     content: string,
     { overwrite }: WriteFileOptions = {}
   ): void {
-    if (this.#files[path] && !overwrite) {
+    if (this._files[path] && !overwrite) {
       throw new FileExistsError(path);
     }
 
-    this.#files[path] = content;
+    this._files[path] = {
+      content,
+      lastModified: new Date(),
+    };
   }
+}
 
-  getFiles(): Record<string, string> {
-    return this.#files;
-  }
+interface FileEntry {
+  content: string;
+  lastModified: Date;
 }

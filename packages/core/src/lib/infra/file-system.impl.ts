@@ -12,6 +12,10 @@ export class FileSystemImpl implements FileSystem {
     return readFile(path, 'utf-8');
   }
 
+  maybeGetLastModifiedDate(path: string): Date | undefined {
+    throw new Error('🚧 Work in progress!');
+  }
+
   async writeFile(
     path: string,
     content: string,
