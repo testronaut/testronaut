@@ -94,11 +94,7 @@
     "test-wide": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "vitest --project wide",
-          "playwright test",
-          "playwright test --config=playwright.failing-multi-worker.config.ts"
-        ],
+        "commands": ["vitest --project wide", "playwright test"],
         "cwd": "{projectRoot}",
         "parallel": false
       }

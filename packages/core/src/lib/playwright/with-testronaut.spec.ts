@@ -8,21 +8,6 @@ import {
 } from './with-testronaut';
 
 describe(withTestronaut.name, () => {
-  /**
-   * This is a temporary workaround meanwhile we implement a proper solution.
-   */
-  it('sets max workers to 1 to avoid race conditions between workers', () => {
-    const config = withTestingTestronaut({
-      configPath: '/my-project/playwright.config.ts',
-      extractionDir: 'generated',
-      testServer: {
-        command: 'npm run start -- --port {port}',
-      },
-    });
-
-    expect(config.workers).toBe(1);
-  });
-
   it('set reuseExistingServer to true to allow mutilple runners to share the same test server instead of just failing', () => {
     const config = withTestingTestronaut({
       configPath: '/my-project/playwright.config.ts',

@@ -74,10 +74,6 @@ export function _internal_withTestronaut({
   return {
     testDir: 'src',
     testMatch: '**/*.pw.ts',
-    /* Forcing a single worker as a temporary workaround
-     * meanwhile we implement a proper solution to avoid race conditions
-     * on generated extractions. */
-    workers: 1,
     use: {
       baseURL: `http://localhost:${port}`,
       testronaut: {
