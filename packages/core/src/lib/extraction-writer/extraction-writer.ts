@@ -14,6 +14,12 @@ import {
 import { FileOps } from './file-ops';
 import { adjustImportPath, toPosixPath } from './path-utils';
 
+/**
+ * The delay in milliseconds after which the entrypoint file is considered stale,
+ * and will be reset.
+ */
+const ENTRYPOINT_STALE_DELAY = 60_000;
+
 export class ExtractionWriter {
   readonly #config: ExtractionWriterConfig;
   /* Absolute path to extraction dir. */
@@ -45,6 +51,16 @@ export class ExtractionWriter {
    * e.g. a run from another branch importing a component that was removed.
    */
   resetEntrypoint() {
+    const lastModified = this.#fileSystem.maybeGetLastModifiedDate(
+      this.#entryPointPath
+    );
+    if (
+      lastModified &&
+      Date.now() - lastModified.getTime() < ENTRYPOINT_STALE_DELAY
+    ) {
+      return;
+    }
+
     this.#fileSystem.writeFileSync(
       this.#entryPointPath,
       DISABLE_CHECKS_MAGIC_STRING,

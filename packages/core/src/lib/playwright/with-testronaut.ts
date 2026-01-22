@@ -57,6 +57,10 @@ export function _internal_withTestronaut({
    *   and extracted files.
    * - The entrypoint file is reset at it might indirectly import files that do not exist
    *   anymore. This happens often when the user switches to another git branch for example.
+   * - We do not overwrite this file if it has been modified recently (less than 1 minute ago)
+   *   as it can cause race conditions. This happens when running the tests on different browsers.
+   *   Playwright keeps the same web server but starts a different worker for each browser.
+   *   This also happens if the user is using both the IDE integration and the CLI for example.
    *
    * The current workaround is to check if the web server has already started or not.
    *

@@ -39,7 +39,7 @@ export class FileSystemFake implements FileSystem {
   }
 
   maybeGetLastModifiedDate(path: string): Date | undefined {
-    throw new Error('🚧 Work in progress!');
+    return this._files[path]?.lastModified;
   }
 
   async writeFile(

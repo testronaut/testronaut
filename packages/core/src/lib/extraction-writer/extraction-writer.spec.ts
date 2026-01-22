@@ -35,26 +35,20 @@ describe(ExtractionWriter.name, () => {
     ).not.toContain('INITIAL_CONTENT');
   });
 
-  it.todo(
-    'does not overwrite "index.ts" file if not older than 1 minute',
-    async () => {
-      const { fileSystemFake, writer } = await setUpWriter();
-      const tenSecondsAgo = new Date(Date.now() - 10 * 1000);
+  it('does not overwrite "index.ts" file if modified recently (less than 1 minute ago)', async () => {
+    const { fileSystemFake, writer } = await setUpWriter();
 
-      fileSystemFake.configure({
-        '/my-project/generated/index.ts': {
-          content: 'const INITIAL_CONTENT = 42;',
-          lastModified: tenSecondsAgo,
-        },
-      });
+    fileSystemFake.writeFileSync(
+      '/my-project/generated/index.ts',
+      'const INITIAL_CONTENT = 42;'
+    );
 
-      writer.resetEntrypoint();
+    writer.resetEntrypoint();
 
-      expect(
-        fileSystemFake.getFiles()['/my-project/generated/index.ts']
-      ).toContain('INITIAL_CONTENT');
-    }
-  );
+    expect(
+      fileSystemFake.getFiles()['/my-project/generated/index.ts']
+    ).toContain('INITIAL_CONTENT');
+  });
 
   it('writes anonymous `runInBrowser` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
