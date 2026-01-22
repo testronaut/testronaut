@@ -1,4 +1,5 @@
 import * as ts from 'typescript';
+import { ExtractedFunctionRecord } from '../core/file-analysis';
 
 export function generateImportDeclaration({
   module,
@@ -29,21 +30,31 @@ export function generateImportDeclaration({
 /**
  * Generates a variable statement for the extracted functions.
  *
- * e.g., `export const extractedFunctionsRecord = {'': () => {...}}`
+ * e.g., `export const extractedFunctionsRecord = { 'anonymous': [() => {...}], 'named': { 'Bye!': () => {...}}}`
  */
-export function generateExportedConstObjectLiteral({
-  variableName,
-  value,
-}: {
-  variableName: string;
-  value: Record<string, string>;
-}): ts.VariableStatement {
-  const propertyAssignments = Object.entries(value).map(([key, value]) =>
-    ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(key),
-      ts.factory.createIdentifier(value)
+export function generateExtractedFunctionsType(
+  variableName: string,
+  extractedFunctionsRecord: ExtractedFunctionRecord
+): ts.VariableStatement {
+  const anonymousFunctions = ts.factory.createPropertyAssignment(
+    ts.factory.createStringLiteral('anonymous'),
+    ts.factory.createArrayLiteralExpression(
+      extractedFunctionsRecord.anonymous.map(({ code }) => ts.factory.createIdentifier(code), true)
     )
   );
+  const namedFunctions = ts.factory.createPropertyAssignment(
+    ts.factory.createStringLiteral('named'),
+    ts.factory.createObjectLiteralExpression(
+      Object.entries(extractedFunctionsRecord.named).map(([_, { code, name }]) =>
+        ts.factory.createPropertyAssignment(
+          ts.factory.createStringLiteral(name ?? ''),
+          ts.factory.createIdentifier(code)
+        )
+      ),
+      true
+    )
+  );
+  const propertyAssignments = [anonymousFunctions, namedFunctions];
 
   /* {'': () => {...}} */
   const objectLiteral = ts.factory.createObjectLiteralExpression(

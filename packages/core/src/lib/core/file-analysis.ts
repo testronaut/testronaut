@@ -25,6 +25,17 @@ export interface ExtractedFunction {
   name?: string;
 }
 
+export interface ExtractedFunctionRecord {
+  anonymous: ExtractedFunction[];
+  named: Record<string, ExtractedFunction>;
+}
+
+export const extractedFunctionsRecordKey = 'extractedFunctionsRecord';
+
+export interface ExtractedFunctionsType {
+  [extractedFunctionsRecordKey]: ExtractedFunctionRecord
+}
+
 export interface ImportedIdentifier {
   name: string;
   module: string;

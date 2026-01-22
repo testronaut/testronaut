@@ -17,7 +17,8 @@ export function assertNoDuplicateExtractedFunctions(
     .filter(
       (group): group is ExtractedFunction[] => group != null && group.length > 1
     )
-    .map((group) => group[0].name ?? '');
+    .map((group) => group[0].name ?? '')
+    .filter(Boolean) // removes the anonymous ones
 
   if (duplicates.length > 0) {
     throw new DuplicateExtractedFunctionsError(fileAnalysis.path, duplicates);

@@ -55,7 +55,8 @@ describe(ExtractionWriter.name, () => {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "": () => { console.log('Hi!'); }
+    "anonymous": [() => { console.log('Hi!'); }],
+    "named": {}
 };
 `),
     });
@@ -109,7 +110,10 @@ export const extractedFunctionsRecord = {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "sayHello": () => { console.log('Hi!'); }
+    "anonymous": [],
+    "named": {
+        "sayHello": () => { console.log('Hi!'); }
+    }
 };
 `),
     });
@@ -139,7 +143,8 @@ export const extractedFunctionsRecord = {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "": () => { console.log('Hello!'); }
+    "anonymous": [() => { console.log('Hello!'); }],
+    "named": {}
 };
 `),
     });
@@ -173,7 +178,8 @@ export const extractedFunctionsRecord = {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(
           `export const extractedFunctionsRecord = {
-    "": () => { console.log('Hi!'); }
+    "anonymous": [() => { console.log('Hi!'); }],
+    "named": {}
 };`
         ),
     });
@@ -232,7 +238,8 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
         expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
-    "": () => { console.log(MyComponent); }
+    "anonymous": [() => { console.log(MyComponent); }],
+    "named": {}
 };
 `),
     });
@@ -264,7 +271,8 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
-    "": () => { console.log(MyComponent); }
+    "anonymous": [() => { console.log(MyComponent); }],
+    "named": {}
 };
 `),
     });
@@ -317,7 +325,8 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
-    "": () => { console.log(MyService, MyServiceError); }
+    "anonymous": [() => { console.log(MyService, MyServiceError); }],
+    "named": {}
 };
 `),
     });

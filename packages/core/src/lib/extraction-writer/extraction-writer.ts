@@ -2,13 +2,14 @@ import { join, relative } from 'node:path';
 import * as ts from 'typescript';
 
 import {
+  extractedFunctionsRecordKey,
   type ExtractedFunction,
   type FileAnalysis,
 } from '../core/file-analysis';
 import { type FileSystem } from '../infra/file-system';
 import { FileSystemImpl } from '../infra/file-system.impl';
 import {
-  generateExportedConstObjectLiteral,
+  generateExtractedFunctionsType,
   generateImportDeclaration,
 } from './ast-factory';
 import { FileOps } from './file-ops';
@@ -61,9 +62,9 @@ export class ExtractionWriter {
       `\
 ${DISABLE_CHECKS_MAGIC_STRING}
 ${this.#generateExtractedFunctionsFile({
-  destFilePath,
-  fileAnalysis,
-})}`,
+        destFilePath,
+        fileAnalysis,
+      })}`,
       { overwrite: true }
     );
 
@@ -93,8 +94,10 @@ ${this.#generateExtractedFunctionsFile({
    * import { greetings } from './greetings';
    *
    * export const extractedFunctionsRecord = {
-   *   '': () => { console.log(greetings); }
-   *   'Bye!': () => { console.log('Bye!'); }
+   *   'anonymous': [() => { console.log(greetings); }],
+   *   'named': {
+   *     'Bye!': () => { console.log('Bye!'); }
+   *   }
    * };
    * `
    */
@@ -164,22 +167,19 @@ ${this.#generateExtractedFunctionsFile({
 
   /**
    * Generates the variable statement for the extracted functions.
-   * e.g., `export const extractedFunctionsRecord = {'': () => {...}}`
+   * e.g., `export const extractedFunctionsRecord = {'anonymous': [() => {...}], ...}}`
    */
   #generateExtractedFunctionsVariableStatement(
-    extractedFunctions: ExtractedFunction[]
+    extractedFunctionArray: ExtractedFunction[]
   ) {
-    const extractedFunctionsRecord = extractedFunctions.reduce<
-      Record<string, string>
-    >((acc, extractedFunction) => {
-      acc[extractedFunction.name ?? ''] = extractedFunction.code;
-      return acc;
-    }, {});
+    const extractedFunctionsRecord = {
+      ...{ anonymous: [], named: {} },
+      ...Object.groupBy(extractedFunctionArray, (extractedFunction) =>
+        extractedFunction.name ? 'named' : 'anonymous'
+      ),
+    };
 
-    return generateExportedConstObjectLiteral({
-      variableName: 'extractedFunctionsRecord',
-      value: extractedFunctionsRecord,
-    });
+    return generateExtractedFunctionsType(extractedFunctionsRecordKey, extractedFunctionsRecord);
   }
 }
 
