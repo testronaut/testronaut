@@ -1,5 +1,4 @@
 import * as ts from 'typescript';
-import { createExtractedFunction } from '../core/file-analysis';
 import { getRunInBrowserIdentifier } from '../core/run-in-browser-identifier';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
@@ -89,9 +88,8 @@ function parseRunInBrowserArgs(
     );
   }
 
-  return createExtractedFunction({
+  return {
     code: codeArg.getText(ctx.sourceFile),
     name: nameArg?.text,
-    importedIdentifiers: [],
-  });
+  };
 }

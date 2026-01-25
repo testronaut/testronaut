@@ -51,7 +51,7 @@ describe(ExtractionWriter.name, () => {
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "anonymous": {
-        "token-hash": "() => { console.log('Hi!'); };"
+        "token-hash": () => { console.log('Hi!'); };
     },
     "named": {}
 };
@@ -100,7 +100,7 @@ export const extractedFunctionsRecord = {
 export const extractedFunctionsRecord = {
     "anonymous": {},
     "named": {
-        "sayHello": "() => { console.log('Hi!'); }"
+        "sayHello": () => { console.log('Hi!'); }
     }
 };
 `),
@@ -128,7 +128,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "anonymous": {
-        "token-hash": "() => { console.log('Hello!'); }"
+        "token-hash": () => { console.log('Hello!'); }
     },
     "named": {}
 };
@@ -161,7 +161,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(
           `export const extractedFunctionsRecord = {
     "anonymous": {
-        "my-hash": "() => { console.log('Hi!'); }"
+        "my-hash": () => { console.log('Hi!'); }
     },
     "named": {}
 };`
@@ -218,7 +218,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
     "anonymous": {
-        "my-hash": "() => { console.log(MyComponent); }"
+        "my-hash": () => { console.log(MyComponent); }
     },
     "named": {}
 };
@@ -252,7 +252,7 @@ export const extractedFunctionsRecord = {
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
     "anonymous": {
-        "my-hash": "() => { console.log(MyComponent); }"
+        "my-hash": () => { console.log(MyComponent); }
     },
     "named": {}
 };
@@ -283,7 +283,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "anonymous": {
-        "token-hash": "() => { console.log('Second try'); }"
+        "token-hash": () => { console.log('Second try'); }
     },
     "named": {}
 };
@@ -321,7 +321,7 @@ export const extractedFunctionsRecord = {
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
     "anonymous": {
-        "hash-2": "() => { console.log(MyService, MyServiceError); }"
+        "hash-2": () => { console.log(MyService, MyServiceError); }
     },
     "named": {}
 };

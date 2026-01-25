@@ -94,18 +94,11 @@ ${this.#generateExtractedFunctionsFile(destFilePath, fileAnalysis)}`,
    *
    * export const extractedFunctionsRecord = {
    *   "anonymous": {
-   *     "hash123": {
-   *       code: "() => { console.log('Hi!'); };",
-   *       tokens: ['console', '.', 'log', '(', 'Hi!', ')'],
-   *     }
+   *     "hash123": () => { console.log('Hi!'); }
    *     // ...
    *   },
    *   "named": {
-   *     "hello": {
-   *       name: "sayHello",
-   *       code: "() => { console.log('Hi!'); };",
-   *     }
-   *     // ...
+   *     "sayHello": () => { console.log('Hi!'); }
    *   }
    * };
    * `

@@ -39,7 +39,7 @@ export function generateImportDeclaration({
 /**
  * Generates a variable statement for the extracted functions.
  *
- * e.g., `export const extractedFunctions = [{ tokens: [...], name: '...' }]`
+ * e.g., `export const extractedFunctionsRecord = { anonymous: { ... }, named: { ... } }`
  */
 export function generateExtractedFunctionsType(
   variableName: string,
@@ -57,7 +57,7 @@ export function generateExtractedFunctionsType(
       Object.entries(functions).map(([hashOrName, code]) =>
         createPropertyAssignment(
           createStringLiteral(hashOrName),
-          createStringLiteral(code)
+          createIdentifier(code)
         )
       ),
       true

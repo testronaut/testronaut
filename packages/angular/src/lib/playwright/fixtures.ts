@@ -70,7 +70,7 @@ function isNamedMount<CMP extends Type<unknown>>(
 }
 
 /**
- * This is a placeholder functiont that should never be called.
+ * This is a placeholder function that should never be called.
  */
 const placeholderMount = async <CMP_TYPE extends Type<unknown>>(): ReturnType<
   BrowserMount<CMP_TYPE>
