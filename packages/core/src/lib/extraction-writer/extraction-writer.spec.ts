@@ -1,6 +1,5 @@
 import { describe } from 'vitest';
 import { ExtractionWriter } from './extraction-writer';
-import { createExtractedFunction } from '../core/file-analysis';
 import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
 
@@ -40,11 +39,7 @@ describe(ExtractionWriter.name, () => {
     await writer.write(
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(
-          createExtractedFunction({
-            code: `() => { console.log('Hi!'); }`,
-          })
-        )
+        .withExtractedFunction(`() => { console.log('Hi!'); };`)
         .build()
     );
 
@@ -55,7 +50,9 @@ describe(ExtractionWriter.name, () => {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "anonymous": [() => { console.log('Hi!'); }],
+    "anonymous": {
+        "token-hash": "() => { console.log('Hi!'); };"
+    },
     "named": {}
 };
 `),
@@ -69,11 +66,7 @@ export const extractedFunctionsRecord = {
     await writer.write(
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(
-          createExtractedFunction({
-            code: `() => { console.log('Hi!'); }`,
-          })
-        )
+        .withExtractedFunction(`() => { console.log('Hi!'); }`)
         .build()
     );
 
@@ -94,12 +87,7 @@ export const extractedFunctionsRecord = {
     await writer.write(
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(
-          createExtractedFunction({
-            name: 'sayHello',
-            code: `() => { console.log('Hi!'); }`,
-          })
-        )
+        .withNamedExtractedFunction('sayHello', `() => { console.log('Hi!'); }`)
         .build()
     );
 
@@ -110,9 +98,9 @@ export const extractedFunctionsRecord = {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "anonymous": [],
+    "anonymous": {},
     "named": {
-        "sayHello": () => { console.log('Hi!'); }
+        "sayHello": "() => { console.log('Hi!'); }"
     }
 };
 `),
@@ -131,11 +119,7 @@ export const extractedFunctionsRecord = {
     await writer.write(
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(
-          createExtractedFunction({
-            code: `() => { console.log('Hello!'); }`,
-          })
-        )
+        .withExtractedFunction(`() => { console.log('Hello!'); }`)
         .build()
     );
 
@@ -143,7 +127,9 @@ export const extractedFunctionsRecord = {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "anonymous": [() => { console.log('Hello!'); }],
+    "anonymous": {
+        "token-hash": "() => { console.log('Hello!'); }"
+    },
     "named": {}
 };
 `),
@@ -163,11 +149,7 @@ export const extractedFunctionsRecord = {
     await writer.write(
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(
-          createExtractedFunction({
-            code: `() => { console.log('Hi!'); }`,
-          })
-        )
+        .withExtractedFunction(`() => { console.log('Hi!'); }`, 'my-hash')
         .build()
     );
 
@@ -178,7 +160,9 @@ export const extractedFunctionsRecord = {
       '/my-project/testronaut/src/my-component.spec.ts':
         expect.stringContaining(
           `export const extractedFunctionsRecord = {
-    "anonymous": [() => { console.log('Hi!'); }],
+    "anonymous": {
+        "my-hash": "() => { console.log('Hi!'); }"
+    },
     "named": {}
 };`
         ),
@@ -198,11 +182,7 @@ export const extractedFunctionsRecord = {
     await writer.write(
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(
-          createExtractedFunction({
-            code: `() => { console.log('Hi!'); }`,
-          })
-        )
+        .withExtractedFunction(`() => { console.log('Hi!'); }`)
         .build()
     );
 
@@ -220,15 +200,14 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
       projectFileAnalysisMother
         .withBasicInfo()
         .withExtractedFunction(
-          createExtractedFunction({
-            importedIdentifiers: [
-              {
-                name: 'MyComponent',
-                module: '@my-lib/my-component',
-              },
-            ],
-            code: `() => { console.log(MyComponent); }`,
-          })
+          `() => { console.log(MyComponent); }`,
+          'my-hash',
+          [
+            {
+              name: 'MyComponent',
+              module: '@my-lib/my-component',
+            },
+          ]
         )
         .build()
     );
@@ -238,7 +217,9 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
         expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
-    "anonymous": [() => { console.log(MyComponent); }],
+    "anonymous": {
+        "my-hash": "() => { console.log(MyComponent); }"
+    },
     "named": {}
 };
 `),
@@ -253,15 +234,14 @@ export const extractedFunctionsRecord = {
       projectFileAnalysisMother
         .withBasicInfo()
         .withExtractedFunction(
-          createExtractedFunction({
-            importedIdentifiers: [
-              {
-                name: 'MyComponent',
-                module: './my-component',
-              },
-            ],
-            code: `() => { console.log(MyComponent); }`,
-          })
+          `() => { console.log(MyComponent); }`,
+          'my-hash',
+          [
+            {
+              name: 'MyComponent',
+              module: './my-component',
+            },
+          ]
         )
         .build()
     );
@@ -271,7 +251,40 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
-    "anonymous": [() => { console.log(MyComponent); }],
+    "anonymous": {
+        "my-hash": "() => { console.log(MyComponent); }"
+    },
+    "named": {}
+};
+`),
+    });
+  });
+
+  it('overrides existing file content', async () => {
+    const { fileSystemFake, projectFileAnalysisMother, writer } =
+      await setUpInitializedWriter();
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(`() => { console.log('First try'); }`)
+        .build()
+    );
+
+    await writer.write(
+      projectFileAnalysisMother
+        .withBasicInfo()
+        .withExtractedFunction(`() => { console.log('Second try'); }`)
+        .build()
+    );
+
+    expect(fileSystemFake.getFiles()).toMatchObject({
+      '/my-project/testronaut/src/my-component.spec.ts':
+        expect.stringContaining(`\
+export const extractedFunctionsRecord = {
+    "anonymous": {
+        "token-hash": "() => { console.log('Second try'); }"
+    },
     "named": {}
 };
 `),
@@ -286,36 +299,18 @@ export const extractedFunctionsRecord = {
       projectFileAnalysisMother
         .withBasicInfo()
         .withExtractedFunction(
-          createExtractedFunction({
-            importedIdentifiers: [
-              {
-                name: 'MyComponent',
-                module: '@my-lib/my-component',
-              },
-            ],
-            code: `() => { console.log(MyComponent); }`,
-          })
-        )
-        .build()
-    );
-
-    await writer.write(
-      projectFileAnalysisMother
-        .withBasicInfo()
-        .withExtractedFunction(
-          createExtractedFunction({
-            importedIdentifiers: [
-              {
-                name: 'MyService',
-                module: '@my-lib/my-service',
-              },
-              {
-                name: 'MyServiceError',
-                module: '@my-lib/my-service',
-              },
-            ],
-            code: `() => { console.log(MyService, MyServiceError); }`,
-          })
+          `() => { console.log(MyService, MyServiceError); }`,
+          'hash-2',
+          [
+            {
+              name: 'MyService',
+              module: '@my-lib/my-service',
+            },
+            {
+              name: 'MyServiceError',
+              module: '@my-lib/my-service',
+            },
+          ]
         )
         .build()
     );
@@ -325,7 +320,9 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
-    "anonymous": [() => { console.log(MyService, MyServiceError); }],
+    "anonymous": {
+        "hash-2": "() => { console.log(MyService, MyServiceError); }"
+    },
     "named": {}
 };
 `),

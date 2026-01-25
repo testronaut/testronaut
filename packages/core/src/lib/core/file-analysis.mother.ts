@@ -1,9 +1,10 @@
 import { join } from 'node:path';
 import {
-  createExtractedFunction,
+  createAnonymousExtractedFunction,
   createFileAnalysis,
-  ExtractedFunction,
+  createNamedExtractedFunction,
   FileAnalysis,
+  ImportedIdentifier,
 } from './file-analysis';
 
 export const fileAnalysisMother = {
@@ -32,38 +33,51 @@ function createFileAnalysisInnerMother(fileAnalysis: FileAnalysis) {
       return fileAnalysis;
     },
     withAnonymousExtractedFunction() {
+      const code = `() => { console.log('anonymous'); }`;
       return createFileAnalysisInnerMother(
         createFileAnalysis({
           ...fileAnalysis,
           extractedFunctions: [
             ...fileAnalysis.extractedFunctions,
-            createExtractedFunction({
-              code: `() => { console.log('anonymous'); }`,
+            createAnonymousExtractedFunction({
+              code,
+              hash: 'token-hash',
             }),
           ],
         })
       );
     },
-    withExtractedFunction(extractedFunction: ExtractedFunction) {
+    withExtractedFunction(
+      code: string,
+      hash = 'token-hash',
+      importedIdentifiers: ImportedIdentifier[] = []
+    ) {
       return createFileAnalysisInnerMother(
         createFileAnalysis({
           ...fileAnalysis,
           extractedFunctions: [
             ...fileAnalysis.extractedFunctions,
-            extractedFunction,
+            createAnonymousExtractedFunction({
+              code,
+              hash,
+              importedIdentifiers,
+            }),
           ],
         })
       );
     },
-    withNamedExtractedFunction(name: string) {
+    withNamedExtractedFunction(
+      name: string,
+      code = `() => { console.log('${name}'); }`
+    ) {
       return createFileAnalysisInnerMother(
         createFileAnalysis({
           ...fileAnalysis,
           extractedFunctions: [
             ...fileAnalysis.extractedFunctions,
-            createExtractedFunction({
+            createNamedExtractedFunction({
               name,
-              code: `() => { console.log('${name}'); }`,
+              code,
             }),
           ],
         })

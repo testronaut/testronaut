@@ -2,8 +2,10 @@ import { join, relative } from 'node:path';
 import * as ts from 'typescript';
 
 import {
-  extractedFunctionsRecordKey,
-  type ExtractedFunction,
+  extractedFunctionsKey,
+  ExtractedFunctionsRecord,
+  isAnonymousExtractedFunction,
+  isNamedExtractedFunction,
   type FileAnalysis,
 } from '../core/file-analysis';
 import { type FileSystem } from '../infra/file-system';
@@ -61,10 +63,7 @@ export class ExtractionWriter {
       destFilePath,
       `\
 ${DISABLE_CHECKS_MAGIC_STRING}
-${this.#generateExtractedFunctionsFile({
-        destFilePath,
-        fileAnalysis,
-      })}`,
+${this.#generateExtractedFunctionsFile(destFilePath, fileAnalysis)}`,
       { overwrite: true }
     );
 
@@ -94,25 +93,35 @@ ${this.#generateExtractedFunctionsFile({
    * import { greetings } from './greetings';
    *
    * export const extractedFunctionsRecord = {
-   *   'anonymous': [() => { console.log(greetings); }],
-   *   'named': {
-   *     'Bye!': () => { console.log('Bye!'); }
+   *   "anonymous": {
+   *     "hash123": {
+   *       code: "() => { console.log('Hi!'); };",
+   *       tokens: ['console', '.', 'log', '(', 'Hi!', ')'],
+   *     }
+   *     // ...
+   *   },
+   *   "named": {
+   *     "hello": {
+   *       name: "sayHello",
+   *       code: "() => { console.log('Hi!'); };",
+   *     }
+   *     // ...
    *   }
    * };
    * `
    */
-  #generateExtractedFunctionsFile({
-    destFilePath,
-    fileAnalysis,
-  }: {
-    destFilePath: string;
-    fileAnalysis: FileAnalysis;
-  }): string {
+  #generateExtractedFunctionsFile(
+    destFilePath: string,
+    fileAnalysis: FileAnalysis
+  ): string {
+    const extractedFunctionsRecord =
+      this.#generateExtractedFunctionsRecord(fileAnalysis);
     const sourceFile = ts.factory.createSourceFile(
       [
         ...this.#generateImportDeclarations({ destFilePath, fileAnalysis }),
-        this.#generateExtractedFunctionsVariableStatement(
-          fileAnalysis.extractedFunctions
+        generateExtractedFunctionsType(
+          extractedFunctionsKey,
+          extractedFunctionsRecord
         ),
       ],
       ts.factory.createToken(ts.SyntaxKind.EndOfFileToken),
@@ -166,20 +175,25 @@ ${this.#generateExtractedFunctionsFile({
   }
 
   /**
-   * Generates the variable statement for the extracted functions.
-   * e.g., `export const extractedFunctionsRecord = {'anonymous': [() => {...}], ...}}`
+   * Generates the final {@link ExtractedFunctionsRecord} object.
    */
-  #generateExtractedFunctionsVariableStatement(
-    extractedFunctionArray: ExtractedFunction[]
-  ) {
-    const extractedFunctionsRecord = {
-      ...{ anonymous: [], named: {} },
-      ...Object.groupBy(extractedFunctionArray, (extractedFunction) =>
-        extractedFunction.name ? 'named' : 'anonymous'
-      ),
+  #generateExtractedFunctionsRecord(
+    fileAnalysis: FileAnalysis
+  ): ExtractedFunctionsRecord {
+    return {
+      anonymous: fileAnalysis.extractedFunctions
+        .filter(isAnonymousExtractedFunction)
+        .reduce((acc, extractedFunction) => {
+          acc[extractedFunction.hash] = extractedFunction.code;
+          return acc;
+        }, {} as Record<string, string>),
+      named: fileAnalysis.extractedFunctions
+        .filter(isNamedExtractedFunction)
+        .reduce((acc, extractedFunction) => {
+          acc[extractedFunction.name] = extractedFunction.code;
+          return acc;
+        }, {} as Record<string, string>),
     };
-
-    return generateExtractedFunctionsType(extractedFunctionsRecordKey, extractedFunctionsRecord);
   }
 }
 

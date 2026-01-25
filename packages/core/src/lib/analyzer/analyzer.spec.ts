@@ -1,6 +1,6 @@
 import { describe } from 'vitest';
 import { FileAnalysis } from '../core/file-analysis';
-import { analyze } from './analyze';
+import { analyze } from './analyzer';
 import { InvalidRunInBrowserCallError } from './visit-run-in-browser-calls';
 
 describe(analyze.name, () => {

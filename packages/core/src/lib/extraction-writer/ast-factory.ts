@@ -1,5 +1,18 @@
 import * as ts from 'typescript';
-import { ExtractedFunctionRecord } from '../core/file-analysis';
+import { ExtractedFunctionsRecord } from '../core/file-analysis';
+
+const {
+  createImportDeclaration,
+  createImportClause,
+  createNamedImports,
+  createImportSpecifier,
+  createIdentifier,
+  createStringLiteral,
+  createVariableStatement,
+  createModifier,
+  createVariableDeclarationList,
+  createVariableDeclaration,
+} = ts.factory;
 
 export function generateImportDeclaration({
   module,
@@ -8,74 +21,61 @@ export function generateImportDeclaration({
   module: string;
   identifiers: string[];
 }): ts.ImportDeclaration {
-  return ts.factory.createImportDeclaration(
+  return createImportDeclaration(
     undefined,
-    ts.factory.createImportClause(
+    createImportClause(
       false,
       undefined,
-      ts.factory.createNamedImports(
+      createNamedImports(
         identifiers.map((identifier) =>
-          ts.factory.createImportSpecifier(
-            false,
-            undefined,
-            ts.factory.createIdentifier(identifier)
-          )
+          createImportSpecifier(false, undefined, createIdentifier(identifier))
         )
       )
     ),
-    ts.factory.createStringLiteral(module)
+    createStringLiteral(module)
   );
 }
 
 /**
  * Generates a variable statement for the extracted functions.
  *
- * e.g., `export const extractedFunctionsRecord = { 'anonymous': [() => {...}], 'named': { 'Bye!': () => {...}}}`
+ * e.g., `export const extractedFunctions = [{ tokens: [...], name: '...' }]`
  */
 export function generateExtractedFunctionsType(
   variableName: string,
-  extractedFunctionsRecord: ExtractedFunctionRecord
+  extractedFunctionsRecord: ExtractedFunctionsRecord
 ): ts.VariableStatement {
-  const anonymousFunctions = ts.factory.createPropertyAssignment(
-    ts.factory.createStringLiteral('anonymous'),
-    ts.factory.createArrayLiteralExpression(
-      extractedFunctionsRecord.anonymous.map(({ code }) => ts.factory.createIdentifier(code), true)
-    )
-  );
-  const namedFunctions = ts.factory.createPropertyAssignment(
-    ts.factory.createStringLiteral('named'),
-    ts.factory.createObjectLiteralExpression(
-      Object.entries(extractedFunctionsRecord.named).map(([_, { code, name }]) =>
-        ts.factory.createPropertyAssignment(
-          ts.factory.createStringLiteral(name ?? ''),
-          ts.factory.createIdentifier(code)
+  const {
+    createStringLiteral,
+    createPropertyAssignment,
+    createObjectLiteralExpression,
+  } = ts.factory;
+  const properties = ['anonymous', 'named'].map((type) => {
+    const functions =
+      extractedFunctionsRecord[type as keyof ExtractedFunctionsRecord];
+    const literal = createObjectLiteralExpression(
+      Object.entries(functions).map(([hashOrName, code]) =>
+        createPropertyAssignment(
+          createStringLiteral(hashOrName),
+          createStringLiteral(code)
         )
       ),
       true
-    )
-  );
-  const propertyAssignments = [anonymousFunctions, namedFunctions];
+    );
+    return createPropertyAssignment(createStringLiteral(type), literal);
+  });
 
-  /* {'': () => {...}} */
-  const objectLiteral = ts.factory.createObjectLiteralExpression(
-    propertyAssignments,
-    true
-  );
-
-  /* extractedFunctionsRecord = {'': () => {...}} */
-  const variableDeclaration = ts.factory.createVariableDeclaration(
-    ts.factory.createIdentifier(variableName),
+  /* extractedFunctionsRecord = { anonymous: { ... }, named: { ... } } */
+  const variableDeclaration = createVariableDeclaration(
+    createIdentifier(variableName),
     undefined,
     undefined,
-    objectLiteral
+    createObjectLiteralExpression(properties, true)
   );
 
-  /* export const extractedFunctionsRecord = {'': () => {...}} */
-  return ts.factory.createVariableStatement(
-    [ts.factory.createModifier(ts.SyntaxKind.ExportKeyword)],
-    ts.factory.createVariableDeclarationList(
-      [variableDeclaration],
-      ts.NodeFlags.Const
-    )
+  /* export const extractedFunctionsRecord = { anonymous: { ... }, named: { ... } } */
+  return createVariableStatement(
+    [createModifier(ts.SyntaxKind.ExportKeyword)],
+    createVariableDeclarationList([variableDeclaration], ts.NodeFlags.Const)
   );
 }

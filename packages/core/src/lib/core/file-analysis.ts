@@ -19,21 +19,46 @@ export function createFileAnalysis(
   };
 }
 
-export interface ExtractedFunction {
-  code: string;
+interface BaseExtractedFunction {
   importedIdentifiers: ImportedIdentifier[];
-  name?: string;
+  code: string;
 }
 
-export interface ExtractedFunctionRecord {
-  anonymous: ExtractedFunction[];
-  named: Record<string, ExtractedFunction>;
+interface AnonymousExtractedFunction extends BaseExtractedFunction {
+  type: 'anonymous';
+  hash: string;
 }
 
-export const extractedFunctionsRecordKey = 'extractedFunctionsRecord';
+interface NamedExtractedFunction extends BaseExtractedFunction {
+  type: 'named';
+  name: string;
+}
+
+export function isAnonymousExtractedFunction(
+  extractedFunction: ExtractedFunction
+): extractedFunction is AnonymousExtractedFunction {
+  return extractedFunction.type === 'anonymous';
+}
+
+export function isNamedExtractedFunction(
+  extractedFunction: ExtractedFunction
+): extractedFunction is NamedExtractedFunction {
+  return extractedFunction.type === 'named';
+}
+
+export type ExtractedFunction =
+  | AnonymousExtractedFunction
+  | NamedExtractedFunction;
+
+export const extractedFunctionsKey = 'extractedFunctionsRecord';
+
+export type ExtractedFunctionsRecord = Record<
+  'anonymous' | 'named',
+  Record<string, string>
+>;
 
 export interface ExtractedFunctionsType {
-  [extractedFunctionsRecordKey]: ExtractedFunctionRecord
+  [extractedFunctionsKey]: ExtractedFunctionsRecord;
 }
 
 export interface ImportedIdentifier {
@@ -41,10 +66,27 @@ export interface ImportedIdentifier {
   module: string;
 }
 
-export function createExtractedFunction(
-  extractedFunction: Optional<ExtractedFunction, 'importedIdentifiers'>
+export function createAnonymousExtractedFunction(
+  extractedFunction: Optional<
+    AnonymousExtractedFunction,
+    'importedIdentifiers' | 'type'
+  >
 ): ExtractedFunction {
   return {
+    type: 'anonymous',
+    importedIdentifiers: [],
+    ...extractedFunction,
+  };
+}
+
+export function createNamedExtractedFunction(
+  extractedFunction: Optional<
+    NamedExtractedFunction,
+    'importedIdentifiers' | 'type'
+  >
+): ExtractedFunction {
+  return {
+    type: 'named',
     importedIdentifiers: [],
     ...extractedFunction,
   };
