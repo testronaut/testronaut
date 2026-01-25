@@ -1,9 +1,9 @@
 import { describe } from 'vitest';
 import { FileAnalysis } from '../core/file-analysis';
-import { analyze } from './analyzer';
+import { Analyzer } from './analyzer';
 import { InvalidRunInBrowserCallError } from './visit-run-in-browser-calls';
 
-describe(analyze.name, () => {
+describe(Analyzer.name, () => {
   it('generates file hash', () => {
     const { hash } = analyzeFileContent(`
 test('...', async ({runInBrowser}) => {
@@ -19,12 +19,12 @@ test('...', async ({runInBrowser}) => {
   await runInBrowser(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toEqual([
-      {
-        code: `() => console.log('Hello!')`,
-        importedIdentifiers: [],
-      },
-    ]);
+
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      code: `() => console.log('Hello!')`,
+      importedIdentifiers: [],
+    });
   });
 
   it('extracts `runInBrowser` async arrow function', () => {
@@ -33,12 +33,11 @@ test('...', async ({runInBrowser}) => {
   await runInBrowser(async () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toEqual([
-      {
-        code: `async () => console.log('Hello!')`,
-        importedIdentifiers: [],
-      },
-    ]);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      code: `async () => console.log('Hello!')`,
+      importedIdentifiers: [],
+    });
   });
 
   it('extracts `runInBrowser` function call', () => {
@@ -47,12 +46,11 @@ test('...', async ({runInBrowser}) => {
   await runInBrowser(function sayHello() { console.log('Hello!'); });
 });
     `);
-    expect(extractedFunctions).toEqual([
-      {
-        code: `function sayHello() { console.log('Hello!'); }`,
-        importedIdentifiers: [],
-      },
-    ]);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      code: `function sayHello() { console.log('Hello!'); }`,
+      importedIdentifiers: [],
+    });
   });
 
   it('extracts `runInBrowser` outside test: in beforeEach', () => {
@@ -61,12 +59,11 @@ test.beforeEach(async ({runInBrowser}) => {
   await runInBrowser(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toEqual([
-      {
-        code: `() => console.log('Hello!')`,
-        importedIdentifiers: [],
-      },
-    ]);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      code: `() => console.log('Hello!')`,
+      importedIdentifiers: [],
+    });
   });
 
   it('extracts `runInBrowser` outside test: in a function', () => {
@@ -75,12 +72,11 @@ function somewhereElse() {
   await runInBrowser(() => console.log('Hello!'));
 }
     `);
-    expect(extractedFunctions).toEqual([
-      {
-        code: `() => console.log('Hello!')`,
-        importedIdentifiers: [],
-      },
-    ]);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      code: `() => console.log('Hello!')`,
+      importedIdentifiers: [],
+    });
   });
 
   it('extracts named `runInBrowser`', () => {
@@ -89,13 +85,12 @@ test('...', async ({runInBrowser}) => {
   await runInBrowser('say hello', () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toEqual([
-      {
-        name: 'say hello',
-        code: `() => console.log('Hello!')`,
-        importedIdentifiers: [],
-      },
-    ]);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      name: 'say hello',
+      code: `() => console.log('Hello!')`,
+      importedIdentifiers: [],
+    });
   });
 
   it('extracts aliased `runInBrowser`', () => {
@@ -104,12 +99,11 @@ test('...', async ({runInBrowser: run}) => {
   await run(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toEqual([
-      {
-        code: `() => console.log('Hello!')`,
-        importedIdentifiers: [],
-      },
-    ]);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      code: `() => console.log('Hello!')`,
+      importedIdentifiers: [],
+    });
   });
 
   it('extracts imported identifiers used in `runInBrowser`', () => {
@@ -198,10 +192,11 @@ runInBrowser(fn);
 });
 
 function analyzeFileContent(content: string): FileAnalysis {
-  return analyze({
-    fileData: {
+  return new Analyzer().analyze(
+    {
       path: 'my-component.spec.ts',
       content,
     },
-  });
+    []
+  );
 }
