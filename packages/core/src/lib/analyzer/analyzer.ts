@@ -31,7 +31,7 @@ export class Analyzer {
         ...result.importedIdentifiers,
       ];
 
-      /* Collect generated names from´´é transforms. */
+      /* Collect generated names from transforms. */
       for (const name of result.generatedNames) {
         generatedNames.add(name);
       }

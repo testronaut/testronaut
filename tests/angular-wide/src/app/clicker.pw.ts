@@ -2,6 +2,7 @@ import { expect, test } from '@testronaut/angular';
 import { Clicker } from './clicker';
 
 test(`anonymous mount`, async ({ page, mount }) => {
+  await mount(Clicker, { inputs: { message: 'Hello' } });
   await mount(Clicker);
   await page.getByRole('button').click();
 
