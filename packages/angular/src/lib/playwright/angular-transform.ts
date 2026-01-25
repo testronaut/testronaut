@@ -15,6 +15,16 @@ import * as ts from 'typescript';
 
 const MOUNT_IDENTIFIER = 'mount';
 
+/**
+ * TODO: Add factory function to generate a transformer
+ *
+ * A transfomer consists of at least two parts:
+ * - A visitor that transforms the code
+ * - A fixture that is used to pass-through the `runInBrowser` call
+ *
+ * If we have a factory function, where both parts are created,
+ * the transformer is self-contained and easier to maintain.
+ */
 export const angularTransform: Transform = {
   name: 'angular',
   apply(fileData): TransformResult {
@@ -58,6 +68,7 @@ export const angularTransform: Transform = {
             }),
           ]
         : [],
+      generatedNames: [],
     };
   },
 };

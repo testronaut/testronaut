@@ -67,6 +67,36 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
       File: /my-project/src/my-component.spec.ts.
       Duplicates: "mount hello duplicate", "mount bye duplicate"`
     );
+  it('does not throw if duplicates are transform-generated names', () => {
+    const { mother } = setUp();
+
+    const fileAnalysis = mother
+      .withBasicInfo(['__testronaut__mount_hello'])
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .build();
+      
+
+    expect(() => assertNoDuplicateExtractedFunctions(fileAnalysis)).not.toThrow();
+  });
+
+  it('throws if user-named duplicates exist even with generated names', () => {
+    const { mother } = setUp();
+
+    const fileAnalysis = mother
+      .withBasicInfo(['__testronaut__mount_hello'])
+      .withNamedExtractedFunction('user-named')
+      .withNamedExtractedFunction('user-named')
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .build();
+
+    expect(() => assertNoDuplicateExtractedFunctions(fileAnalysis)).toThrow(
+      new DuplicateExtractedFunctionsError(
+        '/my-project/src/my-component.spec.ts',
+        ['user-named']
+      )
+    );
   });
 });
 

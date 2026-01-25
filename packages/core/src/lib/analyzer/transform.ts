@@ -13,4 +13,5 @@ export interface TransformApplyFn {
 export interface TransformResult {
   content: string;
   importedIdentifiers: ImportedIdentifier[];
+  generatedNames: string[];
 }

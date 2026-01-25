@@ -3,16 +3,20 @@ import { isNamedExtractedFunction, type FileAnalysis } from './file-analysis';
 
 /**
  * @throws {DuplicateExtractedFunctionsError} if there are duplicate named extracted functions.
- * Only checks for named functions. Anonymous functions are ignored because
- * if they have the same hash, they are the same function.
+ * Only checks for user-named functions. Anonymous functions and transform-generated names
+ * are ignored because:
+ * - Anonymous functions: if they have the same hash, they are the same function
+ * - Transform-generated names: transforms own the naming contract and can reuse names
+ *   for identical functions (cache-like behavior)
  */
 export function assertNoDuplicateExtractedFunctions(
   fileAnalysis: FileAnalysis
 ) {
-  const groups = Object.groupBy(
-    fileAnalysis.extractedFunctions.filter(isNamedExtractedFunction),
-    (funk) => funk.name
-  );
+  const userNamedFunctions = fileAnalysis.extractedFunctions
+    .filter(isNamedExtractedFunction)
+    .filter((fn) => !fileAnalysis.generatedNames.has(fn.name));
+
+  const groups = Object.groupBy(userNamedFunctions, (funk) => funk.name);
 
   const duplicates = Object.values(groups)
     .filter((group) => group !== undefined)

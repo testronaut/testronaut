@@ -10,15 +10,15 @@ import {
 export const fileAnalysisMother = {
   withProjectRoot(projectRoot: string) {
     return {
-      withBasicInfo(
-        name: 'src/my-component.spec.ts' = 'src/my-component.spec.ts'
-      ) {
+      withBasicInfo(generatedNames: string[] = []) {
+        const name = 'src/my-component.spec.ts';
         const path = join(projectRoot, name);
         const hash = `hash|${name}`;
         const fileAnalysis = createFileAnalysis({
           path,
           hash,
           importedIdentifiers: [],
+          generatedNames: new Set(generatedNames),
         });
 
         return createFileAnalysisInnerMother(fileAnalysis);

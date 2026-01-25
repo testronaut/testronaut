@@ -16,6 +16,7 @@ import { computeTokenHash } from '../core/compute-token-hash';
 export class Analyzer {
   analyze(fileData: FileData, transforms: Transform[]): FileAnalysis {
     let additionalImportedIdentifiers: ImportedIdentifier[] = [];
+    const generatedNames = new Set<string>();
 
     /* It is important to compute the hash here before the file is transformed. */
     const hash = this.#generateHash(fileData.content);
@@ -29,6 +30,11 @@ export class Analyzer {
         ...additionalImportedIdentifiers,
         ...result.importedIdentifiers,
       ];
+
+      /* Collect generated names from´´é transforms. */
+      for (const name of result.generatedNames) {
+        generatedNames.add(name);
+      }
     }
 
     /* Create compiler context. */
@@ -67,6 +73,7 @@ export class Analyzer {
       hash,
       extractedFunctions,
       importedIdentifiers: additionalImportedIdentifiers,
+      generatedNames,
     });
   }
 
