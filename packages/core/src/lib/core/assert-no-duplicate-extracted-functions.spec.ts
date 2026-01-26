@@ -8,7 +8,7 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withNamedExtractedFunction('mount hello duplicate')
       .withNamedExtractedFunction('mount hello duplicate')
       .build();
@@ -21,28 +21,25 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
     );
   });
 
-  it('throws if there is more than one anonymous function', () => {
+  it('does not throw if there is more than one anonymous function', () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withAnonymousExtractedFunction()
       .withAnonymousExtractedFunction()
       .build();
 
-    expect(() => assertNoDuplicateExtractedFunctions(fileAnalysis)).toThrow(
-      new DuplicateExtractedFunctionsError(
-        '/my-project/src/my-component.spec.ts',
-        ['']
-      )
-    );
+    expect(() =>
+      assertNoDuplicateExtractedFunctions(fileAnalysis)
+    ).not.toThrow();
   });
 
   it('does not throw if there are no duplicate', () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withNamedExtractedFunction('mount hello')
       .withNamedExtractedFunction('mount bye')
       .withAnonymousExtractedFunction()
@@ -57,7 +54,7 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withNamedExtractedFunction('mount hello duplicate')
       .withNamedExtractedFunction('mount hello duplicate')
       .withNamedExtractedFunction('mount bye duplicate')
@@ -68,9 +65,42 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
       .build();
 
     expect(() => assertNoDuplicateExtractedFunctions(fileAnalysis)).toThrow(
-      `Extracted functions should be unique — unique name per file, or one anonymous call per file.
+      `Extracted function identifiers must be unique per file.
       File: /my-project/src/my-component.spec.ts.
-      Duplicates: "mount hello duplicate", "mount bye duplicate", [anonymous call]`
+      Duplicates: "mount hello duplicate", "mount bye duplicate"`
+    );
+  });
+
+  it('does not throw if duplicates are transform-generated names', () => {
+    const { mother } = setUp();
+
+    const fileAnalysis = mother
+      .withBasicInfo(['__testronaut__mount_hello'])
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .build();
+
+    expect(() =>
+      assertNoDuplicateExtractedFunctions(fileAnalysis)
+    ).not.toThrow();
+  });
+
+  it('throws if user-named duplicates exist even with generated names', () => {
+    const { mother } = setUp();
+
+    const fileAnalysis = mother
+      .withBasicInfo(['__testronaut__mount_hello'])
+      .withNamedExtractedFunction('user-named')
+      .withNamedExtractedFunction('user-named')
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .withNamedExtractedFunction('__testronaut__mount_hello')
+      .build();
+
+    expect(() => assertNoDuplicateExtractedFunctions(fileAnalysis)).toThrow(
+      new DuplicateExtractedFunctionsError(
+        '/my-project/src/my-component.spec.ts',
+        ['user-named']
+      )
     );
   });
 });

@@ -1,4 +1,5 @@
 export { getRunInBrowserIdentifier } from './lib/core/run-in-browser-identifier';
+export { computeTokenHash } from './lib/core/compute-token-hash';
 export {
   AnalysisContext,
   createFileData,

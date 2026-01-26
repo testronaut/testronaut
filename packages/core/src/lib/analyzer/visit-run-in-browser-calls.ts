@@ -1,5 +1,4 @@
 import * as ts from 'typescript';
-import { createExtractedFunction } from '../core/file-analysis';
 import { getRunInBrowserIdentifier } from '../core/run-in-browser-identifier';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
@@ -75,11 +74,30 @@ function parseRunInBrowserArgs(
     );
   }
 
-  const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
-  if (nameArg && !ts.isStringLiteralLike(nameArg)) {
-    throw new InvalidRunInBrowserCallError(
-      `\`${getRunInBrowserIdentifier()}\` name must be a string literal`
-    );
+  /* Determine if first argument is a name (string literal) or data (object literal).
+   * With 2 args: could be (name, fn) or (data, fn)
+   * With 3 args: must be (name, data, fn) */
+  let nameArg: ts.StringLiteralLike | undefined;
+  if (node.arguments.length === 3) {
+    /* Three arguments: (name, data, fn) - first must be a string literal */
+    if (!ts.isStringLiteralLike(node.arguments[0])) {
+      throw new InvalidRunInBrowserCallError(
+        `\`${getRunInBrowserIdentifier()}\` name must be a string literal when providing data`
+      );
+    }
+    nameArg = node.arguments[0];
+  } else if (node.arguments.length === 2) {
+    /* Two arguments: could be (name, fn) or (data, fn) */
+    if (ts.isStringLiteralLike(node.arguments[0])) {
+      /* First arg is a string literal → it's a name */
+      nameArg = node.arguments[0];
+    } else if (!ts.isObjectLiteralExpression(node.arguments[0])) {
+      /* First arg is neither string nor object → invalid */
+      throw new InvalidRunInBrowserCallError(
+        `\`${getRunInBrowserIdentifier()}\` with two arguments: first argument must be a string literal (name) or object literal (data)`
+      );
+    }
+    /* If first arg is an object literal, it's data (not a name), so nameArg remains undefined */
   }
 
   const codeArg = node.arguments.at(-1);
@@ -89,9 +107,8 @@ function parseRunInBrowserArgs(
     );
   }
 
-  return createExtractedFunction({
+  return {
     code: codeArg.getText(ctx.sourceFile),
     name: nameArg?.text,
-    importedIdentifiers: [],
-  });
+  };
 }

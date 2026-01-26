@@ -22,6 +22,7 @@
     "@angular/router": "20.2.4",
     "rxjs": "~7.8.0",
     "semver": "^7.7.2",
+    "xxhashjs": "^0.2.2",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
@@ -56,6 +57,7 @@
     "@testronaut/angular": "workspace:*",
     "@testronaut/core": "workspace:*",
     "@types/node": "20.19.9",
+    "@types/xxhashjs": "^0.2.4",
     "@typescript-eslint/utils": "^8.33.1",
     "@vitest/coverage-v8": "3.2.4",
     "@vitest/ui": "3.2.4",
