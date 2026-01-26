@@ -319,6 +319,9 @@ importers:
       typescript:
         specifier: ~5.9.2
         version: 5.9.2
+      xxhashjs:
+        specifier: ^0.2.2
+        version: 0.2.2
 
 packages:
 
