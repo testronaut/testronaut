@@ -1,3 +1,13 @@
+## 0.0.12 (2026-01-23)
+
+### 🚀 Features
+
+- add nx `init` generator and `ng-add` schematic ([#74](https://github.com/testronaut/testronaut/pull/74))
+
+### ❤️ Thank You
+
+- Rainer Hahnekamp @rainerhahnekamp
+
 ## 0.0.11 (2025-11-05)
 
 ### 🩹 Fixes
