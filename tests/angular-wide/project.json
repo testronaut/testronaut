@@ -92,15 +92,15 @@
       }
     },
     "test-wide": {
-      "executor": "nx:run-commands",
+      "command": "vitest --project wide",
       "options": {
-        "commands": [
-          "vitest --project wide",
-          "playwright test",
-          "playwright test --config=playwright.failing-multi-worker.config.ts"
-        ],
-        "cwd": "{projectRoot}",
-        "parallel": false
+        "cwd": "{projectRoot}"
+      }
+    },
+    "testronaut": {
+      "command": "playwright test",
+      "options": {
+        "cwd": "{projectRoot}"
       }
     },
     "testronaut-commonjs": {

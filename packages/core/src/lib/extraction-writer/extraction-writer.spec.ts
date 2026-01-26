@@ -9,7 +9,7 @@ describe(ExtractionWriter.name, () => {
     const { fileSystemFake } = await setUpInitializedWriter();
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/testronaut/index.ts': `\
+      '/my-project/generated/index.ts': `\
 // prettier-ignore
 // eslint-disable-next-line
 // @ts-nocheck
@@ -17,20 +17,37 @@ describe(ExtractionWriter.name, () => {
     });
   });
 
-  it('does overwrite "index.ts" file if it exists', async () => {
+  it('does overwrite "index.ts" file if older than 1 minute', async () => {
+    const { fileSystemFake, writer } = await setUpWriter();
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+
+    fileSystemFake.configure({
+      '/my-project/generated/index.ts': {
+        content: 'const INITIAL_CONTENT = 42;',
+        lastModified: twoMinutesAgo,
+      },
+    });
+
+    writer.resetEntrypointIfStale();
+
+    expect(
+      fileSystemFake.getFiles()['/my-project/generated/index.ts']
+    ).not.toContain('INITIAL_CONTENT');
+  });
+
+  it('does not overwrite "index.ts" file if modified recently (less than 1 minute ago)', async () => {
     const { fileSystemFake, writer } = await setUpWriter();
 
-    await fileSystemFake.writeFile(
-      '/my-project/testronaut/index.ts',
+    fileSystemFake.writeFileSync(
+      '/my-project/generated/index.ts',
       'const INITIAL_CONTENT = 42;'
     );
 
-    writer.resetEntrypoint();
+    writer.resetEntrypointIfStale();
 
-    expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/testronaut/index.ts':
-        expect.not.stringContaining('INITIAL_CONTENT'),
-    });
+    expect(
+      fileSystemFake.getFiles()['/my-project/generated/index.ts']
+    ).toContain('INITIAL_CONTENT');
   });
 
   it('writes anonymous `runInBrowser` calls', async () => {
@@ -49,10 +66,10 @@ describe(ExtractionWriter.name, () => {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/testronaut/index.ts': expect.stringContaining(
+      '/my-project/generated/index.ts': expect.stringContaining(
         `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
       ),
-      '/my-project/testronaut/src/my-component.spec.ts':
+      '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "": () => { console.log('Hi!'); }
@@ -77,7 +94,7 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/testronaut/src/my-component.spec.ts':
+      '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 // prettier-ignore
 // eslint-disable-next-line
@@ -103,10 +120,10 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/testronaut/index.ts': expect.stringContaining(
+      '/my-project/generated/index.ts': expect.stringContaining(
         `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
       ),
-      '/my-project/testronaut/src/my-component.spec.ts':
+      '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "sayHello": () => { console.log('Hi!'); }
@@ -120,7 +137,7 @@ export const extractedFunctionsRecord = {
       await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
-      '/my-project/testronaut/src/my-component.spec.ts',
+      '/my-project/generated/src/my-component.spec.ts',
       'export const extractedFunctionsRecord = { "": () => { console.log("Hi!"); } };'
     );
 
@@ -136,7 +153,7 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/testronaut/src/my-component.spec.ts':
+      '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
     "": () => { console.log('Hello!'); }
@@ -150,7 +167,7 @@ export const extractedFunctionsRecord = {
       await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
-      '/my-project/testronaut/index.ts',
+      '/my-project/generated/index.ts',
       `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`,
       { overwrite: true }
     );
@@ -167,15 +184,14 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/testronaut/index.ts': expect.stringContaining(
+      '/my-project/generated/index.ts': expect.stringContaining(
         `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`
       ),
-      '/my-project/testronaut/src/my-component.spec.ts':
-        expect.stringContaining(
-          `export const extractedFunctionsRecord = {
+      '/my-project/generated/src/my-component.spec.ts': expect.stringContaining(
+        `export const extractedFunctionsRecord = {
     "": () => { console.log('Hi!'); }
 };`
-        ),
+      ),
     });
   });
 
@@ -184,7 +200,7 @@ export const extractedFunctionsRecord = {
       await setUpInitializedWriter();
 
     await fileSystemFake.writeFile(
-      '/my-project/testronaut/index.ts',
+      '/my-project/generated/index.ts',
       `globalThis['OLD_HASH'] = () => import('./src/my-component.spec.ts');`,
       { overwrite: true }
     );
@@ -201,7 +217,7 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/testronaut/index.ts': `\
+      '/my-project/generated/index.ts': `\
 globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`,
     });
   });
@@ -228,7 +244,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/testronaut/src/my-component.spec.ts':
+      '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
@@ -260,7 +276,7 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/testronaut/src/my-component.spec.ts':
+      '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
@@ -313,7 +329,7 @@ export const extractedFunctionsRecord = {
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
-      '/my-project/testronaut/src/my-component.spec.ts':
+      '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
@@ -327,7 +343,7 @@ export const extractedFunctionsRecord = {
 async function setUpInitializedWriter() {
   const { writer, ...utils } = await setUpWriter();
 
-  writer.resetEntrypoint();
+  writer.resetEntrypointIfStale();
 
   return { writer, ...utils };
 }
@@ -338,7 +354,7 @@ async function setUpWriter() {
 
   const writer = new ExtractionWriter({
     projectRoot,
-    extractionDir: 'testronaut',
+    extractionDir: 'generated',
     fileSystem: fileSystemFake,
   });
 
