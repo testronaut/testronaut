@@ -26,6 +26,10 @@
     "./devkit": {
       "types": "./dist/devkit.d.ts",
       "default": "./dist/devkit.mjs"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.mjs"
     }
   }
 }

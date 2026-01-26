@@ -10,6 +10,7 @@ import {
   BrowserTestingModule,
   platformBrowserTesting,
 } from '@angular/platform-browser/testing';
+import { EventsBuffer, getEventBus } from '@testronaut/core/browser';
 import {
   BrowserMount,
   OUTPUT_BUS_VARIABLE_NAME,
@@ -21,10 +22,18 @@ import { getComponentOutputs } from './ng-internals';
 
 export const mount = async <CMP_TYPE extends Type<unknown>>(
   ...args: Parameters<BrowserMount<CMP_TYPE>>
-): ReturnType<BrowserMount<CMP_TYPE>> => {
+): Promise<{
+  outputNames: Array<keyof OutputTypes<InstanceType<CMP_TYPE>>>;
+  outputs: EventsBuffer<OutputTypes<InstanceType<CMP_TYPE>>>;
+}> => {
   const [cmp, { inputs = {} } = {}] = args;
 
   assertIsSetUp();
+
+  /* Create an event bus to track component outputs. */
+  const eventBus = getEventBus<OutputTypes<InstanceType<CMP_TYPE>>>();
+
+  /* Keep the legacy OUTPUT_BUS for backward compatibility. */
   const g = globalThis as unknown as {
     [OUTPUT_BUS_VARIABLE_NAME]: (
       outputEvent: OutputEvent<InstanceType<typeof cmp>>
@@ -45,14 +54,18 @@ export const mount = async <CMP_TYPE extends Type<unknown>>(
 
   for (const outputName of outputNames) {
     subscribeToOutput(fixture.componentInstance, outputName, (value) => {
-      g[OUTPUT_BUS_VARIABLE_NAME]({
+      /* Emit through the event bus for the new API. */
+      eventBus.emit(outputName, value);
+
+      /* Keep emitting through the legacy OUTPUT_BUS for backward compatibility. */
+      g[OUTPUT_BUS_VARIABLE_NAME]?.({
         outputName,
         value,
       });
     });
   }
 
-  return { outputNames };
+  return { outputNames, outputs: eventBus.events };
 };
 
 export function configure({ providers }: { providers: Provider[] }) {
