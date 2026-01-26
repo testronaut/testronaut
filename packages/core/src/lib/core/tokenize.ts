@@ -91,7 +91,7 @@ function normalizeArrowFunctionParams(tokens: string[]): string[] {
         middleToken !== '[' &&
         middleToken !== '...' &&
         middleToken !== ',' &&
-        !/^[{}[\]():=,\.]$/.test(middleToken);
+        !/^[{}[\]():=,.]$/.test(middleToken);
 
       if (isSimpleIdentifier) {
         // Single parameter with parentheses - remove them
