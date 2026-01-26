@@ -6,6 +6,7 @@ import type {
   TestType,
 } from '@playwright/test';
 import { test as base } from '@playwright/test';
+import { computeTokenHash } from '../core/compute-token-hash';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
 
@@ -80,21 +81,19 @@ export const test: TestronautTestType = base.extend<
         );
       }
 
-      let functionName = '';
-      if (typeof args[0] === 'string') {
-        functionName = args[0];
-        args.shift();
-      }
+      const { name, data, fn } = getParams(args);
+      const hashResult =
+        name === '' ? computeTokenHash(fn.toString()) : undefined;
 
-      let data: Record<string, unknown> = {};
-      if (typeof args[0] === 'object') {
-        data = args[0] as Record<string, unknown>;
-      }
+      const tokenHash = hashResult?.hash;
 
       return await runner.runInBrowser({
+        name,
+        tokenHash,
+        tokens: hashResult?.tokens ?? [],
         hash,
-        functionName,
         data,
+        fn,
       });
     };
 
@@ -121,4 +120,30 @@ export interface RunInBrowser {
     data: DATA,
     fn: (data: DATA) => RETURN | Promise<RETURN>
   ): Promise<RETURN>;
+}
+
+function getParams(args: unknown[]): {
+  name: string;
+  data: Record<string, unknown>;
+  fn: () => unknown;
+} {
+  let name = '';
+  if (typeof args[0] === 'string') {
+    name = args[0];
+    args.shift();
+  }
+
+  let data: Record<string, unknown> = {};
+  if (typeof args[0] !== 'function') {
+    data = args[0] as Record<string, unknown>;
+    args.shift();
+  }
+
+  const fn = args[0] as () => unknown;
+
+  if (typeof fn !== 'function') {
+    throw new Error('`runInBrowser` requires a function as the last argument.');
+  }
+
+  return { name, data, fn };
 }

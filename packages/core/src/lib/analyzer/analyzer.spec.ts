@@ -93,6 +93,43 @@ test('...', async ({runInBrowser}) => {
     });
   });
 
+  it('extracts `runInBrowser` with data parameter (2 args: data, fn)', () => {
+    const { extractedFunctions } = analyzeFileContent(`
+test('...', async ({runInBrowser}) => {
+  await runInBrowser({ word1: 'hello', word2: 'world' }, (data) => {
+    console.log(data.word1, data.word2);
+  });
+});
+    `);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      code: `(data) => {
+    console.log(data.word1, data.word2);
+  }`,
+      importedIdentifiers: [],
+    });
+    // Should be anonymous (no name) when first arg is data object
+    expect(extractedFunction).not.toHaveProperty('name');
+  });
+
+  it('extracts named `runInBrowser` with data parameter (3 args: name, data, fn)', () => {
+    const { extractedFunctions } = analyzeFileContent(`
+test('...', async ({runInBrowser}) => {
+  await runInBrowser('say words', { word1: 'hello', word2: 'world' }, (data) => {
+    console.log(data.word1, data.word2);
+  });
+});
+    `);
+    const extractedFunction = extractedFunctions[0];
+    expect(extractedFunction).toMatchObject({
+      name: 'say words',
+      code: `(data) => {
+    console.log(data.word1, data.word2);
+  }`,
+      importedIdentifiers: [],
+    });
+  });
+
   it('extracts aliased `runInBrowser`', () => {
     const { extractedFunctions } = analyzeFileContent(`
 test('...', async ({runInBrowser: run}) => {
@@ -177,6 +214,24 @@ runInBrowser('say bye', () => {
       analyzeFileContent(`
 const name = 'say hi';
 runInBrowser(name, () => console.log('Say hi!'));
+      `)
+    ).toThrow(InvalidRunInBrowserCallError);
+  });
+
+  it('fails if `runInBrowser` with 2 args has first arg that is neither string nor object', () => {
+    expect(() =>
+      analyzeFileContent(`
+const data = { word: 'hello' };
+runInBrowser(data, () => console.log('Say hi!'));
+      `)
+    ).toThrow(InvalidRunInBrowserCallError);
+  });
+
+  it('fails if `runInBrowser` with 3 args has first arg that is not a string literal', () => {
+    expect(() =>
+      analyzeFileContent(`
+const name = 'say hi';
+runInBrowser(name, { word: 'hello' }, () => console.log('Say hi!'));
       `)
     ).toThrow(InvalidRunInBrowserCallError);
   });

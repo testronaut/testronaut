@@ -8,8 +8,14 @@ import XXHash from 'xxhashjs';
  * string concatenation inside {@link tokenize}.
  *
  * @param code - The TypeScript code to hash
- * @returns The hash of the code
+ * @returns The hash of the code and the tokens
  */
-export function computeTokenHash(code: string): string {
-  return XXHash.h64(tokenize(transpile(code)).join(''), 0).toString(16);
+export function computeTokenHash(code: string): {
+  hash: string;
+  tokens: string[];
+} {
+  const tokens = tokenize(transpile(code));
+  const hash = XXHash.h64(tokens.join(''), 0).toString(16);
+
+  return { hash, tokens };
 }

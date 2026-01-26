@@ -250,4 +250,221 @@ describe('tokenize', () => {
 
     expect(tokens1).not.toEqual(tokens2);
   });
+
+  describe('dropTrailingCommas (post-step)', () => {
+    it('normalizes trailing comma in arrays', () => {
+      const without = tokenize('x([1, 2])');
+      const withTrailing = tokenize('x([1, 2,])');
+
+      expect(without).toEqual(withTrailing);
+    });
+
+    it('normalizes trailing comma in objects', () => {
+      const without = tokenize('x({ a: 1, b: 2 })');
+      const withTrailing = tokenize('x({ a: 1, b: 2, })');
+
+      expect(without).toEqual(withTrailing);
+    });
+
+    it('normalizes trailing comma in TestBed-style providers', () => {
+      const without = tokenize('f({ providers: [a(), b()] })');
+      const withTrailing = tokenize('f({ providers: [a(), b(),] })');
+
+      expect(without).toEqual(withTrailing);
+    });
+
+    it('does not strip elision commas in arrays', () => {
+      const elision = tokenize('[,]');
+      const empty = tokenize('[]');
+
+      expect(elision).not.toEqual(empty);
+      expect(elision).toEqual(['[', ',', ']']);
+    });
+
+    it('does not strip elision commas before trailing comma', () => {
+      const withBoth = tokenize('[,,]');
+
+      expect(withBoth).toEqual(['[', ',', ',', ']']);
+    });
+  });
+
+  describe('normalizeArrowFunctionParams (post-step)', () => {
+    it('normalizes single parameter with parentheses to match without parentheses', () => {
+      const withParens = tokenize('(data) => { console.log(data); }');
+      const withoutParens = tokenize('data => { console.log(data); }');
+
+      expect(withParens).toEqual(withoutParens);
+    });
+
+    it('normalizes single parameter with parentheses in runInBrowser context', () => {
+      const withParens = tokenize(
+        'runInBrowser((data) => { console.log(data.word1, data.word2); })'
+      );
+      const withoutParens = tokenize(
+        'runInBrowser(data => { console.log(data.word1, data.word2); })'
+      );
+
+      expect(withParens).toEqual(withoutParens);
+    });
+
+    it('normalizes multiple single-parameter arrow functions', () => {
+      const withParens = tokenize('(x) => x + 1; (y) => y * 2;');
+      const withoutParens = tokenize('x => x + 1; y => y * 2;');
+
+      expect(withParens).toEqual(withoutParens);
+    });
+
+    it('does not normalize empty parameters', () => {
+      const empty = tokenize('() => { return 42; }');
+
+      expect(empty).toEqual(['(', ')', '=>', '{', 'return', '42', ';', '}']);
+    });
+
+    it('does not normalize multiple parameters', () => {
+      const multiple = tokenize('(a, b) => { return a + b; }');
+
+      expect(multiple).toEqual([
+        '(',
+        'a',
+        ',',
+        'b',
+        ')',
+        '=>',
+        '{',
+        'return',
+        'a',
+        '+',
+        'b',
+        ';',
+        '}',
+      ]);
+    });
+
+    it('does not normalize object destructuring', () => {
+      const destructuring = tokenize('({ data }) => { console.log(data); }');
+
+      expect(destructuring).toEqual([
+        '(',
+        '{',
+        'data',
+        '}',
+        ')',
+        '=>',
+        '{',
+        'console',
+        '.',
+        'log',
+        '(',
+        'data',
+        ')',
+        ';',
+        '}',
+      ]);
+    });
+
+    it('does not normalize array destructuring', () => {
+      const destructuring = tokenize(
+        '([ first, second ]) => { console.log(first, second); }'
+      );
+
+      expect(destructuring).toContain('(');
+      expect(destructuring).toContain('[');
+      expect(destructuring).toContain('first');
+      expect(destructuring).toContain(',');
+      expect(destructuring).toContain('second');
+      expect(destructuring).toContain(']');
+      expect(destructuring).toContain(')');
+      expect(destructuring).toContain('=>');
+    });
+
+    it('does not normalize rest parameters', () => {
+      const rest = tokenize('(...args) => { console.log(args); }');
+
+      expect(rest).toEqual([
+        '(',
+        '...',
+        'args',
+        ')',
+        '=>',
+        '{',
+        'console',
+        '.',
+        'log',
+        '(',
+        'args',
+        ')',
+        ';',
+        '}',
+      ]);
+    });
+
+    it('does not normalize default parameters', () => {
+      const withDefault = tokenize('(data = {}) => { console.log(data); }');
+
+      expect(withDefault).toContain('(');
+      expect(withDefault).toContain('data');
+      expect(withDefault).toContain('=');
+      expect(withDefault).toContain('{');
+      expect(withDefault).toContain('}');
+      expect(withDefault).toContain(')');
+      expect(withDefault).toContain('=>');
+    });
+
+    it('does not normalize type annotations', () => {
+      const withType = tokenize('(data: string) => { console.log(data); }');
+
+      expect(withType).toContain('(');
+      expect(withType).toContain('data');
+      expect(withType).toContain(':');
+      expect(withType).toContain('string');
+      expect(withType).toContain(')');
+      expect(withType).toContain('=>');
+    });
+
+    it('does not normalize nested parentheses that are not arrow function parameters', () => {
+      const nested = tokenize('const fn = (x) => (y) => x + y;');
+
+      // Should normalize both arrow function parameters
+      const expected = tokenize('const fn = x => y => x + y;');
+      expect(nested).toEqual(expected);
+    });
+
+    it('normalizes single parameter even with whitespace', () => {
+      const withSpaces = tokenize('( data ) => { return data; }');
+      const withoutParens = tokenize('data => { return data; }');
+
+      expect(withSpaces).toEqual(withoutParens);
+    });
+
+    it('handles complex nested structures with normalized arrow functions', () => {
+      const complex = tokenize(
+        'runInBrowser({ word1, word2 }, (data) => { console.log(data.word1, data.word2); })'
+      );
+      const expected = tokenize(
+        'runInBrowser({ word1, word2 }, data => { console.log(data.word1, data.word2); })'
+      );
+
+      expect(complex).toEqual(expected);
+    });
+
+    it('does not normalize when parentheses contain comma-separated values', () => {
+      const multiple = tokenize('(a, b, c) => a + b + c;');
+
+      expect(multiple).toContain('(');
+      expect(multiple).toContain('a');
+      expect(multiple).toContain(',');
+      expect(multiple).toContain('b');
+      expect(multiple).toContain(',');
+      expect(multiple).toContain('c');
+      expect(multiple).toContain(')');
+      expect(multiple).toContain('=>');
+    });
+
+    it('normalizes single parameter in array of arrow functions', () => {
+      const withParens = tokenize('[(x) => x, (y) => y, (z) => z]');
+      const withoutParens = tokenize('[x => x, y => y, z => z]');
+
+      expect(withParens).toEqual(withoutParens);
+    });
+  });
 });

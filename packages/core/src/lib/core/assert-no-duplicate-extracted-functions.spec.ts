@@ -8,7 +8,7 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withNamedExtractedFunction('mount hello duplicate')
       .withNamedExtractedFunction('mount hello duplicate')
       .build();
@@ -25,19 +25,21 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withAnonymousExtractedFunction()
       .withAnonymousExtractedFunction()
       .build();
 
-    expect(() => assertNoDuplicateExtractedFunctions(fileAnalysis)).not.toThrow()
+    expect(() =>
+      assertNoDuplicateExtractedFunctions(fileAnalysis)
+    ).not.toThrow();
   });
 
   it('does not throw if there are no duplicate', () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withNamedExtractedFunction('mount hello')
       .withNamedExtractedFunction('mount bye')
       .withAnonymousExtractedFunction()
@@ -52,7 +54,7 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
     const { mother } = setUp();
 
     const fileAnalysis = mother
-      .withBasicInfo('src/my-component.spec.ts')
+      .withBasicInfo()
       .withNamedExtractedFunction('mount hello duplicate')
       .withNamedExtractedFunction('mount hello duplicate')
       .withNamedExtractedFunction('mount bye duplicate')
@@ -67,6 +69,8 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
       File: /my-project/src/my-component.spec.ts.
       Duplicates: "mount hello duplicate", "mount bye duplicate"`
     );
+  });
+
   it('does not throw if duplicates are transform-generated names', () => {
     const { mother } = setUp();
 
@@ -75,9 +79,10 @@ describe(assertNoDuplicateExtractedFunctions.name, () => {
       .withNamedExtractedFunction('__testronaut__mount_hello')
       .withNamedExtractedFunction('__testronaut__mount_hello')
       .build();
-      
 
-    expect(() => assertNoDuplicateExtractedFunctions(fileAnalysis)).not.toThrow();
+    expect(() =>
+      assertNoDuplicateExtractedFunctions(fileAnalysis)
+    ).not.toThrow();
   });
 
   it('throws if user-named duplicates exist even with generated names', () => {

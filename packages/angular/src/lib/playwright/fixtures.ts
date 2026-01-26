@@ -236,6 +236,6 @@ function generateMountName<CMP_TYPE extends Type<unknown>>(
     ? `${componentName}, ${optionsText}`
     : componentName;
   const mountCallText = `mount(${mountArgsText})`;
-  const hash = computeTokenHash(mountCallText);
+  const { hash } = computeTokenHash(mountCallText);
   return `__testronaut__${hash}`;
 }

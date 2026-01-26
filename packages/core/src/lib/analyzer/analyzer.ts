@@ -62,7 +62,7 @@ export class Analyzer {
           : createAnonymousExtractedFunction({
               code: runInBrowserCall.code,
               importedIdentifiers,
-              hash: computeTokenHash(runInBrowserCall.code),
+              hash: computeTokenHash(runInBrowserCall.code).hash,
             })
       );
     });

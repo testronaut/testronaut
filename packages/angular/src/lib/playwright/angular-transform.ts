@@ -104,7 +104,7 @@ function processMountArgs(
    * Wrap arguments in mount(...) to make valid TypeScript for transpile(). */
   const mountArgsText = args.map((arg) => arg.getText(sourceFile)).join(', ');
   const mountCallText = `${MOUNT_IDENTIFIER}(${mountArgsText})`;
-  const hash = computeTokenHash(mountCallText);
+  const { hash } = computeTokenHash(mountCallText);
   const generatedName = `__testronaut__${hash}`;
 
   return {
