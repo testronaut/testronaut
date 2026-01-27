@@ -1,24 +1,24 @@
 import * as ts from 'typescript';
 import { createExtractedFunction } from '../core/file-analysis';
-import { getRunInBrowserIdentifier } from '../core/run-in-browser-identifier';
+import { getInPageIdentifier } from '../core/run-in-browser-identifier';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
 
-const _RUN_IN_BROWSER_IDENTIFIER = 'runInBrowser';
+const _IN_PAGE_IDENTIFIER = 'inPage';
 
-export interface RunInBrowserCall {
+export interface InPageCall {
   node: ts.CallExpression;
   code: string;
   name?: string;
 }
 
-export function visitRunInBrowserCalls(
+export function visitInPageCalls(
   ctx: AnalysisContext,
-  callback: (runInBrowserCall: RunInBrowserCall) => void
+  callback: (inPageCall: InPageCall) => void
 ) {
   const visitor = (node: ts.Node) => {
-    if (ts.isCallExpression(node) && isRunInBrowserCall(ctx, node)) {
-      const { code, name } = parseRunInBrowserArgs(ctx, node);
+    if (ts.isCallExpression(node) && isInPageCall(ctx, node)) {
+      const { code, name } = parseInPageArgs(ctx, node);
       callback({ code, name, node });
       return;
     }
@@ -29,34 +29,34 @@ export function visitRunInBrowserCalls(
   ts.forEachChild(ctx.sourceFile, visitor);
 }
 
-export class InvalidRunInBrowserCallError extends Error {
-  override name = 'InvalidRunInBrowserCallError';
+export class InvalidInPageCallError extends Error {
+  override name = 'InvalidInPageCallError';
 }
 
-function isRunInBrowserCall(
+function isInPageCall(
   ctx: AnalysisContext,
   callExpression: ts.CallExpression
 ): boolean {
-  /* Identifier is `runInBrowser`. */
-  if (callExpression.expression.getText() === getRunInBrowserIdentifier()) {
+  /* Identifier is `inPage`. */
+  if (callExpression.expression.getText() === getInPageIdentifier()) {
     return true;
   }
 
-  const runInBrowserDeclaration = getDeclaration(
+  const inPageDeclaration = getDeclaration(
     ctx.typeChecker,
     callExpression.expression
   );
 
-  /* Identifier is an alias (e.g. `test(..., ({runInBrowser: run}) => { run(...); })`). */
+  /* Identifier is an alias (e.g. `test(..., ({inPage: run}) => { run(...); })`). */
   return (
-    runInBrowserDeclaration != null &&
-    ts.isObjectBindingPattern(runInBrowserDeclaration.parent) &&
-    runInBrowserDeclaration.parent.elements.at(0)?.propertyName?.getText() ===
-      getRunInBrowserIdentifier()
+    inPageDeclaration != null &&
+    ts.isObjectBindingPattern(inPageDeclaration.parent) &&
+    inPageDeclaration.parent.elements.at(0)?.propertyName?.getText() ===
+      getInPageIdentifier()
   );
 }
 
-function parseRunInBrowserArgs(
+function parseInPageArgs(
   ctx: AnalysisContext,
   node: ts.CallExpression
 ): {
@@ -64,28 +64,28 @@ function parseRunInBrowserArgs(
   name?: string;
 } {
   if (node.arguments.length === 0) {
-    throw new InvalidRunInBrowserCallError(
-      `\`${getRunInBrowserIdentifier()}\` must have at least one argument`
+    throw new InvalidInPageCallError(
+      `\`${getInPageIdentifier()}\` must have at least one argument`
     );
   }
 
   if (node.arguments.length > 3) {
-    throw new InvalidRunInBrowserCallError(
-      `\`${getRunInBrowserIdentifier()}\` must have at most three arguments`
+    throw new InvalidInPageCallError(
+      `\`${getInPageIdentifier()}\` must have at most three arguments`
     );
   }
 
   const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
   if (nameArg && !ts.isStringLiteralLike(nameArg)) {
-    throw new InvalidRunInBrowserCallError(
-      `\`${getRunInBrowserIdentifier()}\` name must be a string literal`
+    throw new InvalidInPageCallError(
+      `\`${getInPageIdentifier()}\` name must be a string literal`
     );
   }
 
   const codeArg = node.arguments.at(-1);
   if (!ts.isFunctionLike(codeArg)) {
-    throw new InvalidRunInBrowserCallError(
-      `\`${getRunInBrowserIdentifier()}\` function must be an inline function`
+    throw new InvalidInPageCallError(
+      `\`${getInPageIdentifier()}\` function must be an inline function`
     );
   }
 

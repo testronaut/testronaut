@@ -1,17 +1,17 @@
 import { test } from '@testronaut/core';
 
-/* TODO: once we make `runInBrowser` throw instead,
- * we can `expect(() => runInBrowser(...)).rejects.toThrow()` instead. */
-test.fail('runInBrowser', async ({ runInBrowser }) => {
-  await runInBrowser('duplicate name', () => {
+/* TODO: once we make `inPage` throw instead,
+ * we can `expect(() => inPage(...)).rejects.toThrow()` instead. */
+test.fail('inPage', async ({ inPage }) => {
+  await inPage('duplicate name', () => {
     document.body.textContent = 'Hi!';
   });
 });
 
 test.fail(
-  'another runInBrowser with the same name',
-  async ({ runInBrowser }) => {
-    await runInBrowser('duplicate name', () => {
+  'another inPage with the same name',
+  async ({ inPage }) => {
+    await inPage('duplicate name', () => {
       document.body.textContent = 'Bye!';
     });
   }
