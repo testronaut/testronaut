@@ -8,7 +8,7 @@ import { findImportDeclaration, getDeclaration } from './utils';
 
 export function visitImportedIdentifiers(
   ctx: AnalysisContext,
-  runInBrowserCallNode: ts.CallExpression,
+  inPageCallNode: ts.CallExpression,
   callback: (importedIdentifier: ImportedIdentifier) => void
 ) {
   const visitor = (node: ts.Node) => {
@@ -23,7 +23,7 @@ export function visitImportedIdentifiers(
     ts.forEachChild(node, visitor);
   };
 
-  ts.forEachChild(runInBrowserCallNode, visitor);
+  ts.forEachChild(inPageCallNode, visitor);
 }
 
 function tryGetImportedIdentifier(

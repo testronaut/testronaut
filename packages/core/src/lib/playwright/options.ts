@@ -27,7 +27,7 @@ export interface TestronautOptions {
   /**
    * List of transforms to apply to files before extraction.
    * This is used by framework plugins to transform fixtures
-   * such as `mount()` to `runInBrowser()`.
+   * such as `mount()` to `inPage()`.
    */
   transforms?: Transform[];
 }

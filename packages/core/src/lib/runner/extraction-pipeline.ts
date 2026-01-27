@@ -32,7 +32,7 @@ export class ExtractionPipeline {
 
     /* TODO: it's cheap to just throw an error here.
      * Later, we'll have to extract the errors so that we can throw them
-     * when `runInBrowser` is called in the test.*/
+     * when `inPage` is called in the test.*/
     assertNoDuplicateExtractedFunctions(fileAnalysis);
 
     const fileInfo = createFileInfo({ hash: this.#computeHash(content), path });

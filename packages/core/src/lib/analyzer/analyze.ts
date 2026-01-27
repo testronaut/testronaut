@@ -9,7 +9,7 @@ import {
 import { AnalysisContext, createFileData, type FileData } from './core';
 import type { Transform } from './transform';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
-import { visitRunInBrowserCalls } from './visit-run-in-browser-calls';
+import { visitInPageCalls } from './visit-in-page-calls';
 
 export function analyze({
   fileData,
@@ -39,18 +39,18 @@ export function analyze({
 
   const extractedFunctions: ExtractedFunction[] = [];
 
-  /* Extract `runInBrowser` calls. */
-  visitRunInBrowserCalls(ctx, (runInBrowserCall) => {
-    /* Extracted identifiers inside `runInBrowser` call that are imported. */
+  /* Extract `inPage` calls. */
+  visitInPageCalls(ctx, (inPageCall) => {
+    /* Extracted identifiers inside `inPage` call that are imported. */
     const importedIdentifiers: ImportedIdentifier[] = [];
-    visitImportedIdentifiers(ctx, runInBrowserCall.node, (importedIdentifier) =>
+    visitImportedIdentifiers(ctx, inPageCall.node, (importedIdentifier) =>
       importedIdentifiers.push(importedIdentifier)
     );
 
     extractedFunctions.push(
       createExtractedFunction({
-        code: runInBrowserCall.code,
-        name: runInBrowserCall.name,
+        code: inPageCall.code,
+        name: inPageCall.name,
         importedIdentifiers,
       })
     );

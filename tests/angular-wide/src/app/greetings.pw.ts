@@ -18,8 +18,8 @@ test(`named mount with inputs`, async ({ page, mount }) => {
   await expect(page.getByRole('heading')).toHaveText('Hello Foo!');
 });
 
-test(`named mount with DI`, async ({ page, mount, runInBrowser }) => {
-  await runInBrowser('configure providers', () =>
+test(`named mount with DI`, async ({ page, mount, inPage }) => {
+  await inPage('configure providers', () =>
     configure({ providers: [provideGreeting('Servus')] })
   );
 
