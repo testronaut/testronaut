@@ -74,12 +74,6 @@ export const test: TestronautTestType = base.extend<
     const { hash } = await runner.extract(testInfo.file);
 
     const runInBrowserImpl: RunInBrowser = async (...args: unknown[]) => {
-      if (testInfo.parallelIndex !== 0) {
-        throw new Error(
-          '`runInBrowser` does not support multiple workers yet. Please run your tests in a single worker.'
-        );
-      }
-
       let functionName = '';
       if (typeof args[0] === 'string') {
         functionName = args[0];

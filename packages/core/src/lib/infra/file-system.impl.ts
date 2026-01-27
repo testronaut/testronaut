@@ -1,15 +1,30 @@
+import { mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 import {
   FileExistsError,
   type FileSystem,
   type WriteFileOptions,
 } from './file-system';
-import { dirname } from 'node:path';
-import { mkdirSync, writeFileSync } from 'node:fs';
 
 export class FileSystemImpl implements FileSystem {
   async readFile(path: string): Promise<string> {
     return readFile(path, 'utf-8');
+  }
+
+  maybeGetLastModifiedDate(path: string): Date | undefined {
+    try {
+      return statSync(path).mtime;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code === 'ENOENT'
+      ) {
+        return undefined;
+      }
+      throw error;
+    }
   }
 
   async writeFile(

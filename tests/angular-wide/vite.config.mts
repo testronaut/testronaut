@@ -3,6 +3,7 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineConfig, mergeConfig } from 'vite';
 import { defineConfig as defineVitestConfig } from 'vitest/config';
 
+const isCI = !!process.env['CI'];
 const allTestFiles = ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'];
 const wideTestFiles = [
   'src/**/*.wide.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
@@ -43,8 +44,9 @@ export default mergeConfig(
           test: {
             name: 'wide',
             include: wideTestFiles,
-            /* These wide tests are slow as we generate apps, install packages, etc... */
-            testTimeout: 120_000,
+            /* These wide tests are slow as we generate apps, install packages, etc...
+             * They are even slower on CI.  */
+            testTimeout: isCI ? 240_000 : 120_000,
           },
         },
       ],
