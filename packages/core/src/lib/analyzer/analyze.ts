@@ -9,7 +9,7 @@ import {
 import { AnalysisContext, createFileData, type FileData } from './core';
 import type { Transform } from './transform';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
-import { visitInPageCalls } from './visit-run-in-browser-calls';
+import { visitInPageCalls } from './visit-in-page-calls';
 
 export function analyze({
   fileData,

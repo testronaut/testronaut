@@ -1,6 +1,6 @@
 import * as ts from 'typescript';
 import { createExtractedFunction } from '../core/file-analysis';
-import { getInPageIdentifier } from '../core/run-in-browser-identifier';
+import { getInPageIdentifier } from '../core/in-page-identifier';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
 
