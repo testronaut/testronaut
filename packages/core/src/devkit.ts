@@ -1,4 +1,4 @@
-export { getRunInBrowserIdentifier } from './lib/core/run-in-browser-identifier';
+export { getInPageIdentifier } from './lib/core/run-in-browser-identifier';
 export {
   AnalysisContext,
   createFileData,

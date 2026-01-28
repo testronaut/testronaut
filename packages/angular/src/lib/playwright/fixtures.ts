@@ -11,7 +11,7 @@ import {
 export { expect } from '@testronaut/core';
 
 export const test = base.extend<Fixtures>({
-  mount: async ({ page, runInBrowser }, use) => {
+  mount: async ({ page, inPage }, use) => {
     const mountImpl: Fixtures['mount'] = async <CMP_TYPE extends Type<unknown>>(
       ...args: MountParameters<CMP_TYPE>
     ) => {
@@ -22,16 +22,16 @@ export const test = base.extend<Fixtures>({
 
       const inputs = options?.inputs;
 
-      /* Using a placeholder function here because what matters to `runInBrowser`
+      /* Using a placeholder function here because what matters to `inPage`
        * is the name (if not anonymous). */
       const { outputNames } =
         functionName != null
-          ? await runInBrowser(
+          ? await inPage(
               functionName,
               { inputs },
               placeholderMount<CMP_TYPE>
             )
-          : await runInBrowser({ inputs }, placeholderMount<CMP_TYPE>);
+          : await inPage({ inputs }, placeholderMount<CMP_TYPE>);
 
       const { outputsCalls } = await listenToOutputBus({ page, outputNames });
 

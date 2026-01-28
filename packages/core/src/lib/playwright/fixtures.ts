@@ -55,7 +55,7 @@ export const test: TestronautTestType = base.extend<
     await use(page);
   },
 
-  runInBrowser: async ({ testronaut, page }, use, testInfo) => {
+  inPage: async ({ testronaut, page }, use, testInfo) => {
     if (!testronaut) {
       /* TODO: Setup a link with detailed instructions */
       throw new Error(
@@ -73,7 +73,7 @@ export const test: TestronautTestType = base.extend<
     );
     const { hash } = await runner.extract(testInfo.file);
 
-    const runInBrowserImpl: RunInBrowser = async (...args: unknown[]) => {
+    const inPageImpl: InPage = async (...args: unknown[]) => {
       let functionName = '';
       if (typeof args[0] === 'string') {
         functionName = args[0];
@@ -85,22 +85,22 @@ export const test: TestronautTestType = base.extend<
         data = args[0] as Record<string, unknown>;
       }
 
-      return await runner.runInBrowser({
+      return await runner.inPage({
         hash,
         functionName,
         data,
       });
     };
 
-    await use(runInBrowserImpl);
+    await use(inPageImpl);
   },
 });
 
 export interface Fixtures {
-  runInBrowser: RunInBrowser;
+  inPage: InPage;
 }
 
-export interface RunInBrowser {
+export interface InPage {
   <RETURN>(fn: () => RETURN | Promise<RETURN>): Promise<RETURN>;
 
   <RETURN>(name: string, fn: () => RETURN | Promise<RETURN>): Promise<RETURN>;

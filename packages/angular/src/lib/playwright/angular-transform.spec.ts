@@ -8,7 +8,7 @@ import { describe } from 'vitest';
 import { angularTransform } from './angular-transform';
 
 describe(angularTransform.name, () => {
-  it('replaces anonymous mount call with runInBrowser + mount', () => {
+  it('replaces anonymous mount call with inPage + mount', () => {
     const result = transform(`
 import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
@@ -21,13 +21,13 @@ test('hello', async ({ mount }) => {
     expect(result.content).toContain(`\
 import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
-test('hello', async ({ runInBrowser }) => {
-    await runInBrowser(() => mount(Hello));
+test('hello', async ({ inPage }) => {
+    await inPage(() => mount(Hello));
 });
 `);
   });
 
-  it('replaces mount call with runInBrowser + mount', () => {
+  it('replaces mount call with inPage + mount', () => {
     const result = transform(`
 import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
@@ -40,8 +40,8 @@ test('hello', async ({ mount }) => {
     expect(result.content).toContain(`\
 import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
-test('hello', async ({ runInBrowser }) => {
-    await runInBrowser('hello', () => mount(Hello));
+test('hello', async ({ inPage }) => {
+    await inPage('hello', () => mount(Hello));
 });
 `);
   });
@@ -68,8 +68,8 @@ test('hello', async ({ mount }) => {
     const result = transform(`
 import { test } from '@testronaut/angular';
 
-test('hello', async ({ runInBrowser }) => {
-  await runInBrowser(() => {
+test('hello', async ({ inPage }) => {
+  await inPage(() => {
     console.log('hello');
   });
 });

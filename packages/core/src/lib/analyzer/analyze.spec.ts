@@ -1,22 +1,22 @@
 import { describe } from 'vitest';
 import { FileAnalysis } from '../core/file-analysis';
 import { analyze } from './analyze';
-import { InvalidRunInBrowserCallError } from './visit-run-in-browser-calls';
+import { InvalidInPageCallError } from './visit-run-in-browser-calls';
 
 describe(analyze.name, () => {
   it('generates file hash', () => {
     const { hash } = analyzeFileContent(`
-test('...', async ({runInBrowser}) => {
-  await runInBrowser(() => console.log('Hello!'));
+test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(hash).toBe('dzvDWHTi');
+    expect(hash).toBe('MLZi2ARp');
   });
 
-  it('extracts `runInBrowser` sync arrow function', () => {
+  it('extracts `inPage` sync arrow function', () => {
     const { extractedFunctions } = analyzeFileContent(`
-test('...', async ({runInBrowser}) => {
-  await runInBrowser(() => console.log('Hello!'));
+test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
 });
     `);
     expect(extractedFunctions).toEqual([
@@ -27,10 +27,10 @@ test('...', async ({runInBrowser}) => {
     ]);
   });
 
-  it('extracts `runInBrowser` async arrow function', () => {
+  it('extracts `inPage` async arrow function', () => {
     const { extractedFunctions } = analyzeFileContent(`
-test('...', async ({runInBrowser}) => {
-  await runInBrowser(async () => console.log('Hello!'));
+test('...', async ({inPage}) => {
+  await inPage(async () => console.log('Hello!'));
 });
     `);
     expect(extractedFunctions).toEqual([
@@ -41,10 +41,10 @@ test('...', async ({runInBrowser}) => {
     ]);
   });
 
-  it('extracts `runInBrowser` function call', () => {
+  it('extracts `inPage` function call', () => {
     const { extractedFunctions } = analyzeFileContent(`
-test('...', async ({runInBrowser}) => {
-  await runInBrowser(function sayHello() { console.log('Hello!'); });
+test('...', async ({inPage}) => {
+  await inPage(function sayHello() { console.log('Hello!'); });
 });
     `);
     expect(extractedFunctions).toEqual([
@@ -55,10 +55,10 @@ test('...', async ({runInBrowser}) => {
     ]);
   });
 
-  it('extracts `runInBrowser` outside test: in beforeEach', () => {
+  it('extracts `inPage` outside test: in beforeEach', () => {
     const { extractedFunctions } = analyzeFileContent(`
-test.beforeEach(async ({runInBrowser}) => {
-  await runInBrowser(() => console.log('Hello!'));
+test.beforeEach(async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
 });
     `);
     expect(extractedFunctions).toEqual([
@@ -69,10 +69,10 @@ test.beforeEach(async ({runInBrowser}) => {
     ]);
   });
 
-  it('extracts `runInBrowser` outside test: in a function', () => {
+  it('extracts `inPage` outside test: in a function', () => {
     const { extractedFunctions } = analyzeFileContent(`
 function somewhereElse() {
-  await runInBrowser(() => console.log('Hello!'));
+  await inPage(() => console.log('Hello!'));
 }
     `);
     expect(extractedFunctions).toEqual([
@@ -83,10 +83,10 @@ function somewhereElse() {
     ]);
   });
 
-  it('extracts named `runInBrowser`', () => {
+  it('extracts named `inPage`', () => {
     const { extractedFunctions } = analyzeFileContent(`
-test('...', async ({runInBrowser}) => {
-  await runInBrowser('say hello', () => console.log('Hello!'));
+test('...', async ({inPage}) => {
+  await inPage('say hello', () => console.log('Hello!'));
 });
     `);
     expect(extractedFunctions).toEqual([
@@ -98,9 +98,9 @@ test('...', async ({runInBrowser}) => {
     ]);
   });
 
-  it('extracts aliased `runInBrowser`', () => {
+  it('extracts aliased `inPage`', () => {
     const { extractedFunctions } = analyzeFileContent(`
-test('...', async ({runInBrowser: run}) => {
+test('...', async ({inPage: run}) => {
   await run(() => console.log('Hello!'));
 });
     `);
@@ -112,18 +112,18 @@ test('...', async ({runInBrowser: run}) => {
     ]);
   });
 
-  it('extracts imported identifiers used in `runInBrowser`', () => {
+  it('extracts imported identifiers used in `inPage`', () => {
     const { extractedFunctions } = analyzeFileContent(`
 import { something, somethingElse, somethingUsedOutside } from './something';
 import { somethingFromAnotherFile } from './another-file';
 
 console.log(somethingUsedOutside);
 
-runInBrowser('say hi', () => {
+inPage('say hi', () => {
   console.log(something);
 });
 
-runInBrowser('say bye', () => {
+inPage('say bye', () => {
   console.log(something);
   console.log(somethingFromAnotherFile);
 });
@@ -154,46 +154,46 @@ runInBrowser('say bye', () => {
     ]);
   });
 
-  it.todo('extracts imported identifiers with alias used in `runInBrowser`');
+  it.todo('extracts imported identifiers with alias used in `inPage`');
 
   it.todo(
-    'extracts imported identifiers with default import used in `runInBrowser`'
+    'extracts imported identifiers with default import used in `inPage`'
   );
 
   it.todo(
-    'extracts imported identifiers with namespace used in `runInBrowser`'
+    'extracts imported identifiers with namespace used in `inPage`'
   );
 
-  it('fails if `runInBrowser` is called without args', () => {
-    expect(() => analyzeFileContent(`runInBrowser();`)).toThrow(
-      InvalidRunInBrowserCallError
+  it('fails if `inPage` is called without args', () => {
+    expect(() => analyzeFileContent(`inPage();`)).toThrow(
+      InvalidInPageCallError
     );
   });
 
-  it('fails if `runInBrowser` is called with too many args', () => {
+  it('fails if `inPage` is called with too many args', () => {
     expect(() =>
       analyzeFileContent(
-        `runInBrowser('say hi', () => console.log('Say hi!'), 'superfluous');`
+        `inPage('say hi', () => console.log('Say hi!'), 'superfluous');`
       )
-    ).toThrow(InvalidRunInBrowserCallError);
+    ).toThrow(InvalidInPageCallError);
   });
 
-  it('fails if `runInBrowser` name is not a string literal', () => {
+  it('fails if `inPage` name is not a string literal', () => {
     expect(() =>
       analyzeFileContent(`
 const name = 'say hi';
-runInBrowser(name, () => console.log('Say hi!'));
+inPage(name, () => console.log('Say hi!'));
       `)
-    ).toThrow(InvalidRunInBrowserCallError);
+    ).toThrow(InvalidInPageCallError);
   });
 
-  it('fails if `runInBrowser` function is not an inline function', () => {
+  it('fails if `inPage` function is not an inline function', () => {
     expect(() =>
       analyzeFileContent(`
 const fn = () => console.log('Say hi!');
-runInBrowser(fn);
+inPage(fn);
       `)
-    ).toThrow(InvalidRunInBrowserCallError);
+    ).toThrow(InvalidInPageCallError);
   });
 });
 

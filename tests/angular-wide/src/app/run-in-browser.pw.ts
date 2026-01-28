@@ -1,23 +1,23 @@
 import { expect, test } from '@testronaut/core';
 
-test('anonymous runInBrowser', async ({ page, runInBrowser }) => {
-  await runInBrowser(() => {
+test('anonymous inPage', async ({ page, inPage }) => {
+  await inPage(() => {
     document.body.textContent = 'Hi!';
   });
 
   await expect(page.getByText('Hi!')).toBeVisible();
 });
 
-test('named runInBrowser', async ({ page, runInBrowser }) => {
-  await runInBrowser('hello', () => {
+test('named inPage', async ({ page, inPage }) => {
+  await inPage('hello', () => {
     document.body.textContent = 'Hello!';
   });
 
   await expect(page.getByText('Hello!')).toBeVisible();
 });
 
-test('named runInBrowser with args', async ({ page, runInBrowser }) => {
-  await runInBrowser('hello foo', { name: 'Foo' }, ({ name }) => {
+test('named inPage with args', async ({ page, inPage }) => {
+  await inPage('hello foo', { name: 'Foo' }, ({ name }) => {
     document.body.textContent = `Hello ${name}!`;
   });
 

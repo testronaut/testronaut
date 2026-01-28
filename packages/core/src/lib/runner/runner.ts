@@ -14,7 +14,7 @@ export class Runner {
     return this.#extractionPipeline.extract(filePath);
   }
 
-  async runInBrowser({
+  async inPage({
     hash,
     functionName,
     data,

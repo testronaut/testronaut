@@ -1,7 +1,7 @@
 import {
   AnalysisContext,
   createImportedIdentifier,
-  getRunInBrowserIdentifier,
+  getInPageIdentifier,
   type Transform,
   type TransformResult,
 } from '@testronaut/core/devkit';
@@ -26,7 +26,7 @@ export const angularTransform: Transform = {
         replacePropertyInObjectBinding(
           node,
           MOUNT_IDENTIFIER,
-          getRunInBrowserIdentifier()
+          getInPageIdentifier()
         ),
       callExpression: (node) => {
         if (node.expression.getText() !== MOUNT_IDENTIFIER) {
@@ -35,12 +35,12 @@ export const angularTransform: Transform = {
 
         mountFound = true;
 
-        const { mountArgs, runInBrowserArgs } = processMountArgs(
+        const { mountArgs, inPageArgs } = processMountArgs(
           Array.from(node.arguments)
         );
 
-        return createCallExpression(getRunInBrowserIdentifier(), [
-          ...runInBrowserArgs,
+        return createCallExpression(getInPageIdentifier(), [
+          ...inPageArgs,
           createArrowFunction(
             createCallExpression(MOUNT_IDENTIFIER, mountArgs)
           ),
@@ -63,13 +63,13 @@ export const angularTransform: Transform = {
 };
 
 function processMountArgs(args: ts.Expression[]): {
-  runInBrowserArgs: ts.Expression[];
+  inPageArgs: ts.Expression[];
   mountArgs: ts.Expression[];
 } {
   const isNamedCall = ts.isStringLiteral(args[0]);
 
   return {
-    runInBrowserArgs: isNamedCall ? [args[0]] : [],
+    inPageArgs: isNamedCall ? [args[0]] : [],
     mountArgs: isNamedCall ? args.slice(1) : args,
   };
 }
