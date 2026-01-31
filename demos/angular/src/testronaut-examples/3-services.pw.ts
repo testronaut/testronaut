@@ -1,5 +1,4 @@
 import { test, expect } from '@testronaut/angular';
-import { mount } from '@testronaut/angular/browser';
 import {
   ClickMe,
   MessageService,
@@ -24,7 +23,7 @@ import {
  * (e.g. `mount` and `inPage`).
  */
 test('should use the real message service', async ({ inPage, page }) => {
-  await inPage('mount1', () => mount(ClickMe));
+  await inPage('mount1', () => TestBed.createComponent(ClickMe));
   await page.getByRole('button', { name: 'Click me' }).click();
   await expect(page.getByText('Lift Off!')).toBeVisible();
 });
@@ -48,7 +47,7 @@ test.describe('mocks', () => {
       });
     });
 
-    await inPage('mount2', () => mount(ClickMe));
+    await inPage('mount2', () => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Mocked Lift Off!')).toBeVisible();
   });
@@ -64,7 +63,7 @@ test.describe('mocks', () => {
         ],
       });
     });
-    await inPage('mount3', () => mount(ClickMe));
+    await inPage('mount3', () => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Mocked Lift Off!')).toBeVisible();
   });
@@ -96,7 +95,7 @@ test.describe('fakes', () => {
       TestBed.inject(MessageServiceFake).setMessage('Fake Lift Off!');
     });
 
-    await inPage('mount4', () => mount(ClickMe));
+    await inPage('mount4', () => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Fake Lift Off!')).toBeVisible();
   });
@@ -113,7 +112,7 @@ test.describe('fakes', () => {
       injectMessageServiceFake().setMessage('Fake Lift Off!');
     });
 
-    await inPage('mount5', () => mount(ClickMe));
+    await inPage('mount5', () => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Fake Lift Off!')).toBeVisible();
   });

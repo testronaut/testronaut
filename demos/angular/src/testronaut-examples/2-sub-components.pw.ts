@@ -1,5 +1,4 @@
 import { test, expect } from '@testronaut/angular';
-import { mount } from '@testronaut/angular/browser';
 import { ClickMeWithSub } from './components/2-click-me-with-sub-components';
 import { TestBed } from '@angular/core/testing';
 import { Component, Directive } from '@angular/core';
@@ -23,7 +22,7 @@ import { ShallowClickDirective } from './test-helpers/shallow-click.directive';
  * (e.g. `mount` and `inPage`).
  */
 test('no test doubles', async ({ inPage, page }) => {
-  await inPage('mount1', () => mount(ClickMeWithSub));
+  await inPage('mount1', () => TestBed.createComponent(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toHaveClass('unclicked');
@@ -58,7 +57,7 @@ test('embedded shallow components', async ({ inPage, page }) => {
     });
   });
 
-  await inPage('mount2', () => mount(ClickMeWithSub));
+  await inPage('mount2', () => TestBed.createComponent(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();
@@ -77,7 +76,7 @@ test('externalized shallow components', async ({ inPage, page }) => {
     });
   });
 
-  await inPage('mount3', () => mount(ClickMeWithSub));
+  await inPage('mount3', () => TestBed.createComponent(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();

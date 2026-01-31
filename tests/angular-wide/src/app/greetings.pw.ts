@@ -1,19 +1,22 @@
 import { expect, test } from '@testronaut/angular';
-import { configure, mount } from '@testronaut/angular/browser';
+import { configure } from '@testronaut/angular/browser';
+import { TestBed } from '@angular/core/testing';
 import { Greetings, provideGreeting } from './greetings.ng';
 
 test(`anonymous mount`, async ({ page, inPage }) => {
-  await inPage(() => mount(Greetings));
+  await inPage(() => TestBed.createComponent(Greetings));
 
   await expect(page.getByRole('heading')).toHaveText('Hello Guest!');
 });
 
-test(`named mount with inputs`, async ({ page, inPage }) => {
-  await inPage('hello foo', { inputs: { name: 'Foo' } }, ({ inputs }) =>
-    mount(Greetings, { inputs })
-  );
-
-  await expect(page.getByRole('heading')).toHaveText('Hello Foo!');
+/* Inputs support is temporarily disabled.
+ * @see https://github.com/testronaut/testronaut/issues/107 */
+test.skip(`named mount with inputs`, async ({ page, inPage }) => {
+  // await inPage('hello foo', { inputs: { name: 'Foo' } }, ({ inputs }) =>
+  //   mount(Greetings, { inputs })
+  // );
+  //
+  // await expect(page.getByRole('heading')).toHaveText('Hello Foo!');
 });
 
 test(`named mount with DI`, async ({ page, inPage }) => {
@@ -21,7 +24,7 @@ test(`named mount with DI`, async ({ page, inPage }) => {
     configure({ providers: [provideGreeting('Servus')] })
   );
 
-  await inPage('hello austria', () => mount(Greetings));
+  await inPage('hello austria', () => TestBed.createComponent(Greetings));
 
   await expect(page.getByRole('heading')).toHaveText('Servus Guest!');
 });

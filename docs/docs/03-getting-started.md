@@ -6,11 +6,11 @@ Better code than words, here is a simple example of an Angular Testronaut test:
 
 ```ts
 import { test, expect } from '@testronaut/angular';
-import { mount } from '@testronaut/angular/browser';
+import { TestBed } from '@angular/core/testing';
 import { Basket } from './basket.ng';
 
 test('should render clear basket button', async ({ page, inPage }) => {
-  await inPage(() => mount(Basket));
+  await inPage(() => TestBed.createComponent(Basket));
   await expect(page.getByRole('button', { name: 'Clear basket' })).toBeVisible();
 });
 ```
