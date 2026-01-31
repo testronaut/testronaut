@@ -67,7 +67,6 @@ export const test: TestronautTestType = base.extend<
       new ExtractionPipeline({
         projectRoot: testronaut.projectRoot,
         extractionDir: testronaut.extractionDir,
-        transforms: testronaut.transforms,
       }),
       page
     );
