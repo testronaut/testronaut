@@ -1,5 +1,4 @@
-import { expect, test } from '@testronaut/angular';
-import { Rating } from './rating';
+import { test } from '@testronaut/angular';
 
 /* Outputs support is temporarily disabled.
  * @see https://github.com/testronaut/testronaut/issues/107 */

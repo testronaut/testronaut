@@ -10,7 +10,7 @@ test('should show the click me component', async ({ inPage, page }) => {
 
 /* Inputs support is temporarily disabled.
  * @see https://github.com/testronaut/testronaut/issues/107 */
-test.skip('should change the click me label', async ({ inPage, page }) => {
+test.skip('should change the click me label', async ({ inPage: _inPage, page: _page }) => {
   // await inPage('mount2', { inputs: { clickMeLabel: 'Press me' } }, ({ inputs }) =>
   //   mount(ClickMe, { inputs })
   // );
@@ -20,7 +20,7 @@ test.skip('should change the click me label', async ({ inPage, page }) => {
 
 /* Outputs support is temporarily disabled.
  * @see https://github.com/testronaut/testronaut/issues/107 */
-test.skip('should emit an event on click', async ({ inPage, page }) => {
+test.skip('should emit an event on click', async ({ inPage: _inPage, page: _page }) => {
   // await inPage('mount3', () => mount(ClickMe));
   // await page.getByRole('button', { name: 'Click me' }).click();
   // await expect(outputs.clicked.calls).toEqual([1]);

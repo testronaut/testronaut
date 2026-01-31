@@ -11,7 +11,7 @@ test(`anonymous mount`, async ({ page, inPage }) => {
 
 /* Inputs support is temporarily disabled.
  * @see https://github.com/testronaut/testronaut/issues/107 */
-test.skip(`named mount with inputs`, async ({ page, inPage }) => {
+test.skip(`named mount with inputs`, async ({ page: _page, inPage: _inPage }) => {
   // await inPage('hello foo', { inputs: { name: 'Foo' } }, ({ inputs }) =>
   //   mount(Greetings, { inputs })
   // );
