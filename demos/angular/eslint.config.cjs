@@ -6,6 +6,9 @@ module.exports = [
   ...nx.configs['flat/angular'],
   ...nx.configs['flat/angular-template'],
   {
+    ignores: ['**/testronaut/generated/**'],
+  },
+  {
     files: ['**/*.ts'],
     rules: {
       '@angular-eslint/directive-selector': [

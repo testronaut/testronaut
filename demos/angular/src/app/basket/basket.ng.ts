@@ -79,7 +79,7 @@ export class Basket {
     });
   }
 
-  trackByProduct(index: number, product: any) {
+  trackByProduct(index: number, product: { id: number }) {
     return product.id;
   }
 }

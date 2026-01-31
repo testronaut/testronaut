@@ -57,8 +57,8 @@ for (const name of [
         );
       });
 
-      await page.route('https://testronaut.dev/lift-off', (route) => {
-        route.fulfill({
+      await page.route('https://testronaut.dev/lift-off', async (route) => {
+        await route.fulfill({
           json: 'Lift Off!',
         });
       });
