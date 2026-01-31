@@ -1,6 +1,6 @@
 export {
   getInPageIdentifier,
-  getInPageWithFunctionNameIdentifier,
+  getInPageWithNamedFunctionIdentifier,
 } from './lib/core/in-page-identifier';
 export {
   AnalysisContext,

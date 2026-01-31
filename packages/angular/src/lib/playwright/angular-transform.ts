@@ -2,7 +2,7 @@ import {
   AnalysisContext,
   createImportedIdentifier,
   getInPageIdentifier,
-  getInPageWithFunctionNameIdentifier,
+  getInPageWithNamedFunctionIdentifier,
   type Transform,
   type TransformResult,
 } from '@testronaut/core/devkit';
@@ -40,9 +40,9 @@ export const angularTransform: Transform = {
           Array.from(node.arguments)
         );
 
-        /* Use `inPageWithFunctionName` for named calls, `inPage` for anonymous ones. */
+        /* Use `inPageWithNamedFunction` for named calls, `inPage` for anonymous ones. */
         const inPageFn = isNamed
-          ? getInPageWithFunctionNameIdentifier()
+          ? getInPageWithNamedFunctionIdentifier()
           : getInPageIdentifier();
 
         return createCallExpression(inPageFn, [

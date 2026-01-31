@@ -12,6 +12,6 @@ export function getInPageIdentifier(): string {
  * This should be used as a last resort when multiple `inPage` calls
  * need to be distinguished at runtime.
  */
-export function getInPageWithFunctionNameIdentifier(): string {
-  return 'inPageWithFunctionName';
+export function getInPageWithNamedFunctionIdentifier(): string {
+  return 'inPageWithNamedFunction';
 }

@@ -11,7 +11,7 @@ import {
 export { expect } from '@testronaut/core';
 
 export const test = base.extend<Fixtures>({
-  mount: async ({ page, inPage, inPageWithFunctionName }, use) => {
+  mount: async ({ page, inPage, inPageWithNamedFunction }, use) => {
     const mountImpl: Fixtures['mount'] = async <CMP_TYPE extends Type<unknown>>(
       ...args: MountParameters<CMP_TYPE>
     ) => {
@@ -22,11 +22,11 @@ export const test = base.extend<Fixtures>({
 
       const inputs = options?.inputs;
 
-      /* Using a placeholder function here because what matters to `inPage`/`inPageWithFunctionName`
+      /* Using a placeholder function here because what matters to `inPage`/`inPageWithNamedFunction`
        * is the name (if not anonymous). */
       const { outputNames } =
         functionName != null
-          ? await inPageWithFunctionName(
+          ? await inPageWithNamedFunction(
               functionName,
               { inputs },
               placeholderMount<CMP_TYPE>

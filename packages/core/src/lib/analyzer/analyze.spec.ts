@@ -83,10 +83,10 @@ function somewhereElse() {
     ]);
   });
 
-  it('extracts named `inPageWithFunctionName`', () => {
+  it('extracts named `inPageWithNamedFunction`', () => {
     const { extractedFunctions } = analyzeFileContent(`
-test('...', async ({inPageWithFunctionName}) => {
-  await inPageWithFunctionName('say hello', () => console.log('Hello!'));
+test('...', async ({inPageWithNamedFunction}) => {
+  await inPageWithNamedFunction('say hello', () => console.log('Hello!'));
 });
     `);
     expect(extractedFunctions).toEqual([
@@ -112,18 +112,18 @@ test('...', async ({inPage: run}) => {
     ]);
   });
 
-  it('extracts imported identifiers used in `inPageWithFunctionName`', () => {
+  it('extracts imported identifiers used in `inPageWithNamedFunction`', () => {
     const { extractedFunctions } = analyzeFileContent(`
 import { something, somethingElse, somethingUsedOutside } from './something';
 import { somethingFromAnotherFile } from './another-file';
 
 console.log(somethingUsedOutside);
 
-inPageWithFunctionName('say hi', () => {
+inPageWithNamedFunction('say hi', () => {
   console.log(something);
 });
 
-inPageWithFunctionName('say bye', () => {
+inPageWithNamedFunction('say bye', () => {
   console.log(something);
   console.log(somethingFromAnotherFile);
 });
@@ -178,19 +178,19 @@ inPageWithFunctionName('say bye', () => {
     ).toThrow(InvalidInPageCallError);
   });
 
-  it('fails if `inPageWithFunctionName` is called with too many args', () => {
+  it('fails if `inPageWithNamedFunction` is called with too many args', () => {
     expect(() =>
       analyzeFileContent(
-        `inPageWithFunctionName('say hi', {}, () => console.log('Say hi!'), 'superfluous');`
+        `inPageWithNamedFunction('say hi', {}, () => console.log('Say hi!'), 'superfluous');`
       )
     ).toThrow(InvalidInPageCallError);
   });
 
-  it('fails if `inPageWithFunctionName` name is not a string literal', () => {
+  it('fails if `inPageWithNamedFunction` name is not a string literal', () => {
     expect(() =>
       analyzeFileContent(`
 const name = 'say hi';
-inPageWithFunctionName(name, () => console.log('Say hi!'));
+inPageWithNamedFunction(name, () => console.log('Say hi!'));
       `)
     ).toThrow(InvalidInPageCallError);
   });

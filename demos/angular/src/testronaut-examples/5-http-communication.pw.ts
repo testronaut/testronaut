@@ -16,15 +16,15 @@ for (const name of [
   test.describe(name, () => {
     test('respond via `HttpTestingController', async ({
       page,
-      inPageWithFunctionName,
+      inPageWithNamedFunction,
     }) => {
-      await inPageWithFunctionName('config1', () => {
+      await inPageWithNamedFunction('config1', () => {
         TestBed.configureTestingModule({
           providers: [provideHttpClient(), provideHttpClientTesting()],
         });
       });
 
-      await inPageWithFunctionName('mount1', { name }, ({ name }) => {
+      await inPageWithNamedFunction('mount1', { name }, ({ name }) => {
         TestBed.createComponent(
           (name.endsWith('httpResource')
             ? ClickMeWithResource
@@ -33,7 +33,7 @@ for (const name of [
       });
       await page.getByRole('button', { name: 'Click me' }).click();
 
-      await inPageWithFunctionName('respond1', () => {
+      await inPageWithNamedFunction('respond1', () => {
         const httpTestingController = TestBed.inject(HttpTestingController);
         httpTestingController
           .expectOne('https://testronaut.dev/lift-off')
@@ -42,14 +42,14 @@ for (const name of [
       await expect(page.getByText('Lift Off!')).toBeVisible();
     });
 
-    test('respond via page.route', async ({ page, inPageWithFunctionName }) => {
-      await inPageWithFunctionName('config2', () => {
+    test('respond via page.route', async ({ page, inPageWithNamedFunction }) => {
+      await inPageWithNamedFunction('config2', () => {
         TestBed.configureTestingModule({
           providers: [provideHttpClient()],
         });
       });
 
-      await inPageWithFunctionName('mount2', { name }, ({ name }) => {
+      await inPageWithNamedFunction('mount2', { name }, ({ name }) => {
         TestBed.createComponent(
           (name.endsWith('httpResource')
             ? ClickMeWithResource

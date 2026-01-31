@@ -89,7 +89,7 @@ export const test: TestronautTestType = base.extend<
     await use(inPageImpl);
   },
 
-  inPageWithFunctionName: async ({ testronaut, page }, use, testInfo) => {
+  inPageWithNamedFunction: async ({ testronaut, page }, use, testInfo) => {
     if (!testronaut) {
       /* TODO: Setup a link with detailed instructions */
       throw new Error(
@@ -107,7 +107,7 @@ export const test: TestronautTestType = base.extend<
     );
     const { hash } = await runner.extract(testInfo.file);
 
-    const inPageWithFunctionNameImpl: InPageWithFunctionName = async (
+    const inPageWithNamedFunctionImpl: InPageWithNamedFunction = async (
       ...args: unknown[]
     ) => {
       const functionName = args[0] as string;
@@ -125,13 +125,13 @@ export const test: TestronautTestType = base.extend<
       });
     };
 
-    await use(inPageWithFunctionNameImpl);
+    await use(inPageWithNamedFunctionImpl);
   },
 });
 
 export interface Fixtures {
   inPage: InPage;
-  inPageWithFunctionName: InPageWithFunctionName;
+  inPageWithNamedFunction: InPageWithNamedFunction;
 }
 
 /**
@@ -158,7 +158,7 @@ export interface InPage {
  *
  * In most cases, prefer using the anonymous `inPage` variant instead.
  */
-export interface InPageWithFunctionName {
+export interface InPageWithNamedFunction {
   <RETURN>(name: string, fn: () => RETURN | Promise<RETURN>): Promise<RETURN>;
 
   <DATA extends Record<string, unknown>, RETURN>(

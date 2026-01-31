@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import { createExtractedFunction } from '../core/file-analysis';
 import {
   getInPageIdentifier,
-  getInPageWithFunctionNameIdentifier,
+  getInPageWithNamedFunctionIdentifier,
 } from '../core/in-page-identifier';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
@@ -13,7 +13,7 @@ export interface InPageCall {
   name?: string;
 }
 
-type InPageVariant = 'inPage' | 'inPageWithFunctionName';
+type InPageVariant = 'inPage' | 'inPageWithNamedFunction';
 
 export function visitInPageCalls(
   ctx: AnalysisContext,
@@ -50,9 +50,9 @@ function getInPageVariant(
     return 'inPage';
   }
 
-  /* Direct identifier match for `inPageWithFunctionName`. */
-  if (expressionText === getInPageWithFunctionNameIdentifier()) {
-    return 'inPageWithFunctionName';
+  /* Direct identifier match for `inPageWithNamedFunction`. */
+  if (expressionText === getInPageWithNamedFunctionIdentifier()) {
+    return 'inPageWithNamedFunction';
   }
 
   const declaration = getDeclaration(
@@ -70,14 +70,14 @@ function getInPageVariant(
     return 'inPage';
   }
 
-  /* Identifier is an alias for `inPageWithFunctionName`. */
+  /* Identifier is an alias for `inPageWithNamedFunction`. */
   if (
     declaration != null &&
     ts.isObjectBindingPattern(declaration.parent) &&
     declaration.parent.elements.at(0)?.propertyName?.getText() ===
-      getInPageWithFunctionNameIdentifier()
+      getInPageWithNamedFunctionIdentifier()
   ) {
-    return 'inPageWithFunctionName';
+    return 'inPageWithNamedFunction';
   }
 
   return null;
@@ -94,7 +94,7 @@ function parseInPageArgs(
   const identifier =
     variant === 'inPage'
       ? getInPageIdentifier()
-      : getInPageWithFunctionNameIdentifier();
+      : getInPageWithNamedFunctionIdentifier();
 
   if (node.arguments.length === 0) {
     throw new InvalidInPageCallError(
@@ -122,7 +122,7 @@ function parseInPageArgs(
       importedIdentifiers: [],
     });
   } else {
-    /* `inPageWithFunctionName` accepts: name+fn or name+data+fn (2-3 args) */
+    /* `inPageWithNamedFunction` accepts: name+fn or name+data+fn (2-3 args) */
     if (node.arguments.length < 2) {
       throw new InvalidInPageCallError(
         `\`${identifier}\` must have at least two arguments: a name and a function`

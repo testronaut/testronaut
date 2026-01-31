@@ -1,17 +1,17 @@
 import { test } from '@testronaut/core';
 
-/* TODO: once we make `inPageWithFunctionName` throw instead,
- * we can `expect(() => inPageWithFunctionName(...)).rejects.toThrow()` instead. */
-test.fail('inPageWithFunctionName', async ({ inPageWithFunctionName }) => {
-  await inPageWithFunctionName('duplicate name', () => {
+/* TODO: once we make `inPageWithNamedFunction` throw instead,
+ * we can `expect(() => inPageWithNamedFunction(...)).rejects.toThrow()` instead. */
+test.fail('inPageWithNamedFunction', async ({ inPageWithNamedFunction }) => {
+  await inPageWithNamedFunction('duplicate name', () => {
     document.body.textContent = 'Hi!';
   });
 });
 
 test.fail(
-  'another inPageWithFunctionName with the same name',
-  async ({ inPageWithFunctionName }) => {
-    await inPageWithFunctionName('duplicate name', () => {
+  'another inPageWithNamedFunction with the same name',
+  async ({ inPageWithNamedFunction }) => {
+    await inPageWithNamedFunction('duplicate name', () => {
       document.body.textContent = 'Bye!';
     });
   }

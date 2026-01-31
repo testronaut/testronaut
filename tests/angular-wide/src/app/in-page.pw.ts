@@ -8,19 +8,19 @@ test('anonymous inPage', async ({ page, inPage }) => {
   await expect(page.getByText('Hi!')).toBeVisible();
 });
 
-test('named inPageWithFunctionName', async ({ page, inPageWithFunctionName }) => {
-  await inPageWithFunctionName('hello', () => {
+test('named inPageWithNamedFunction', async ({ page, inPageWithNamedFunction }) => {
+  await inPageWithNamedFunction('hello', () => {
     document.body.textContent = 'Hello!';
   });
 
   await expect(page.getByText('Hello!')).toBeVisible();
 });
 
-test('named inPageWithFunctionName with args', async ({
+test('named inPageWithNamedFunction with args', async ({
   page,
-  inPageWithFunctionName,
+  inPageWithNamedFunction,
 }) => {
-  await inPageWithFunctionName('hello foo', { name: 'Foo' }, ({ name }) => {
+  await inPageWithNamedFunction('hello foo', { name: 'Foo' }, ({ name }) => {
     document.body.textContent = `Hello ${name}!`;
   });
 
