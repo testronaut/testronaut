@@ -1,11 +1,8 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { ExtractionWriter } from '../extraction-writer/extraction-writer';
 import type { FileSystem } from '../infra/file-system';
 import type { TestronautOptions } from './options';
-
-const __filename = fileURLToPath(import.meta.url);
 
 /**
  * This function is used to configure Playwright for component testing.
@@ -38,7 +35,6 @@ export function _internal_withTestronaut({
   configPath,
   extractionDir,
   testServer,
-  transforms,
   fileSystem,
 }: _internal_WithTestronautParams): PlaywrightTestronautConfig {
   const projectRoot = dirname(configPath);
@@ -80,7 +76,6 @@ export function _internal_withTestronaut({
         extractionDir,
         projectRoot,
         testServer,
-        transforms,
       },
     },
     webServer: {
