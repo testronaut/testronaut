@@ -1,127 +1,196 @@
-# LAX Approach — Specification for Matching Extracted Functions Across Transpilers
+# Lax Hashing — Matching Extracted Functions Across Transpilers
 
-## 1. Overview and Context
+**Status:** Draft. Last updated: 2025-01-31. Changelog: [History](#history).
 
-Testronaut extracts callbacks from `inPage(...)` calls into a file, which gets compiled by Angular and will be triggered in the browser during test execution.
+## Contents
 
-Users have the option to apply a unique name to an `inPage` call, which would be **named function**. Testronaut would find that function in the browser safely via the name.
+- [Overview and Context](#overview-and-context)
+- [Lax Hashing](#lax-hashing)
+  - [Pipeline](#pipeline)
+  - [Collision Detection](#collision-detection)
+  - [String Quotation Handling](#string-quotation-handling)
+- [Visualization](#visualization)
+- [Risks](#risks)
+- [Future Fallback Strategies](#future-fallback-strategies)
+- [Considered and Used Alternatives](#considered-and-used-alternatives)
+- [Glossary](#glossary)
+- [History](#history)
 
-Without a unique name, the function is called an **anonymous function** and matching would be based on the code itself. The challenge is to match the compiled version of the Angular CLI with the compiled version of Playwright.
+## Overview and Context
+
+Per test file, Testronaut extracts functions from `inPage(...)` calls into a separate file. The Angular CLI [transpiles](#transpiler) that separate file. During test execution, Playwright transpiles the same function inside `inPage` as well.
+
+> The challenge is to match the same function across its two transpiled versions (extract-time and Playwright at runtime).
+
+Users can add a unique name to an `inPage` function. We call the function **named function**. Testronaut matches that function in the browser safely via the name.
+
+Without a unique name, the function is called an **anonymous function** and matching is based on the code itself.
+
+Because of better DX, users prefer anonymous over named functions.
 
 Transpilers often emit **syntactically different but equivalent** JS (commas, parens, formatting). So an exact matching algorithm based on tokens or just string equal very likely fails.
 
-For example the original code could be `(message: string) => console.log(message);`. Playwright could transpile it into `message => console.log('Hello world');` and Angular into `(message) => console.log('Hello world')`.
+**Example:**
 
-The Playwright version removed the parenthises (from `(message)` to `message` and Angular CLI removed the `;`. Both differ from the original and both token and string-based matching approaches would fail.
+Let's take the following code `(message: string) => console.log(message);`. Playwright and Angular CLI could transpile into the following, slightly different versions.
 
-We call the current appraoch "Lax Hashing" which is based on an approximation but comes with a collision detection, if the approximation would match two semantically different functions.
+1.  `message => console.log('Hello world');`
+2.  `(message) => console.log('Hello world')`.
+
+The first version misses the parentheses from `(message)` to `message`. The second misses the `;` at the end of the line. A string-based match would therefore fail.
 
 ## Lax Hashing
 
-The original function is transpiled and tokenized. Known tokens which could be added or removed by a transpiler are then skipped. We end up with tokens which a transpiler will always keep and which is a subset of the full tokens. Based on that subset of tokens, we generate a hash, which we call "Lax Hash" (from relaxed hash).
+Testronaut's solution is called "Lax Hashing" which is based on an approximation with an integrated collision detection.
 
-`(message: string) => console.log(message);` would get first transpiled into `(message) => console.log(message);` and the full tokens would be `['(', 'message', ')', '=>' 'console', '.', 'log', '(', 'message', ')', ';']`. The lax hashing would remove character like parenthesis, commas and semi-colons. So we end up with "laxed tokens" `['message', '=>', 'console', '.', 'log', 'message']`. That array would the be hased to a five character hash, which is the "Lax Hash".
+In a nutshell, LAX adds a hash to each anonymous function, effectively making it a named function. The hash is computed from the transpiled code (at extract-time and at runtime from Playwright), so we match the two transpiled versions via their hash, not by comparing directly to Angular's output. See [Visualization](#visualization) for a diagram of the pipeline.
 
-If we apply the lax hashing to both Playwright's transpiled code and the original source code, we should have a guranteed match in theory.
+### Pipeline
 
-The problem is that removed tokens have a semnatic meaning and we could end up matching two functions with different meaning.
+With Lax Hashing, Testronaut transpiles (third time, next to Playwright & Angular) and tokenizes the original function. It removes known tokens which a transpiler could add or remove. We therefore end up with tokens which a transpiler will always keep. Based on that subset of tokens, we generate a hash, which we call "Lax Hash" (from relaxed hash).
 
-For example following distinct functions would end up in the same lax hash:
+```mermaid
+flowchart LR
+  A[Transpile to JS] --> B[Tokenize]
+  B --> C[Full tokens]
+  B --> D[Lax tokens after blacklist]
+  C --> E[Full hash for collision check]
+  D --> F[LAX hash]
+```
 
-- `(message) => console.log(message())`
-- `(message) => console.log(message)`
-- `(message) => [console.log, message]`
-- `(message) => [, console.log, message]`
+The following characters will be removed: `(`, `)`, `,`, `;`.
 
-That scenario can be dealt with via collision detection. We apply lax hashing at code extraction and a second time, during test execution, when Playwright executes `inPage`. The collision detection happens during code extraction, which runs during the initialization of the test. That means the collision detection throws as early as possible.
+**Example:**
 
-Collision detection creates the hash for all tokens, which will include parenthises, commas, etc. If we have more than one extracted functions that end up with same the lax hash, exact matchin cannot be gurananteed, and Testronaut throws an error, telling the user to fallback to a named function.
-Collision detection does not use the soure code because there could be differences because of whitespaces. The hashed tokenizer along transpiler gets rid of them.
+1. `(message: string) => console.log(message);` gets transpiled into `(message) => console.log(message);`
+2. The tokenizer produces the full tokens as an array: `['(', 'message', ')', '=>' 'console', '.', 'log', '(', 'message', ')', ';']`.
+3. The lax hashing would remove character like parenthesis, commas and semi-colons. So we end up with a lax token array of `['message', '=>', 'console', '.', 'log', 'message']`.
+4. Via the xxhash that laxed string array becomes the actual Lax Hash
+
+### Collision Detection
+
+If we apply the lax hashing to both Playwright's transpiled code and the original source code, we should have a guaranteed match in theory.
+
+The problem is that removed tokens have a semantic meaning and we could end up matching two functions with different meaning.
+
+Collision detection will ensure a safe match of extracted functions.
+
+Testronaut applies the lax hashing to each `inPage` with an anonymous function. With each run, it checks if the same lax hash for that file was already generated. If that's the case, then it verifies the existing hash of the full tokens with the full token hash of the current function. If both full hashes are the same, it has to be the same function and the current one is skipped.
+
+In case we have the lax hash but two different full hashes, then functions COULD be different. In that case, Testronaut plays it safe and throws an error, telling the user which functions collided and to apply a named function instead.
+
+Additionally, Testronaut also asks the user to create an issue on Testronaut's GitHub repo for further investigation.
+
+Quotes are handled by the tokenizer: string literals are normalized to a canonical form (see **String Quotation Handling** below), so `'hi'`, `"hi"`, and `` `hi` `` produce the same token value and the same LAX hash — avoiding false negatives when different transpilers use different quote styles. Different string _contents_ (e.g. `'Hello "World"'` vs `"Hello 'World'"`) still produce different token values and different lax hashes.
+
+**Example:**
+
+Given the following distinct semantically different `inPage` calls:
+
+- `inPage(() => (message) => console.log(message()))`
+- `inPage(() => (message) => console.log(message))`
+
+Both would produce the same lax tokens: `['message', '=>', 'console', '.', 'log', 'message']`.
+
+Since the same lax hash exists multiple times, Testronaut starts the collision detection, that calculates the full token hash. Those will be different for both functions, and Testronaut will throw an error.
+
+For the sake of completeness, here are the full tokens for both functions:
+
+- `['(', 'message', ')', '=>', 'console', '.', 'log', '(', 'message', '(', ')', ')']`
+- `['(', 'message', ')', '=>', 'console', '.', 'log', '(', 'message', ')']`
+
+### String Quotation Handling
+
+Since strings can contain different delimiter characters (`'`, `"`, `` ` ``), they have to be unified as well.
+
+The tokenizer normalizes them to a canonical form, by not keeping the delimiter character of the source code but always uses a single quote delimiter.
+
+We cannot put string quotes to the exclude list, because we would have a collision with string literals and variable names, i.e. `console.log('message')` and `console.log(message)`.
+
+## Visualization
+
+```mermaid
+flowchart TB
+  subgraph extract [Extract time]
+    A1[Test file with inPage]
+    A2[Our transpiler]
+    A3[Tokenize]
+    A4[Full tokens]
+    A5[Lax tokens after blacklist]
+    A6[LAX hash]
+    A7[Full hash for collision check]
+    A8[Extracted file keyed by LAX hash]
+    A9[Angular CLI]
+    A10[Browser bundle]
+    A1 --> A2 --> A3 --> A4
+    A3 --> A5
+    A4 --> A7
+    A5 --> A6
+    A6 --> A8 --> A9 --> A10
+  end
+
+  subgraph runtime [Runtime]
+    B1[Playwright runs test]
+    B2[inPage callback fn]
+    B3["fn.toString() = Playwright JS"]
+    B4[Tokenize]
+    B5[LAX hash]
+    B6[Look up hash in page]
+    B7[Run extracted function]
+    B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7
+  end
+
+  A6 -.->|"same hash = match"| B5
+```
+
+## Risks
+
+At the moment, Lax hashing hasn't been used for a wide range of code. We will need to be aware of potential risks which users will face and hopefully report. Concrete risks (optional chaining tokenization, template literals with `${ }` spacing, comment handling) will be identified during implementation and testing.
+
+That is also why, Testronaut provides a copy & paste ready error message, which the user can use to create an issue on Testronaut's GitHub repo.
+
+## Future Fallback Strategies
+
+In case we encounter issues, which are not covered by Lax hashing, we will need to fall back to a more expensive technique.
+
+A promising option would be using a tool, which re-creates JavaScript from any transpiled code. That would mean that we always have the same JavaScript code, regardless of the transpiler used.
+
+Since this is an expensive operation, it would only be used in collision with Lax hashing. So Lax Hashing would still be the primary matching strategy.
+
+## Considered and Used Alternatives
+
+### Full-Token
+
+Doing just the transpilation and tokenization, with comparing the full tokens of the original source code and the transpiled code does not work, because of the differences in the transpiled code.
+
+Therefore, we tried to cover common cases, like trailing commas, semi-colons or no parenthesis for functions with only one argument.
+
+We found though, that this strategy would lead us to a catching-up game, where we would need to always update the matching strategy to cover the new transpiler features.
+
+Especially, since Testronaut is new, we wouldn't be aware of all potential risks and users would get the impression, that Testronaut is not working.
+
+### AST Parsing
+
+AST parsing was the suggested approach by various AI tools, but they all highlighted the complexity of the approach, the longer implementation along maintenance costs, not even talking about the bad performance implications.
+
+### ESLint
+
+ESLint is a very powerful tool, which could definitely help to verify if functions are "matchable'. We didn't really follow this approach, because we don't want to enforce the usage of ESLint for our users.
+
+### Single Anonymous Function per File
+
+The single anonymous function per file, turned that anonymous function into a named function with name empty string.
+
+Very soon, it turned out that this is not a very user friendly approach and could become the main obstacle for users to adopt Testronaut.
+
+## Glossary
+
+- <a id="transpiler"></a>**Transpiler** — A subtype of a compiler which compiles from one language to another. In this case from TypeScript to JavaScript.
+- **LAX hash** — Hash computed from the lax token stream (full tokens after blacklisting `(`, `)`, `,`, `;`). Used as the stable key for an anonymous function at extract time and at runtime.
+- **Full hash** — Hash of the full token stream (no blacklist). Used only for collision detection; same LAX hash + different full hash ⇒ error.
+- **Named function** — `inPage` callback with a user-supplied name; matched in the browser by that name, not by LAX hash.
+- **Anonymous function** — `inPage` callback without a name; matched by LAX hash.
 
 ## History
 
-## Future Options
-
-Today: **named** functions matched by user-supplied ID; **anonymous** allowed **one per file** only. Goal: **drop the one-anonymous-per-file limit** without requiring unique IDs — multiple anonymous `inPage` callbacks per file, matched automatically.
-
----
-
-## 2. Alternatives Considered
-
-**Exact match (string/tokens):** Transpile ourselves and match. **Problem:** commas, parens, trailing commas, etc. differ between transpilers → single-char difference breaks matching.
-
-**Transpiler tweaks:** Special-case known differences. **Problem:** brittle; new TS/tooling versions add new quirks.
-
-**AST-based matching:** **Problem:** too complex and slow.
-
-**Tokenizer (fallback):** Full tokenization (proper tokens, not stripped LAX) + edge-case handling. Use as fallback or alternative. Benchmark vs LAX later; **start with LAX**.
-
-**Minifiers / Prettiers (future):** Rewrite TS/JS in a standardized way → could give a **100%** solution. **Problem:** too expensive for test execution time.
-
----
-
-## 3. The LAX Approach
-
-**Idea:** The **`inPage`** fixture receives the function. We run **transpile → tokenize → generate LAX** (blacklist e.g. `(`, `)`, `,`) → **hash**. The LAX hash is the **stable key** for the function in the extracted file and at runtime. Intentionally approximate: two different functions could collide (same LAX). We add a **collision check** (§5).
-
-**Where LAX runs:** **Playwright only.** We apply the pipeline to the function `inPage` receives. **Angular CLI** compiles our extracted file; we **do not** LAX Angular output. We key functions by LAX hash in that file; the app (dev or build) carries the mapping. At runtime we look up by LAX hash.
-
-**Store vs discard:** **Store** LAX hash + function code. **For collision check only, then discard:** **full** fingerprint (transpile → tokenize → hash, no stripping). No raw source; pipeline avoids whitespace. Same LAX + different full form ⇒ fail; then discard full fingerprint.
-
----
-
-## 4. Why LAX Works
-
-LAX strips characters and hashes what’s left — it can look flaky. The **collision check** makes it safe: we never silently match the wrong function. We strip exactly the cosmetic noise (commas, parens, etc.), so same function ⇒ same LAX ⇒ same hash.
-
-**Collision rule:** Same LAX hash + **different full form** (transpile → tokenize → hash, no stripping) within one file ⇒ **fail**. One implementation per LAX hash; we refuse when ambiguous.
-
-**Trade-off:** We may reject valid files (collisions). Fail-safe over silently wrong; collisions expected rare.
-
----
-
-## 5. Implementation Specification
-
-**LAX pipeline (input = function from `inPage`):** (1) **Transpile** to JS (Playwright-side). (2) **Tokenize.** (3) **Generate LAX:** blacklist chars (e.g. `(`, `)`, `,`; set implementation-defined). (4) **Hash** the LAX string (e.g. SHA-256, truncate). Same LAX ⇒ same hash.
-
-**Collision check (per file, before Angular CLI):** For each extracted function: LAX hash + **full** fingerprint (transpile → tokenize → hash, no stripping). Same LAX hash + different full fingerprint ⇒ **fail** before Angular CLI runs. Multiple anonymous per file only if all LAX hashes distinct. Then **discard** full fingerprint; **store** only LAX hash + code.
-
-**Runtime:** Look up by LAX hash. We do not compute LAX from the app output; uniqueness is guaranteed by the collision check.
-
-**Tokenizer fallback:** Optional full tokenization + edge-case handling; benchmark vs LAX later. **Ship LAX first.**
-
----
-
-## 6. Examples
-
-**6.1 Same function, cosmetic variation ⇒ same LAX**
-
-```ts
-(x) => {
-  return x + 1;
-};
-```
-
-Variants: `(x) => { return x + 1; }` vs `x => { return x + 1; }`. After LAX (blacklist `(`, `)`, `;`): both ⇒ `x => { return x + 1 }` ⇒ same hash ⇒ stable key.
-
-**6.2 Two different functions ⇒ same LAX (collision)**
-
-**A:** `(g, x) => g(x)` **B:** `(g) => (x) => g(x)`. With blacklist `(`, `)`, `,`: **A** ⇒ `g x => g x`, **B** ⇒ `g => x => g x` (differ). With a **broader** blacklist that also drops `=>`: both ⇒ `g x g x` ⇒ same LAX, **different** full form. **Fail.** User must disambiguate (e.g. name one).
-
-**6.3 Minimal collision**
-
-**A:** `(x) => x` **B:** `x => x`. Blacklist `(`, `)`: both ⇒ `x => x`. Same LAX, different full form ⇒ **fail.**
-
----
-
-## 7. Summary
-
-| Aspect           | Description                                                                                           |
-| ---------------- | ----------------------------------------------------------------------------------------------------- |
-| **Goal**         | Match `inPage` callbacks to app; drop one-anonymous-per-file; no user IDs.                            |
-| **LAX**          | Transpile → tokenize → LAX (blacklist) → hash. Playwright-side only; Angular compiles extracted file. |
-| **Safety**       | Same LAX + different full form ⇒ fail. No wrong-targeting.                                            |
-| **Trade-off**    | May reject valid files (collisions); fail-safe over silent misuse.                                    |
-| **Alternatives** | Tokenizer fallback; minifiers/prettiers (100% but too slow).                                          |
-
-**References:** `visit-run-in-browser-calls.ts`, `assert-no-duplicate-extracted-functions.ts`, `extraction-writer.ts`, `runner.ts`.
+- _Draft._ Spec created; LAX pipeline and tokenizer not yet implemented.
