@@ -1,7 +1,7 @@
 import { describe } from 'vitest';
 import { FileAnalysis } from '../core/file-analysis';
 import { analyze } from './analyze';
-import { InvalidInPageCallError } from './visit-run-in-browser-calls';
+import { InvalidInPageCallError } from './visit-in-page-calls';
 
 describe(analyze.name, () => {
   it('generates file hash', () => {
