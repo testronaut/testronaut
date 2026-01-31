@@ -27,7 +27,7 @@ test('hello', async ({ inPage }) => {
 `);
   });
 
-  it('replaces mount call with inPage + mount', () => {
+  it('replaces named mount call with inPageWithFunctionName + mount', () => {
     const result = transform(`
 import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
@@ -41,7 +41,7 @@ test('hello', async ({ mount }) => {
 import { test } from '@testronaut/angular';
 import { Hello } from './hello.component';
 test('hello', async ({ inPage }) => {
-    await inPage('hello', () => mount(Hello));
+    await inPageWithFunctionName('hello', () => mount(Hello));
 });
 `);
   });

@@ -5,8 +5,8 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { expect, test } from '@testronaut/angular';
 import { RoutingMessage } from './components/6-click-me-with-routing';
 
-test('routing', async ({ mount, page, inPage }) => {
-  await inPage('mount', async () => {
+test('routing', async ({ mount, page, inPageWithFunctionName }) => {
+  await inPageWithFunctionName('mount', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter(

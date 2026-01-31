@@ -6,3 +6,12 @@
 export function getInPageIdentifier(): string {
   return 'inPage';
 }
+
+/**
+ * The identifier for the named variant of `inPage`.
+ * This should be used as a last resort when multiple `inPage` calls
+ * need to be distinguished at runtime.
+ */
+export function getInPageWithFunctionNameIdentifier(): string {
+  return 'inPageWithFunctionName';
+}

@@ -13,13 +13,13 @@ import { ShallowClickDirective } from './test-helpers/shallow-click.directive';
  * `ClickDirective` (selector `button[appClick]`) via `TestBed.overrideComponent`.
  *
  * Any code, which runs in the browser, has to be imported from a separate or has
- * be declared within the `inPage` function.
+ * be declared within the `inPageWithFunctionName` function.
  *
  * This test shows both ways for shallowing the `MessageComponent` and the `ClickDirective`, via
  * `ShallowMessageComponent` and `ShallowClickDirective`.
  *
- * A unique `inPage` identifier is provided because this file performs multiple browser actions
- * (e.g. `mount` and `inPage`).
+ * A unique `inPageWithFunctionName` identifier is provided because this file performs multiple browser actions
+ * (e.g. `mount` and `inPageWithFunctionName`).
  */
 test('no test doubles', async ({ mount, page }) => {
   await mount('mount1', ClickMeWithSub);
@@ -34,8 +34,8 @@ test('no test doubles', async ({ mount, page }) => {
   await expect(buttonLocator).toBeDisabled();
 });
 
-test('embedded shallow components', async ({ mount, page, inPage }) => {
-  await inPage('override with embedded shallows', () => {
+test('embedded shallow components', async ({ mount, page, inPageWithFunctionName }) => {
+  await inPageWithFunctionName('override with embedded shallows', () => {
     @Component({
       selector: 'app-message',
       template: `<p data-testid="shallowed-message">Shallowed</p>`,
@@ -70,9 +70,9 @@ test('embedded shallow components', async ({ mount, page, inPage }) => {
 test('externalized shallow components', async ({
   mount,
   page,
-  inPage,
+  inPageWithFunctionName,
 }) => {
-  await inPage('override with externalized shallows', () => {
+  await inPageWithFunctionName('override with externalized shallows', () => {
     TestBed.overrideComponent(ClickMeWithSub, {
       set: {
         imports: [ShallowMessageComponent, ShallowClickDirective],
