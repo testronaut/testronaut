@@ -1,0 +1,35 @@
+name: Cursor Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  cursor-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set code review prompt
+        run: |
+          echo "Review the pull request at ${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }}. Analyze the code changes, suggest improvements, and post your review as a comment on the PR." > .cursor-review-prompt.txt
+
+      - name: Install Cursor CLI
+        run: |
+          curl -fsSL https://cursor.com/install | bash
+          echo "$HOME/.cursor/bin" >> $GITHUB_PATH
+
+      - name: Run Cursor Code Review
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          export PATH="$HOME/.cursor/bin:$PATH"
+          agent -p "$(cat .cursor-review-prompt.txt)"
