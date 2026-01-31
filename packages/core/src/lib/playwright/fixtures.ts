@@ -1,5 +1,4 @@
 import type {
-  Page,
   PlaywrightTestArgs,
   PlaywrightTestOptions,
   PlaywrightWorkerArgs,
@@ -43,43 +42,96 @@ export const test: TestronautTestType = base.extend<
   testronaut: [null, { option: true }],
 
   /**
-   * Users should not care how to navigate a "page". Testronaut takes
+   * Users should not care how to navigate a "page". CT takes
    * care of that, as it also manages the test server.
    */
   page: async ({ page }, use) => {
     await page.goto('/');
     page.goto = () => {
       throw new Error(
-        'page.goto() is not available. Navigation is managed by Testronaut.'
+        'page.goto() is not available. Navigation is managed by CT.'
       );
     };
     await use(page);
   },
 
-  inPageWithNamedFunction: async ({ testronaut, page }, use, testInfo) => {
-    const inPageVariant = await createInPageVariant(
-      testronaut,
-      page,
-      testInfo.file,
-      'inPageWithNamedFunction'
+  inPage: async ({ testronaut, page }, use, testInfo) => {
+    if (!testronaut) {
+      /* TODO: Setup a link with detailed instructions */
+      throw new Error(
+        'No config for Playwright CT. Use `withTestronaut` in `defineConfig` (playwright.config.ts) to set it up.'
+      );
+    }
+
+    const runner = new Runner(
+      new ExtractionPipeline({
+        projectRoot: testronaut.projectRoot,
+        extractionDir: testronaut.extractionDir,
+        transforms: testronaut.transforms,
+      }),
+      page
     );
-    await use(inPageVariant);
+    const { hash } = await runner.extract(testInfo.file);
+
+    const inPageImpl: InPage = async (...args: unknown[]) => {
+      let data: Record<string, unknown> = {};
+      if (typeof args[0] === 'object') {
+        data = args[0] as Record<string, unknown>;
+      }
+
+      return await runner.inPage({
+        hash,
+        functionName: '',
+        data,
+      });
+    };
+
+    await use(inPageImpl);
   },
 
-  inPage: async ({ testronaut, page }, use, testInfo) => {
-    const inPageVariant = await createInPageVariant(
-      testronaut,
-      page,
-      testInfo.file,
-      'inPage'
+  inPageWithFunctionName: async ({ testronaut, page }, use, testInfo) => {
+    if (!testronaut) {
+      /* TODO: Setup a link with detailed instructions */
+      throw new Error(
+        'No config for Playwright CT. Use `withTestronaut` in `defineConfig` (playwright.config.ts) to set it up.'
+      );
+    }
+
+    const runner = new Runner(
+      new ExtractionPipeline({
+        projectRoot: testronaut.projectRoot,
+        extractionDir: testronaut.extractionDir,
+        transforms: testronaut.transforms,
+      }),
+      page
     );
-    await use(inPageVariant);
+    const { hash } = await runner.extract(testInfo.file);
+
+    const inPageWithFunctionNameImpl: InPageWithFunctionName = async (
+      ...args: unknown[]
+    ) => {
+      const functionName = args[0] as string;
+      args.shift();
+
+      let data: Record<string, unknown> = {};
+      if (typeof args[0] === 'object') {
+        data = args[0] as Record<string, unknown>;
+      }
+
+      return await runner.inPage({
+        hash,
+        functionName,
+        data,
+      });
+    };
+
+    await use(inPageWithFunctionNameImpl);
   },
 });
 
 export interface Fixtures {
   inPage: InPage;
-  inPageWithNamedFunction: InPageWithNamedFunction;
+  inPageWithFunctionName: InPageWithFunctionName;
 }
 
 /**
@@ -101,11 +153,12 @@ export interface InPage {
  * **Warning: This should be used as a last resort.**
  *
  * The function name serves as a unique identifier, which is required in rare scenarios
- * where `inPage` calls cannot be found during runtime.
+ * where multiple `inPage` calls need to be distinguished at runtime (e.g., when performing
+ * multiple browser actions in the same test).
  *
- * In most cases, prefer using \`inPage\` instead.
+ * In most cases, prefer using the anonymous `inPage` variant instead.
  */
-export interface InPageWithNamedFunction {
+export interface InPageWithFunctionName {
   <RETURN>(name: string, fn: () => RETURN | Promise<RETURN>): Promise<RETURN>;
 
   <DATA extends Record<string, unknown>, RETURN>(
@@ -113,67 +166,4 @@ export interface InPageWithNamedFunction {
     data: DATA,
     fn: (data: DATA) => RETURN | Promise<RETURN>
   ): Promise<RETURN>;
-}
-
-async function createInPageVariant(
-  testronaut: TestronautOptions | null,
-  page: Page,
-  filePath: string,
-  variant: 'inPage'
-): Promise<InPage>;
-
-async function createInPageVariant(
-  testronaut: TestronautOptions | null,
-  page: Page,
-  filePath: string,
-  variant: 'inPageWithNamedFunction'
-): Promise<InPageWithNamedFunction>;
-
-/**
- * Creates a generic function which works
- * for both `inPage` and `inPageWithNamedFunction`.
- *
- * The difference is that with `inPageWithNamedFunction` has
- * a first argument which is the function name. The rest is
- * the same as with `inPage`.
- */
-async function createInPageVariant(
-  testronaut: TestronautOptions | null,
-  page: Page,
-  filePath: string
-): Promise<InPage | InPageWithNamedFunction> {
-  if (!testronaut) {
-    throw new Error(`
-No config for Testronaut. Use \`withTestronaut\` in \`defineConfig\` (playwright-testronaut.config.mts) to set it up.
-More information on https://testronaut.dev`);
-  }
-
-  const runner = new Runner(
-    new ExtractionPipeline({
-      projectRoot: testronaut.projectRoot,
-      extractionDir: testronaut.extractionDir,
-    }),
-    page
-  );
-  const { hash } = await runner.extract(filePath);
-
-  const inPageWithNamedFunctionImpl: InPageWithNamedFunction = async (
-    ...args: unknown[]
-  ) => {
-    let functionName = '';
-
-    if (typeof args[0] === 'string') {
-      functionName = args[0];
-      args.shift();
-    }
-
-    let data: Record<string, unknown> = {};
-    if (typeof args[0] === 'object') {
-      data = args[0] as Record<string, unknown>;
-    }
-
-    return await runner.inPage(hash, functionName, data);
-  };
-
-  return inPageWithNamedFunctionImpl;
 }
