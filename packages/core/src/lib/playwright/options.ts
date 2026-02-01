@@ -17,6 +17,13 @@ export interface TestronautOptions {
      * The command to start the test server.
      */
     command: string;
+
+    /**
+     * The port number of the test server.
+     *
+     * @default - Derive a deterministic port number from the config path.
+     */
+    port?: number;
   };
 
   /**

@@ -2,6 +2,7 @@ import type { PlaywrightTestConfig } from '@playwright/test';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ExtractionWriter } from '../extraction-writer/extraction-writer';
+import { derivePortFromSeed } from '../infra/derive-port-from-seed';
 import type { FileSystem } from '../infra/file-system';
 import type { TestronautOptions } from './options';
 
@@ -42,7 +43,33 @@ export function _internal_withTestronaut({
   fileSystem,
 }: _internal_WithTestronautParams): PlaywrightTestronautConfig {
   const projectRoot = dirname(configPath);
-  const port = 7357;
+
+  /**
+   * Users can end up with multiple Playwright runner instances
+   * (monorepo, working on different repositories or worktrees simultaneously, ...).
+   * A hardcoded test server port would not work as a project A might end up
+   * mistakenly reusing the test server of project B instead of starting its own.
+   *
+   * The current workaround is to simply derive a deterministic port number from the config path,
+   * or let the user specify the port number if they want to.
+   *
+   * The long term solution is to control the test server ourselves with a daemon.
+   *
+   * Other options were considered but discarded:
+   *
+   * - Use a port finder that just picks the next available port: the problem is that this configuration
+   * file is loaded by Playwright runner which starts the `webServer` then each worker also reloads the config
+   * but the returned `webServer` is just ignored. This means that the Playwright runner would pick 7357 port
+   * for example, and start the test server, then the first worker would load the config and see that 7357 port
+   * is already in use and decide to use 7358 instead but given that the `webServer` is just ignored, the tests
+   * would fail.
+   *
+   * - Use a file to store the port number for each Playwright runner instance process id: it would require almost
+   * as much complexity as the long term solution.
+   * e.g. lock file, cleaning up the old process ids but how to differentiate between a long running
+   * Playwright runner instance in watch mode and an old run etc...
+   */
+  const port = testServer.port ?? derivePortFromSeed(configPath);
 
   const extractionWriter = new ExtractionWriter({
     extractionDir,
