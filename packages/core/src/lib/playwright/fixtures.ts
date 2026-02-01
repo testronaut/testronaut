@@ -129,6 +129,14 @@ async function createInPageVariant(
   variant: 'inPageWithNamedFunction'
 ): Promise<InPageWithNamedFunction>;
 
+/**
+ * Creates a generic function which works
+ * for both `inPage` and `inPageWithNamedFunction`.
+ *
+ * The difference is that with `inPageWithNamedFunction` has
+ * a first argument which is the function name. The rest is
+ * the same as with `inPage`.
+ */
 async function createInPageVariant(
   testronaut: TestronautOptions | null,
   page: Page,
@@ -153,8 +161,12 @@ More information on https://testronaut.dev`);
   const inPageWithNamedFunctionImpl: InPageWithNamedFunction = async (
     ...args: unknown[]
   ) => {
-    const functionName = args[0] as string;
-    args.shift();
+    let functionName = '';
+
+    if (typeof args[0] === 'string') {
+      functionName = args[0];
+      args.shift();
+    }
 
     let data: Record<string, unknown> = {};
     if (typeof args[0] === 'object') {
