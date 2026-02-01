@@ -6,7 +6,7 @@ import {
   type FileAnalysis,
   type ImportedIdentifier,
 } from '../core/file-analysis';
-import { AnalysisContext, createFileData, type FileData } from './core';
+import { AnalysisContext, type FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitInPageCalls } from './visit-in-page-calls';
 

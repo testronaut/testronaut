@@ -1,5 +1,3 @@
-import { test } from '@testronaut/angular';
-
 // Mount with options (outputs) is not supported at the moment. Will be re-introduced in issue #107.
 // test('mount listens to outputs', async ({ page, mount }) => {
 //   const { outputs } = await mount(Rating);
