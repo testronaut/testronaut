@@ -152,7 +152,6 @@ More information on https://testronaut.dev`);
     new ExtractionPipeline({
       projectRoot: testronaut.projectRoot,
       extractionDir: testronaut.extractionDir,
-      transforms: testronaut.transforms,
     }),
     page
   );
