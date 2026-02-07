@@ -1,4 +1,5 @@
 import { test, expect } from '@testronaut/angular';
+import { TestBed } from '@angular/core/testing';
 import { Countdown } from './components/4-countdown';
 
 /**
@@ -17,9 +18,11 @@ import { Countdown } from './components/4-countdown';
  * This example shows how to speed up the test by using the `page.clock` API.
  */
 
-test('should speed up the countdown', async ({ mount, page }) => {
+test('should speed up the countdown', async ({ inPageWithNamedFunction, page }) => {
   await page.clock.install();
-  await mount('mount2', Countdown);
+  await inPageWithNamedFunction('mount2', () =>
+    TestBed.createComponent(Countdown)
+  );
   await expect(page.getByText('3')).toBeVisible();
   await page.clock.runFor(3000);
   await expect.configure({ timeout: 500 })(page.getByText('0')).toBeVisible();

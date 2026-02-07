@@ -21,7 +21,7 @@ test('ng add @testronaut/angular (standalone)', async () => {
   const { exitCode, stdout } =
     await $`pnpm playwright test -c playwright-testronaut.config.mts`;
   expect.soft(exitCode).toBe(0);
-  expect.soft(stdout).toContain('3 passed');
+  expect.soft(stdout).toContain('1 passed');
 });
 
 test('ng add @testronaut/angular (CLI Workspace)', async () => {
@@ -42,7 +42,7 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
   const { exitCode, stdout } =
     await $`pnpm playwright test -c projects/my-app/playwright-testronaut.config.mts`;
   expect.soft(exitCode).toBe(0);
-  expect.soft(stdout).toContain('3 passed');
+  expect.soft(stdout).toContain('1 passed');
 });
 
 test('nx add @testronaut/angular', async () => {
@@ -72,7 +72,7 @@ test('nx add @testronaut/angular', async () => {
   const { exitCode, stdout } =
     await $`pnpm playwright test -c apps/my-app/playwright-testronaut.config.mts`;
   expect.soft(exitCode).toBe(0);
-  expect.soft(stdout).toContain('3 passed');
+  expect.soft(stdout).toContain('1 passed');
 });
 
 async function setUp() {

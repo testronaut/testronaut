@@ -22,17 +22,21 @@ import {
  * A unique `inPageWithNamedFunction` identifier is provided because this file performs multiple browser actions
  * (e.g. `mount` and `inPageWithNamedFunction`).
  */
-test('should use the real message service', async ({ mount, page }) => {
-  await mount('mount1', ClickMe);
+test('should use the real message service', async ({
+  inPageWithNamedFunction,
+  page,
+}) => {
+  await inPageWithNamedFunction('mount1', () =>
+    TestBed.createComponent(ClickMe)
+  );
   await page.getByRole('button', { name: 'Click me' }).click();
   await expect(page.getByText('Lift Off!')).toBeVisible();
 });
 
 test.describe('mocks', () => {
   test('should mock the message service embedded', async ({
-    mount,
-    page,
     inPageWithNamedFunction,
+    page,
   }) => {
     await inPageWithNamedFunction('mock the message service', () => {
       class EmbeddedMockedMessageService {
@@ -51,15 +55,16 @@ test.describe('mocks', () => {
       });
     });
 
-    await mount('mount2', ClickMe);
+    await inPageWithNamedFunction('mount2', () =>
+      TestBed.createComponent(ClickMe)
+    );
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Mocked Lift Off!')).toBeVisible();
   });
 
   test('should mock the message service (externalized)', async ({
-    mount,
-    page,
     inPageWithNamedFunction,
+    page,
   }) => {
     await inPageWithNamedFunction('mock the message service externalized', () => {
       TestBed.configureTestingModule({
@@ -68,7 +73,9 @@ test.describe('mocks', () => {
         ],
       });
     });
-    await mount('mount3', ClickMe);
+    await inPageWithNamedFunction('mount3', () =>
+      TestBed.createComponent(ClickMe)
+    );
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Mocked Lift Off!')).toBeVisible();
   });
@@ -76,9 +83,8 @@ test.describe('mocks', () => {
 
 test.describe('fakes', () => {
   test('should fake the message service embedded', async ({
-    mount,
-    page,
     inPageWithNamedFunction,
+    page,
   }) => {
     await inPageWithNamedFunction('fake the message service embedded', () => {
       @Injectable({ providedIn: 'root' })
@@ -104,15 +110,16 @@ test.describe('fakes', () => {
       TestBed.inject(MessageServiceFake).setMessage('Fake Lift Off!');
     });
 
-    await mount('mount4', ClickMe);
+    await inPageWithNamedFunction('mount4', () =>
+      TestBed.createComponent(ClickMe)
+    );
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Fake Lift Off!')).toBeVisible();
   });
 
   test('should fake the message service externalized', async ({
-    mount,
-    page,
     inPageWithNamedFunction,
+    page,
   }) => {
     await inPageWithNamedFunction('fake the message service externalized', () => {
       TestBed.configureTestingModule({
@@ -122,7 +129,9 @@ test.describe('fakes', () => {
       injectMessageServiceFake().setMessage('Fake Lift Off!');
     });
 
-    await mount('mount5', ClickMe);
+    await inPageWithNamedFunction('mount5', () =>
+      TestBed.createComponent(ClickMe)
+    );
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Fake Lift Off!')).toBeVisible();
   });
