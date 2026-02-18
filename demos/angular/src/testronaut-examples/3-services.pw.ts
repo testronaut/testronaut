@@ -17,10 +17,10 @@ import {
  * The test suite overrides both the `MessageService` via `TestBed.configureTestingModule`.
  *
  * Any code, which runs in the browser, has to be imported from a separate or has
- * be declared within the `inPage` function.
+ * be declared within the `inPageWithNamedFunction` function.
  *
- * A unique `inPage` identifier is provided because this file performs multiple browser actions
- * (e.g. `mount` and `inPage`).
+ * A unique `inPageWithNamedFunction` identifier is provided because this file performs multiple browser actions
+ * (e.g. `mount` and `inPageWithNamedFunction`).
  */
 test('should use the real message service', async ({ mount, page }) => {
   await mount('mount1', ClickMe);
@@ -32,9 +32,9 @@ test.describe('mocks', () => {
   test('should mock the message service embedded', async ({
     mount,
     page,
-    inPage,
+    inPageWithNamedFunction,
   }) => {
-    await inPage('mock the message service', () => {
+    await inPageWithNamedFunction('mock the message service', () => {
       class EmbeddedMockedMessageService {
         getMessage() {
           return 'Mocked Lift Off!';
@@ -59,9 +59,9 @@ test.describe('mocks', () => {
   test('should mock the message service (externalized)', async ({
     mount,
     page,
-    inPage,
+    inPageWithNamedFunction,
   }) => {
-    await inPage('mock the message service externalized', () => {
+    await inPageWithNamedFunction('mock the message service externalized', () => {
       TestBed.configureTestingModule({
         providers: [
           { provide: MessageService, useClass: MockedMessageService },
@@ -78,9 +78,9 @@ test.describe('fakes', () => {
   test('should fake the message service embedded', async ({
     mount,
     page,
-    inPage,
+    inPageWithNamedFunction,
   }) => {
-    await inPage('fake the message service embedded', () => {
+    await inPageWithNamedFunction('fake the message service embedded', () => {
       @Injectable({ providedIn: 'root' })
       class MessageServiceFake implements MessageService {
         #message = '';
@@ -112,9 +112,9 @@ test.describe('fakes', () => {
   test('should fake the message service externalized', async ({
     mount,
     page,
-    inPage,
+    inPageWithNamedFunction,
   }) => {
-    await inPage('fake the message service externalized', () => {
+    await inPageWithNamedFunction('fake the message service externalized', () => {
       TestBed.configureTestingModule({
         providers: [provideMessageServiceFake()],
       });

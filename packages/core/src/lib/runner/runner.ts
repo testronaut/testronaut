@@ -14,15 +14,11 @@ export class Runner {
     return this.#extractionPipeline.extract(filePath);
   }
 
-  async inPage({
-    hash,
-    functionName,
-    data,
-  }: {
-    hash: string;
-    functionName: string;
-    data: Record<string, unknown>;
-  }) {
+  async inPage(
+    hash: string,
+    functionName: string,
+    data: Record<string, unknown>
+  ) {
     await this.waitUntilHashIsAvailable(hash);
 
     /* Execute the function in the browser context and return the result. */

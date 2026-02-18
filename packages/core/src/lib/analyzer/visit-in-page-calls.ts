@@ -1,10 +1,11 @@
 import * as ts from 'typescript';
 import { createExtractedFunction } from '../core/file-analysis';
-import { getInPageIdentifier } from '../core/in-page-identifier';
+import {
+  getInPageIdentifier,
+  getInPageWithNamedFunctionIdentifier,
+} from '../core/in-page-identifier';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
-
-const _IN_PAGE_IDENTIFIER = 'inPage';
 
 export interface InPageCall {
   node: ts.CallExpression;
@@ -12,15 +13,20 @@ export interface InPageCall {
   name?: string;
 }
 
+type InPageVariant = 'inPage' | 'inPageWithNamedFunction';
+
 export function visitInPageCalls(
   ctx: AnalysisContext,
   callback: (inPageCall: InPageCall) => void
 ) {
   const visitor = (node: ts.Node) => {
-    if (ts.isCallExpression(node) && isInPageCall(ctx, node)) {
-      const { code, name } = parseInPageArgs(ctx, node);
-      callback({ code, name, node });
-      return;
+    if (ts.isCallExpression(node)) {
+      const variant = getInPageVariant(ctx, node);
+      if (variant) {
+        const { code, name } = parseInPageArgs(ctx, node, variant);
+        callback({ code, name, node });
+        return;
+      }
     }
 
     ts.forEachChild(node, visitor);
@@ -33,65 +39,120 @@ export class InvalidInPageCallError extends Error {
   override name = 'InvalidInPageCallError';
 }
 
-function isInPageCall(
+function getInPageVariant(
   ctx: AnalysisContext,
   callExpression: ts.CallExpression
-): boolean {
-  /* Identifier is `inPage`. */
-  if (callExpression.expression.getText() === getInPageIdentifier()) {
-    return true;
+): InPageVariant | null {
+  const expressionText = callExpression.expression.getText();
+
+  /* Direct identifier match for `inPage`. */
+  if (expressionText === getInPageIdentifier()) {
+    return 'inPage';
   }
 
-  const inPageDeclaration = getDeclaration(
+  /* Direct identifier match for `inPageWithNamedFunction`. */
+  if (expressionText === getInPageWithNamedFunctionIdentifier()) {
+    return 'inPageWithNamedFunction';
+  }
+
+  const declaration = getDeclaration(
     ctx.typeChecker,
     callExpression.expression
   );
 
   /* Identifier is an alias (e.g. `test(..., ({inPage: run}) => { run(...); })`). */
-  return (
-    inPageDeclaration != null &&
-    ts.isObjectBindingPattern(inPageDeclaration.parent) &&
-    inPageDeclaration.parent.elements.at(0)?.propertyName?.getText() ===
+  if (
+    declaration != null &&
+    ts.isObjectBindingPattern(declaration.parent) &&
+    declaration.parent.elements.at(0)?.propertyName?.getText() ===
       getInPageIdentifier()
-  );
+  ) {
+    return 'inPage';
+  }
+
+  /* Identifier is an alias for `inPageWithNamedFunction`. */
+  if (
+    declaration != null &&
+    ts.isObjectBindingPattern(declaration.parent) &&
+    declaration.parent.elements.at(0)?.propertyName?.getText() ===
+      getInPageWithNamedFunctionIdentifier()
+  ) {
+    return 'inPageWithNamedFunction';
+  }
+
+  return null;
 }
 
 function parseInPageArgs(
   ctx: AnalysisContext,
-  node: ts.CallExpression
+  node: ts.CallExpression,
+  variant: InPageVariant
 ): {
   code: string;
   name?: string;
 } {
+  const identifier =
+    variant === 'inPage'
+      ? getInPageIdentifier()
+      : getInPageWithNamedFunctionIdentifier();
+
   if (node.arguments.length === 0) {
     throw new InvalidInPageCallError(
-      `\`${getInPageIdentifier()}\` must have at least one argument`
+      `\`${identifier}\` must have at least one argument`
     );
   }
 
-  if (node.arguments.length > 3) {
-    throw new InvalidInPageCallError(
-      `\`${getInPageIdentifier()}\` must have at most three arguments`
-    );
-  }
+  if (variant === 'inPage') {
+    /* `inPage` accepts: fn or data+fn (max 2 args) */
+    if (node.arguments.length > 2) {
+      throw new InvalidInPageCallError(
+        `\`${identifier}\` must have at most two arguments`
+      );
+    }
 
-  const nameArg = node.arguments.length > 1 ? node.arguments[0] : undefined;
-  if (nameArg && !ts.isStringLiteralLike(nameArg)) {
-    throw new InvalidInPageCallError(
-      `\`${getInPageIdentifier()}\` name must be a string literal`
-    );
-  }
+    const codeArg = node.arguments.at(-1);
+    if (!ts.isFunctionLike(codeArg)) {
+      throw new InvalidInPageCallError(
+        `\`${identifier}\` function must be an inline function`
+      );
+    }
 
-  const codeArg = node.arguments.at(-1);
-  if (!ts.isFunctionLike(codeArg)) {
-    throw new InvalidInPageCallError(
-      `\`${getInPageIdentifier()}\` function must be an inline function`
-    );
-  }
+    return createExtractedFunction({
+      code: codeArg.getText(ctx.sourceFile),
+      importedIdentifiers: [],
+    });
+  } else {
+    /* `inPageWithNamedFunction` accepts: name+fn or name+data+fn (2-3 args) */
+    if (node.arguments.length < 2) {
+      throw new InvalidInPageCallError(
+        `\`${identifier}\` must have at least two arguments: a name and a function`
+      );
+    }
 
-  return createExtractedFunction({
-    code: codeArg.getText(ctx.sourceFile),
-    name: nameArg?.text,
-    importedIdentifiers: [],
-  });
+    if (node.arguments.length > 3) {
+      throw new InvalidInPageCallError(
+        `\`${identifier}\` must have at most three arguments`
+      );
+    }
+
+    const nameArg = node.arguments[0];
+    if (!ts.isStringLiteralLike(nameArg)) {
+      throw new InvalidInPageCallError(
+        `\`${identifier}\` name must be a string literal`
+      );
+    }
+
+    const codeArg = node.arguments.at(-1);
+    if (!ts.isFunctionLike(codeArg)) {
+      throw new InvalidInPageCallError(
+        `\`${identifier}\` function must be an inline function`
+      );
+    }
+
+    return createExtractedFunction({
+      code: codeArg.getText(ctx.sourceFile),
+      name: nameArg.text,
+      importedIdentifiers: [],
+    });
+  }
 }
