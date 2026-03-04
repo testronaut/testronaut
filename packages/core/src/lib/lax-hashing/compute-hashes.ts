@@ -2,7 +2,11 @@ import { computeHash } from './internal/hash';
 import { tokenize } from './internal/tokenize';
 import { transpileToJs } from './internal/transpile';
 
-export const LAX_HASH_PREFIX = 'ℒ'; // Script capital L (Laplace/Lax)
+export const LAX_HASH_PREFIX = 'ℒ';
+
+export function isLaxHash(hash: string): boolean {
+  return hash.startsWith(LAX_HASH_PREFIX);
+}
 
 export type Hashes = {
   laxHash: string;

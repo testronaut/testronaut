@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { analyze } from '../analyzer/analyze';
 import { createFileData } from '../analyzer/core';
-import { assertNoDuplicateExtractedFunctions } from '../core/assert-no-duplicate-extracted-functions';
 import {
   ExtractionWriter,
   type ExtractionWriterConfig,
@@ -25,11 +24,6 @@ export class ExtractionPipeline {
         content,
       }),
     });
-
-    /* TODO: it's cheap to just throw an error here.
-     * Later, we'll have to extract the errors so that we can throw them
-     * when `inPage` is called in the test.*/
-    assertNoDuplicateExtractedFunctions(fileAnalysis);
 
     const fileInfo = createFileInfo({ hash: this.#computeHash(content), path });
 
