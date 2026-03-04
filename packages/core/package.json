@@ -15,6 +15,9 @@
   "peerDependencies": {
     "@playwright/test": ">=1.36.0 <=1.56.0"
   },
+  "devDependencies": {
+    "@types/xxhashjs": "^0.2.4"
+  },
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
