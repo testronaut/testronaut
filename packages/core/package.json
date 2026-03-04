@@ -10,7 +10,8 @@
     "LICENSE"
   ],
   "dependencies": {
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "xxhashjs": "^0.2.2"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.36.0 <=1.56.0"
