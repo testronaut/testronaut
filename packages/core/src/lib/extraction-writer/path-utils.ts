@@ -1,4 +1,4 @@
-import { dirname, join, relative } from 'node:path/posix';
+import { dirname, join, posix, relative, sep } from 'node:path';
 
 /**
  * Adjust the relative import path when moving a file from `srcFilePath` to `destFilePath`.
@@ -17,11 +17,14 @@ export function adjustImportPath({
   importPath: string;
 }) {
   if (importPath.startsWith('./') || importPath.startsWith('../')) {
-    return relative(
-      dirname(destFilePath),
-      join(dirname(srcFilePath), importPath)
+    return toPosixPath(
+      relative(dirname(destFilePath), join(dirname(srcFilePath), importPath))
     );
   } else {
     return importPath;
   }
+}
+
+export function toPosixPath(path: string) {
+  return path.replaceAll(sep, posix.sep);
 }

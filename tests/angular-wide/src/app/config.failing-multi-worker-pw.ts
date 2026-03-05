@@ -4,7 +4,7 @@ import { expect, test } from '@testronaut/core';
  * We run two tests, skip the first one, and make sure the second one crashes. */
 for (let i = 0; i < 2; i++) {
   test(`fail if there is more than one worker ${i}`, async ({
-    runInBrowser,
+    inPage,
   }, testInfo) => {
     /* It seems that Playwright will always run the first test in the first worker.
      * If this behavior changes, we will have to adapt this condition and make
@@ -13,10 +13,10 @@ for (let i = 0; i < 2; i++) {
     console.log(testInfo.parallelIndex);
 
     await expect(async () => {
-      await runInBrowser(() => {
+      await inPage(() => {
         document.body.textContent =
           'This test fails before because there are two workers!';
       });
-    }).rejects.toThrow('`runInBrowser` does not support multiple workers yet.');
+    }).rejects.toThrow('`inPage` does not support multiple workers yet.');
   });
 }

@@ -1,24 +1,63 @@
+import { describe, expect, it } from 'vitest';
 import { FileSystemFake } from '../infra/file-system.fake';
-import { _internal_withTestronaut, withTestronaut } from './with-testronaut';
-import { describe, it, expect } from 'vitest';
+import {
+  _internal_withTestronaut,
+  PlaywrightTestronautConfig,
+  withTestronaut,
+  WithTestronautParams,
+} from './with-testronaut';
 
 describe(withTestronaut.name, () => {
-  /**
-   * This is a temporary workaround meanwhile we implement a proper solution.
-   */
-  it('sets max workers to 1 to avoid race conditions between workers', () => {
-    const config = _internal_withTestronaut({
-      configPath: 'playwright.config.ts',
+  it('set reuseExistingServer to true to allow mutilple runners to share the same test server instead of just failing', () => {
+    const config = withTestingTestronaut({
+      configPath: '/my-project/playwright.config.ts',
       extractionDir: 'generated',
       testServer: {
         command: 'npm run start -- --port {port}',
       },
-      /* Use fake here to avoid polluting the filesystem.
-       * This would create a `generated` folder at the root of the workspace:
-       * Don't ask me how I know. 😅 */
-      fileSystem: new FileSystemFake(),
     });
 
-    expect(config.workers).toBe(1);
+    expect(config.webServer).toMatchObject({
+      reuseExistingServer: true,
+    });
+  });
+
+  it('initializes generated/index.ts file', () => {
+    const { fileSystemFake, withTestronaut } = setUpWithTestronaut();
+
+    withTestronaut({
+      configPath: '/my-project/playwright.config.ts',
+      extractionDir: 'generated',
+      testServer: {
+        command: 'npm run start -- --port {port}',
+      },
+    });
+
+    expect(
+      fileSystemFake.getFiles()['/my-project/generated/index.ts'].length
+    ).toBeGreaterThan(0);
   });
 });
+
+function setUpWithTestronaut() {
+  const fileSystemFake = new FileSystemFake();
+
+  return {
+    fileSystemFake,
+    withTestronaut: (config: WithTestronautParams) =>
+      withTestingTestronaut(config, fileSystemFake),
+  };
+}
+
+function withTestingTestronaut(
+  config: WithTestronautParams,
+  fileSystem?: FileSystemFake
+): PlaywrightTestronautConfig {
+  return _internal_withTestronaut({
+    ...config,
+    /* Use fake here to avoid polluting the filesystem.
+     * This would create a `generated` folder at the root of the workspace:
+     * Don't ask me how I know. 😅 */
+    fileSystem: fileSystem ?? new FileSystemFake(),
+  });
+}

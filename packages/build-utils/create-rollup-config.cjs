@@ -1,22 +1,25 @@
 const { withNx } = require('@nx/rollup/with-nx');
 
 /**
- * @param {string} main
- * @param {string[]} additionalEntryPoints
+ * @param {import('@nx/rollup/with-nx').RollupWithNxPluginOptions} & {keepPath?: {pattern: RegExp, dirname: string} options
  */
-exports.createRollupConfig = ({ main, additionalEntryPoints }) => {
+exports.createRollupConfig = ({ main, input = {}, assets = [] }) => {
   const base = withNx({
-    main,
-    additionalEntryPoints,
     generatePackageJson: false,
     outputPath: './dist',
     tsConfig: './tsconfig.lib.json',
     compiler: 'tsc',
     format: ['esm'],
+    main,
+    assets,
   });
 
   return {
     ...base,
+    input: {
+      ...base.input,
+      ...input,
+    },
     output: base.output.map((output) => ({
       ...output,
       chunkFileNames: '[name].mjs',

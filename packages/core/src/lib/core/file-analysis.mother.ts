@@ -1,4 +1,4 @@
-import { join } from 'node:path/posix';
+import { join } from 'node:path';
 import {
   createExtractedFunction,
   createFileAnalysis,

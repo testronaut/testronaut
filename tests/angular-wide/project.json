@@ -91,6 +91,22 @@
         "spa": true
       }
     },
+    "test-wide": {
+      "command": "vitest --project wide",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
+    },
+    "testronaut": {
+      "command": "playwright test",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
+    },
+    "testronaut-commonjs": {
+      "command": "{projectRoot}/test-commonjs-support.sh",
+      "dependsOn": ["@testronaut/source:local-registry"]
+    },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
@@ -99,21 +115,6 @@
           "tsc --noEmit -p {projectRoot}/tsconfig.spec.json"
         ]
       }
-    },
-    "testronaut": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "playwright test",
-          "playwright test --config=playwright.failing-multi-worker.config.ts"
-        ],
-        "cwd": "{projectRoot}",
-        "parallel": false
-      }
-    },
-    "testronaut-commonjs": {
-      "command": "{projectRoot}/test-commonjs-support.sh",
-      "dependsOn": ["@testronaut/source:local-registry"]
     }
   }
 }

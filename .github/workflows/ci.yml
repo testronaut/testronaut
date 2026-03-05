@@ -11,8 +11,19 @@ permissions:
   contents: read
 
 jobs:
+  check-playwright-version-sync:
+    name: Check Playwright Version Sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check-playwright-version-sync.mjs
+
   test:
     name: Test
+    needs: check-playwright-version-sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,12 +43,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
-      - run: pnpm exec nx affected -t build e2e lint test testronaut typecheck --exclude=tag:type:demo
+      - run: pnpm exec nx affected -t build lint test testronaut typecheck --exclude=tag:type:demo
       - run: pnpm nx-cloud fix-ci
         if: always()
 
   test-commonjs:
     name: Test CommonJS Support
+    needs: check-playwright-version-sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,5 +71,31 @@ jobs:
       # This target changes the `package.json` and `pnpm-lock.yaml` files.
       # Do not run anything that might be affected by this after this step.
       - run: pnpm exec nx affected -t testronaut-commonjs
+      - run: pnpm nx-cloud fix-ci
+        if: always()
+
+  test-wide:
+    name: Test Wide
+    needs: check-playwright-version-sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      # Cache node_modules
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps
+      - uses: nrwl/nx-set-shas@v4
+      - run: pnpm exec nx affected -t e2e test-wide --exclude=tag:type:demo
       - run: pnpm nx-cloud fix-ci
         if: always()

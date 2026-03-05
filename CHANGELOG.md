@@ -1,3 +1,43 @@
+## 0.0.12 (2026-01-23)
+
+### 🚀 Features
+
+- add nx `init` generator and `ng-add` schematic ([#74](https://github.com/testronaut/testronaut/pull/74))
+
+### ❤️ Thank You
+
+- Rainer Hahnekamp @rainerhahnekamp
+
+## 0.0.11 (2025-11-05)
+
+### 🩹 Fixes
+
+- **core:** clear import map on windows too ([#83](https://github.com/testronaut/testronaut/pull/83))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
+## 0.0.10 (2025-11-05)
+
+### 🩹 Fixes
+
+- **core:** 🐞 fix windows support ([#81](https://github.com/testronaut/testronaut/pull/81))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
+## 0.0.9 (2025-10-15)
+
+### 🩹 Fixes
+
+- **core:** allow multiple runners against same test server ([#75](https://github.com/testronaut/testronaut/pull/75))
+
+### ❤️ Thank You
+
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.8 (2025-10-15)
 
 ### 🩹 Fixes
