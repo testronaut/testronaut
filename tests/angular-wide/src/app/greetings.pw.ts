@@ -9,16 +9,17 @@ test(`anonymous mount`, async ({ page, inPage }) => {
   await expect(page.getByRole('heading')).toHaveText('Hello Guest!');
 });
 
-// Mount with options is not supported at the moment. Will be re-introduced in issue #107.
-// test(`named mount with inputs`, async ({ page, mount }) => {
-//   await mount('hello foo', Greetings, {
-//     inputs: {
-//       name: 'Foo',
-//     },
-//   });
-//
-//   await expect(page.getByRole('heading')).toHaveText('Hello Foo!');
-// });
+test(`named mount with inputs`, async ({ page, inPageWithNamedFunction }) => {
+  await inPageWithNamedFunction('hello foo', () =>
+    mount(Greetings, {
+      inputs: {
+        name: 'Foo',
+      },
+    })
+  );
+
+  await expect(page.getByRole('heading')).toHaveText('Hello Foo!');
+});
 
 test(`named mount with DI`, async ({ page, inPageWithNamedFunction }) => {
   await inPageWithNamedFunction('configure providers', () =>
