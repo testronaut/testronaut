@@ -120,6 +120,7 @@ function parseInPageArgs(
     return createExtractedFunction({
       code: codeArg.getText(ctx.sourceFile),
       importedIdentifiers: [],
+      name: '',
     });
   } else {
     /* `inPageWithNamedFunction` accepts: name+fn or name+data+fn (2-3 args) */

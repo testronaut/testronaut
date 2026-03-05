@@ -5,7 +5,7 @@ describe('computeLaxHashes', () => {
   it('returns laxHash, fullHash', () => {
     const ts = '(message: string) => console.log(message);';
     const { laxHash, fullHash } = computeHashes(ts);
-    expect(laxHash).toBe('ℒc8b941f6');
+    expect(laxHash).toBe('__lax__c8b941f6');
     expect(fullHash).toBe('3efddd87');
   });
 

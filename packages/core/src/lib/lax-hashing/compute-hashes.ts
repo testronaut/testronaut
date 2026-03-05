@@ -2,7 +2,7 @@ import { computeHash } from './internal/hash';
 import { tokenize } from './internal/tokenize';
 import { transpileToJs } from './internal/transpile';
 
-export const LAX_HASH_PREFIX = 'ℒ';
+export const LAX_HASH_PREFIX = '__lax__';
 
 export function isLaxHash(hash: string): boolean {
   return hash.startsWith(LAX_HASH_PREFIX);

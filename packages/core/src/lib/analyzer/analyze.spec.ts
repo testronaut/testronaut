@@ -26,7 +26,7 @@ test('...', async ({inPage}) => {
       code: `() => console.log('Hello!')`,
       importedIdentifiers: [],
     });
-    expect(extractedFunctions[0].name).toMatch('ℒc5374cf9');
+    expect(extractedFunctions[0].name).toMatch('__lax__c5374cf9');
   });
 
   it('extracts multiple anonymous `inPage` calls in one file', () => {
