@@ -152,6 +152,10 @@ More information on https://testronaut.dev`);
     new ExtractionPipeline({
       projectRoot: testronaut.projectRoot,
       extractionDir: testronaut.extractionDir,
+<<<<<<< HEAD
+=======
+      transforms: testronaut.transforms,
+>>>>>>> main
     }),
     page
   );

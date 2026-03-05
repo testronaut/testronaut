@@ -21,9 +21,15 @@ test(`named mount with inputs`, async ({ page, inPageWithNamedFunction }) => {
   await expect(page.getByRole('heading')).toHaveText('Hello Foo!');
 });
 
+<<<<<<< HEAD
 test(`named mount with DI`, async ({ page, inPageWithNamedFunction }) => {
   await inPageWithNamedFunction('configure providers', () =>
     TestBed.configureTestingModule({ providers: [provideGreeting('Servus')] })
+=======
+test(`named mount with DI`, async ({ page, mount, inPageWithNamedFunction }) => {
+  await inPageWithNamedFunction('configure providers', () =>
+    configure({ providers: [provideGreeting('Servus')] })
+>>>>>>> main
   );
 
   await inPageWithNamedFunction('hello austria', () => mount(Greetings));

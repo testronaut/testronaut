@@ -61,11 +61,11 @@ for (const name of [
         );
       });
 
-      await page.route('https://testronaut.dev/lift-off', (route) => {
+      await page.route('https://testronaut.dev/lift-off', (route) =>
         route.fulfill({
           json: 'Lift Off!',
-        });
-      });
+        })
+      );
 
       await page.getByRole('button', { name: 'Click me' }).click();
       await expect(page.getByText('Lift Off!')).toBeVisible();
