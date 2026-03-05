@@ -24,6 +24,9 @@
     "e2e-ci--**/*": {
       "dependsOn": ["^build"]
     },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
     "test": {
       "options": {
         "passWithNoTests": true,
