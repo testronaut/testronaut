@@ -1,7 +1,8 @@
 import {
   AnalysisContext,
   createImportedIdentifier,
-  getRunInBrowserIdentifier,
+  getInPageIdentifier,
+  getInPageWithNamedFunctionIdentifier,
   type Transform,
   type TransformResult,
 } from '@testronaut/core/devkit';
@@ -26,7 +27,7 @@ export const angularTransform: Transform = {
         replacePropertyInObjectBinding(
           node,
           MOUNT_IDENTIFIER,
-          getRunInBrowserIdentifier()
+          getInPageIdentifier()
         ),
       callExpression: (node) => {
         if (node.expression.getText() !== MOUNT_IDENTIFIER) {
@@ -35,12 +36,17 @@ export const angularTransform: Transform = {
 
         mountFound = true;
 
-        const { mountArgs, runInBrowserArgs } = processMountArgs(
+        const { mountArgs, inPageArgs, isNamed } = processMountArgs(
           Array.from(node.arguments)
         );
 
-        return createCallExpression(getRunInBrowserIdentifier(), [
-          ...runInBrowserArgs,
+        /* Use `inPageWithNamedFunction` for named calls, `inPage` for anonymous ones. */
+        const inPageFn = isNamed
+          ? getInPageWithNamedFunctionIdentifier()
+          : getInPageIdentifier();
+
+        return createCallExpression(inPageFn, [
+          ...inPageArgs,
           createArrowFunction(
             createCallExpression(MOUNT_IDENTIFIER, mountArgs)
           ),
@@ -63,13 +69,15 @@ export const angularTransform: Transform = {
 };
 
 function processMountArgs(args: ts.Expression[]): {
-  runInBrowserArgs: ts.Expression[];
+  inPageArgs: ts.Expression[];
   mountArgs: ts.Expression[];
+  isNamed: boolean;
 } {
   const isNamedCall = ts.isStringLiteral(args[0]);
 
   return {
-    runInBrowserArgs: isNamedCall ? [args[0]] : [],
+    inPageArgs: isNamedCall ? [args[0]] : [],
     mountArgs: isNamedCall ? args.slice(1) : args,
+    isNamed: isNamedCall,
   };
 }

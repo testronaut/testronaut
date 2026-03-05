@@ -50,7 +50,7 @@ describe(ExtractionWriter.name, () => {
     ).toContain('INITIAL_CONTENT');
   });
 
-  it('writes anonymous `runInBrowser` calls', async () => {
+  it('writes anonymous `inPage` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
       await setUpInitializedWriter();
 
@@ -103,7 +103,7 @@ export const extractedFunctionsRecord = {
     });
   });
 
-  it('writes named `runInBrowser` calls', async () => {
+  it('writes named `inPage` calls', async () => {
     const { fileSystemFake, projectFileAnalysisMother, writer } =
       await setUpInitializedWriter();
 
