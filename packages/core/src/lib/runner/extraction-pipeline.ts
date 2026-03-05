@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { analyze } from '../analyzer/analyze';
 import { createFileData } from '../analyzer/core';
-import { type Transform } from '../analyzer/transform';
 import { assertNoDuplicateExtractedFunctions } from '../core/assert-no-duplicate-extracted-functions';
 import {
   ExtractionWriter,
@@ -12,11 +11,9 @@ import { createFileInfo, type FileInfo } from './file-info';
 
 export class ExtractionPipeline {
   readonly #extractionWriter: ExtractionWriter;
-  readonly #transforms?: Transform[];
 
-  constructor({ transforms, ...config }: ExtractionPipelineConfig) {
+  constructor(config: ExtractionPipelineConfig) {
     this.#extractionWriter = new ExtractionWriter(config);
-    this.#transforms = transforms;
   }
 
   async extract(path: string): Promise<FileInfo> {
@@ -27,7 +24,6 @@ export class ExtractionPipeline {
         path,
         content,
       }),
-      transforms: this.#transforms,
     });
 
     /* TODO: it's cheap to just throw an error here.
@@ -47,6 +43,4 @@ export class ExtractionPipeline {
   }
 }
 
-export interface ExtractionPipelineConfig extends ExtractionWriterConfig {
-  transforms?: Transform[];
-}
+export type ExtractionPipelineConfig = ExtractionWriterConfig;

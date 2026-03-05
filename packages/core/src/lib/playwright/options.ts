@@ -1,5 +1,3 @@
-import type { Transform } from '../analyzer/transform';
-
 export interface TestronautOptions {
   /**
    * This is generally the folder containing the `playwright.config.ts` file.
@@ -23,11 +21,4 @@ export interface TestronautOptions {
    * The directory where the extracted code will be generated.
    */
   extractionDir?: string;
-
-  /**
-   * List of transforms to apply to files before extraction.
-   * This is used by framework plugins to transform fixtures
-   * such as `mount()` to `inPage()`.
-   */
-  transforms?: Transform[];
 }

@@ -11,8 +11,3 @@ export {
   createImportedIdentifier,
   type ImportedIdentifier,
 } from './lib/core/file-analysis';
-export type {
-  Transform,
-  TransformApplyFn,
-  TransformResult,
-} from './lib/analyzer/transform';

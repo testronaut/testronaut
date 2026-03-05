@@ -1,5 +1,4 @@
 import { withTestronaut, type WithTestronautParams } from '@testronaut/core';
-import { angularTransform } from './angular-transform';
 
 /**
  * This fixes errors when Playwright imports some Angular code.
@@ -50,10 +49,7 @@ import '@angular/compiler';
  * ```
  */
 export function withTestronautAngular(config: WithTestronautAngularParams) {
-  return withTestronaut({
-    ...config,
-    transforms: [...(config.transforms ?? []), angularTransform],
-  });
+  return withTestronaut(config);
 }
 
 /**
