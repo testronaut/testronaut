@@ -1,4 +1,8 @@
-import type { InputSignal, Type } from '@angular/core';
+import {
+  provideZonelessChangeDetection,
+  type InputSignal,
+  type Type,
+} from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   BrowserTestingModule,
@@ -28,6 +32,12 @@ export async function mount<CMP_TYPE extends Type<unknown>>(
 
 export function setUpTestronautAngular() {
   TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+
+  // TODO: just force zoneless for now.
+  // We'll make this configurable in a near future.
+  TestBed.configureTestingModule({
+    providers: [provideZonelessChangeDetection()],
+  });
 
   isSetUp = true;
 }
