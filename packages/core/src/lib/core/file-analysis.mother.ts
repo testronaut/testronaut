@@ -14,11 +14,7 @@ export const fileAnalysisMother = {
       ) {
         const path = join(projectRoot, name);
         const hash = `hash|${name}`;
-        const fileAnalysis = createFileAnalysis({
-          path,
-          hash,
-          importedIdentifiers: [],
-        });
+        const fileAnalysis = createFileAnalysis({ path, hash });
 
         return createFileAnalysisInnerMother(fileAnalysis);
       },

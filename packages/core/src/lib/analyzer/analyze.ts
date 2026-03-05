@@ -36,7 +36,6 @@ export function analyze({ fileData }: { fileData: FileData }): FileAnalysis {
     path: fileData.path,
     hash,
     extractedFunctions,
-    importedIdentifiers: [],
   });
 }
 
