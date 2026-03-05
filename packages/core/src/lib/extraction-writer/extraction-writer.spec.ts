@@ -59,6 +59,7 @@ describe(ExtractionWriter.name, () => {
         .withBasicInfo()
         .withExtractedFunction(
           createExtractedFunction({
+            name: '__lax__',
             code: `() => { console.log('Hi!'); }`,
           })
         )
@@ -72,7 +73,7 @@ describe(ExtractionWriter.name, () => {
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "": () => { console.log('Hi!'); }
+    "__lax__": () => { console.log('Hi!'); }
 };
 `),
     });
@@ -88,6 +89,7 @@ export const extractedFunctionsRecord = {
         .withExtractedFunction(
           createExtractedFunction({
             code: `() => { console.log('Hi!'); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -147,6 +149,7 @@ export const extractedFunctionsRecord = {
         .withExtractedFunction(
           createExtractedFunction({
             code: `() => { console.log('Hello!'); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -156,7 +159,7 @@ export const extractedFunctionsRecord = {
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "": () => { console.log('Hello!'); }
+    "__lax__": () => { console.log('Hello!'); }
 };
 `),
     });
@@ -178,6 +181,7 @@ export const extractedFunctionsRecord = {
         .withExtractedFunction(
           createExtractedFunction({
             code: `() => { console.log('Hi!'); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -189,7 +193,7 @@ export const extractedFunctionsRecord = {
       ),
       '/my-project/generated/src/my-component.spec.ts': expect.stringContaining(
         `export const extractedFunctionsRecord = {
-    "": () => { console.log('Hi!'); }
+    "__lax__": () => { console.log('Hi!'); }
 };`
       ),
     });
@@ -211,6 +215,7 @@ export const extractedFunctionsRecord = {
         .withExtractedFunction(
           createExtractedFunction({
             code: `() => { console.log('Hi!'); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -238,6 +243,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
               },
             ],
             code: `() => { console.log(MyComponent); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -248,7 +254,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
         expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
-    "": () => { console.log(MyComponent); }
+    "__lax__": () => { console.log(MyComponent); }
 };
 `),
     });
@@ -270,6 +276,7 @@ export const extractedFunctionsRecord = {
               },
             ],
             code: `() => { console.log(MyComponent); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -280,7 +287,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
-    "": () => { console.log(MyComponent); }
+    "__lax__": () => { console.log(MyComponent); }
 };
 `),
     });
@@ -302,6 +309,7 @@ export const extractedFunctionsRecord = {
               },
             ],
             code: `() => { console.log(MyComponent); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -323,6 +331,7 @@ export const extractedFunctionsRecord = {
               },
             ],
             code: `() => { console.log(MyService, MyServiceError); }`,
+            name: '__lax__',
           })
         )
         .build()
@@ -333,7 +342,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
-    "": () => { console.log(MyService, MyServiceError); }
+    "__lax__": () => { console.log(MyService, MyServiceError); }
 };
 `),
     });

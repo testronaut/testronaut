@@ -1,13 +1,11 @@
-export class DuplicateExtractedFunctionsError extends Error {
-  override name = 'DuplicateExtractedFunctionsError';
+export class DuplicatedNamedFunctionsError extends Error {
+  override name = 'DuplicatedNamedFunctionsError';
 
-  constructor(filePath: string, duplicates: string[]) {
+  constructor(filePath: string, name: string) {
     super(
-      `Extracted functions should be unique — unique name per file, or one anonymous call per file.
-      File: ${filePath}.
-      Duplicates: ${duplicates
-        .map((name) => (name !== '' ? `"${name}"` : '[anonymous call]'))
-        .join(', ')}`
+      `runInPageWithNamedFunction have to use unique names.
+
+The name "${name}" in the file ${filePath} is used multiple times.`
     );
   }
 }

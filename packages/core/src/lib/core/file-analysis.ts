@@ -18,7 +18,7 @@ export function createFileAnalysis(
 export interface ExtractedFunction {
   code: string;
   importedIdentifiers: ImportedIdentifier[];
-  name?: string;
+  name: string;
 }
 
 export interface ImportedIdentifier {

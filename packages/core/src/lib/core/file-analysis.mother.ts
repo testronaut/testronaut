@@ -35,6 +35,7 @@ function createFileAnalysisInnerMother(fileAnalysis: FileAnalysis) {
             ...fileAnalysis.extractedFunctions,
             createExtractedFunction({
               code: `() => { console.log('anonymous'); }`,
+              name: '__lax__',
             }),
           ],
         })
