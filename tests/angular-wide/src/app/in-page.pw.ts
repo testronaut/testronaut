@@ -8,14 +8,10 @@ test('anonymous inPage', async ({ page, inPage }) => {
   await expect(page.getByText('Hi!')).toBeVisible();
 });
 
-<<<<<<< HEAD
 test('named inPageWithNamedFunction', async ({
   page,
   inPageWithNamedFunction,
 }) => {
-=======
-test('named inPageWithNamedFunction', async ({ page, inPageWithNamedFunction }) => {
->>>>>>> main
   await inPageWithNamedFunction('hello', () => {
     document.body.textContent = 'Hello!';
   });
