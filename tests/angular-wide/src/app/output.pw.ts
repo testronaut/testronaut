@@ -1,4 +1,4 @@
-// import { expect, test } from '@testronaut/angular';
+import { test } from '@testronaut/angular';
 // import { mount } from '@testronaut/angular/browser';
 // import { Rating } from './rating';
 
