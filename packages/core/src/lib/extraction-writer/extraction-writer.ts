@@ -1,4 +1,4 @@
-import { join, relative } from 'node:path/posix';
+import { join, relative } from 'node:path';
 import * as ts from 'typescript';
 
 import {
@@ -12,7 +12,13 @@ import {
   generateImportDeclaration,
 } from './ast-factory';
 import { FileOps } from './file-ops';
-import { adjustImportPath } from './path-utils';
+import { adjustImportPath, toPosixPath } from './path-utils';
+
+/**
+ * The delay in milliseconds after which the entrypoint file is considered stale,
+ * and will be reset.
+ */
+const ENTRYPOINT_STALE_DELAY = 60_000;
 
 export class ExtractionWriter {
   readonly #config: ExtractionWriterConfig;
@@ -44,7 +50,17 @@ export class ExtractionWriter {
    * Sometimes these previous runs can import files that do not exist anymore —
    * e.g. a run from another branch importing a component that was removed.
    */
-  resetEntrypoint() {
+  resetEntrypointIfStale() {
+    const lastModified = this.#fileSystem.maybeGetLastModifiedDate(
+      this.#entryPointPath
+    );
+    if (
+      lastModified &&
+      Date.now() - lastModified.getTime() < ENTRYPOINT_STALE_DELAY
+    ) {
+      return;
+    }
+
     this.#fileSystem.writeFileSync(
       this.#entryPointPath,
       DISABLE_CHECKS_MAGIC_STRING,
@@ -67,12 +83,13 @@ ${this.#generateExtractedFunctionsFile({
       { overwrite: true }
     );
 
+    const posixRelativePath = toPosixPath(relativePath);
     await this.#fileOps.upsertLine({
       path: this.#entryPointPath,
-      match: relativePath,
+      match: posixRelativePath,
       replacement: this.#generateEntrypointGlobal({
         hash: fileAnalysis.hash,
-        path: relativePath,
+        path: posixRelativePath,
       }),
     });
   }

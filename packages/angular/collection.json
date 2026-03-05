@@ -1,0 +1,17 @@
+{
+  "$schema": "@angular-devkit/schematics/collection-schema.json",
+  "name": "testronaut",
+  "version": "0.0.1",
+  "schematics": {
+    "ng-add": {
+      "factory": "./dist/schematics/init/index.mjs#initSchematic",
+      "schema": "./dist/schematics/init/schema.json",
+      "description": "ng-add generator"
+    },
+    "init": {
+      "factory": "./dist/schematics/init/index.mjs#initSchematic",
+      "schema": "./dist/schematics/init/schema.json",
+      "description": "init generator"
+    }
+  }
+}
