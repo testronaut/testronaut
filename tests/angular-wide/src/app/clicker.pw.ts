@@ -1,9 +1,9 @@
 import { expect, test } from '@testronaut/angular';
-import { TestBed } from '@angular/core/testing';
+import { mount } from '@testronaut/angular/browser';
 import { Clicker } from './clicker';
 
 test(`anonymous mount`, async ({ page, inPage }) => {
-  await inPage(() => TestBed.createComponent(Clicker));
+  await inPage(() => mount(Clicker));
   await page.getByRole('button').click();
 
   await expect(page.getByText('You clicked me')).toBeVisible();

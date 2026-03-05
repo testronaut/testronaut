@@ -5,6 +5,7 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { expect, test } from '@testronaut/angular';
+import { mount } from '@testronaut/angular/browser';
 import { ClickMeWithHttp } from './components/5a-click-me-with-http';
 import { ClickMeWithResource } from './components/5b-click-me-with-resource';
 import { Type } from '@angular/core';
@@ -25,10 +26,10 @@ for (const name of [
       });
 
       await inPageWithNamedFunction('mount1', { name }, ({ name }) => {
-        TestBed.createComponent(
+        return mount(
           (name.endsWith('httpResource')
             ? ClickMeWithResource
-            : ClickMeWithHttp) as Type<unknown>,
+            : ClickMeWithHttp) as Type<unknown>
         );
       });
       await page.getByRole('button', { name: 'Click me' }).click();
@@ -42,7 +43,10 @@ for (const name of [
       await expect(page.getByText('Lift Off!')).toBeVisible();
     });
 
-    test('respond via page.route', async ({ page, inPageWithNamedFunction }) => {
+    test('respond via page.route', async ({
+      page,
+      inPageWithNamedFunction,
+    }) => {
       await inPageWithNamedFunction('config2', () => {
         TestBed.configureTestingModule({
           providers: [provideHttpClient()],
@@ -53,7 +57,7 @@ for (const name of [
         TestBed.createComponent(
           (name.endsWith('httpResource')
             ? ClickMeWithResource
-            : ClickMeWithHttp) as Type<unknown>,
+            : ClickMeWithHttp) as Type<unknown>
         );
       });
 

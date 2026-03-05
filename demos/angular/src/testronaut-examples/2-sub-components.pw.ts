@@ -1,9 +1,10 @@
-import { test, expect } from '@testronaut/angular';
-import { ClickMeWithSub } from './components/2-click-me-with-sub-components';
-import { TestBed } from '@angular/core/testing';
 import { Component, Directive } from '@angular/core';
-import { ShallowMessageComponent } from './test-helpers/shallow-message.component';
+import { TestBed } from '@angular/core/testing';
+import { expect, test } from '@testronaut/angular';
+import { mount } from 'packages/angular/browser';
+import { ClickMeWithSub } from './components/2-click-me-with-sub-components';
 import { ShallowClickDirective } from './test-helpers/shallow-click.directive';
+import { ShallowMessageComponent } from './test-helpers/shallow-message.component';
 
 /**
  * Demonstrates shallow overrides (aka. stubs) of components, directives, and pipes
@@ -22,9 +23,7 @@ import { ShallowClickDirective } from './test-helpers/shallow-click.directive';
  * (e.g. `mount` and `inPageWithNamedFunction`).
  */
 test('no test doubles', async ({ inPageWithNamedFunction, page }) => {
-  await inPageWithNamedFunction('mount1', () =>
-    TestBed.createComponent(ClickMeWithSub)
-  );
+  await inPageWithNamedFunction('mount1', () => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toHaveClass('unclicked');
@@ -62,9 +61,7 @@ test('embedded shallow components', async ({
     });
   });
 
-  await inPageWithNamedFunction('mount2', () =>
-    TestBed.createComponent(ClickMeWithSub)
-  );
+  await inPageWithNamedFunction('mount2', () => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();
@@ -86,9 +83,7 @@ test('externalized shallow components', async ({
     });
   });
 
-  await inPageWithNamedFunction('mount3', () =>
-    TestBed.createComponent(ClickMeWithSub)
-  );
+  await inPageWithNamedFunction('mount3', () => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();

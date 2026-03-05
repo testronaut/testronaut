@@ -11,7 +11,7 @@ test('routing', async ({ page, inPageWithNamedFunction }) => {
       providers: [
         provideRouter(
           [{ path: 'lift-off/:message', component: RoutingMessage }],
-          withComponentInputBinding(),
+          withComponentInputBinding()
         ),
         provideLocationMocks(),
       ],

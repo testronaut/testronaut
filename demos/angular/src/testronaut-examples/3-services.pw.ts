@@ -10,6 +10,7 @@ import {
   injectMessageServiceFake,
   provideMessageServiceFake,
 } from './test-helpers/message-service-fake';
+import { mount } from 'packages/angular/browser';
 
 /**
  * Demonstrates mocking and faking services.
@@ -26,9 +27,7 @@ test('should use the real message service', async ({
   inPageWithNamedFunction,
   page,
 }) => {
-  await inPageWithNamedFunction('mount1', () =>
-    TestBed.createComponent(ClickMe)
-  );
+  await inPageWithNamedFunction('mount1', () => mount(ClickMe));
   await page.getByRole('button', { name: 'Click me' }).click();
   await expect(page.getByText('Lift Off!')).toBeVisible();
 });
@@ -66,13 +65,16 @@ test.describe('mocks', () => {
     inPageWithNamedFunction,
     page,
   }) => {
-    await inPageWithNamedFunction('mock the message service externalized', () => {
-      TestBed.configureTestingModule({
-        providers: [
-          { provide: MessageService, useClass: MockedMessageService },
-        ],
-      });
-    });
+    await inPageWithNamedFunction(
+      'mock the message service externalized',
+      () => {
+        TestBed.configureTestingModule({
+          providers: [
+            { provide: MessageService, useClass: MockedMessageService },
+          ],
+        });
+      }
+    );
     await inPageWithNamedFunction('mount3', () =>
       TestBed.createComponent(ClickMe)
     );
@@ -121,13 +123,16 @@ test.describe('fakes', () => {
     inPageWithNamedFunction,
     page,
   }) => {
-    await inPageWithNamedFunction('fake the message service externalized', () => {
-      TestBed.configureTestingModule({
-        providers: [provideMessageServiceFake()],
-      });
+    await inPageWithNamedFunction(
+      'fake the message service externalized',
+      () => {
+        TestBed.configureTestingModule({
+          providers: [provideMessageServiceFake()],
+        });
 
-      injectMessageServiceFake().setMessage('Fake Lift Off!');
-    });
+        injectMessageServiceFake().setMessage('Fake Lift Off!');
+      }
+    );
 
     await inPageWithNamedFunction('mount5', () =>
       TestBed.createComponent(ClickMe)
