@@ -1,69 +1,40 @@
 import {
-  OutputRef,
-  Provider,
   provideZonelessChangeDetection,
-  Type,
+  type InputSignal,
+  type Type,
 } from '@angular/core';
-
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   BrowserTestingModule,
   platformBrowserTesting,
 } from '@angular/platform-browser/testing';
-import {
-  BrowserMount,
-  OUTPUT_BUS_VARIABLE_NAME,
-  OutputEvent,
-  OutputTypes,
-} from '../common';
 import { TestronautAngularNotSetUpError } from '../playwright/testronaut-angular-not-set-up.error';
-import { getComponentOutputs } from './ng-internals';
 
-export const mount = async <CMP_TYPE extends Type<unknown>>(
-  ...args: Parameters<BrowserMount<CMP_TYPE>>
-): ReturnType<BrowserMount<CMP_TYPE>> => {
-  const [cmp, { inputs = {} } = {}] = args;
-
-  assertIsSetUp();
-  const g = globalThis as unknown as {
-    [OUTPUT_BUS_VARIABLE_NAME]: (
-      outputEvent: OutputEvent<InstanceType<typeof cmp>>
-    ) => void;
-  };
+/**
+ * Mounts a component in the browser using `TestBed`.
+ *
+ * @internal Note: Function is async to be future proof (e.g. opt-in for `whenStable`).
+ */
+export async function mount<CMP_TYPE extends Type<unknown>>(
+  cmp: CMP_TYPE,
+  opts?: BrowserMountOpts<InstanceType<CMP_TYPE>>
+): Promise<void> {
+  _assertIsSetUp();
 
   const fixture = TestBed.createComponent(cmp) as ComponentFixture<
     InstanceType<CMP_TYPE>
   >;
 
-  Object.entries(inputs).forEach(([key, value]) => {
+  Object.entries(opts?.inputs ?? {}).forEach(([key, value]) => {
     fixture.componentRef.setInput(key, value);
   });
-
-  await fixture.whenStable();
-
-  const outputNames = getComponentOutputs(cmp);
-
-  for (const outputName of outputNames) {
-    subscribeToOutput(fixture.componentInstance, outputName, (value) => {
-      g[OUTPUT_BUS_VARIABLE_NAME]({
-        outputName,
-        value,
-      });
-    });
-  }
-
-  return { outputNames };
-};
-
-export function configure({ providers }: { providers: Provider[] }) {
-  assertIsSetUp();
-
-  TestBed.configureTestingModule({ providers });
 }
 
 export function setUpTestronautAngular() {
   TestBed.initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
 
+  // TODO: just force zoneless for now.
+  // We'll make this configurable in a near future.
   TestBed.configureTestingModule({
     providers: [provideZonelessChangeDetection()],
   });
@@ -71,19 +42,20 @@ export function setUpTestronautAngular() {
   isSetUp = true;
 }
 
-function assertIsSetUp() {
+function _assertIsSetUp() {
   if (!isSetUp) {
     throw new TestronautAngularNotSetUpError();
   }
 }
 
-function subscribeToOutput<CMP, PROP extends keyof OutputTypes<CMP>>(
-  componentInstance: CMP,
-  outputName: PROP,
-  callback: (value: OutputTypes<CMP>[PROP]) => void
-) {
-  (componentInstance[outputName] as OutputRef<CMP[PROP]>)?.subscribe(
-    callback as (value: CMP[PROP]) => void
-  );
-}
 let isSetUp = false;
+
+export interface BrowserMountOpts<CMP> {
+  inputs?: Inputs<CMP>;
+}
+
+export type Inputs<CMP> = Partial<{
+  [PROP in keyof CMP as CMP[PROP] extends InputSignal<unknown>
+    ? PROP
+    : never]: CMP[PROP] extends InputSignal<infer VALUE> ? VALUE : never;
+}>;

@@ -1,9 +1,10 @@
-import { test, expect } from '@testronaut/angular';
-import { ClickMeWithSub } from './components/2-click-me-with-sub-components';
-import { TestBed } from '@angular/core/testing';
 import { Component, Directive } from '@angular/core';
-import { ShallowMessageComponent } from './test-helpers/shallow-message.component';
+import { TestBed } from '@angular/core/testing';
+import { expect, test } from '@testronaut/angular';
+import { mount } from 'packages/angular/browser';
+import { ClickMeWithSub } from './components/2-click-me-with-sub-components';
 import { ShallowClickDirective } from './test-helpers/shallow-click.directive';
+import { ShallowMessageComponent } from './test-helpers/shallow-message.component';
 
 /**
  * Demonstrates shallow overrides (aka. stubs) of components, directives, and pipes
@@ -21,8 +22,8 @@ import { ShallowClickDirective } from './test-helpers/shallow-click.directive';
  * A unique `inPageWithNamedFunction` identifier is provided because this file performs multiple browser actions
  * (e.g. `mount` and `inPageWithNamedFunction`).
  */
-test('no test doubles', async ({ mount, page }) => {
-  await mount('mount1', ClickMeWithSub);
+test('no test doubles', async ({ inPageWithNamedFunction, page }) => {
+  await inPageWithNamedFunction('mount1', () => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toHaveClass('unclicked');
@@ -34,7 +35,10 @@ test('no test doubles', async ({ mount, page }) => {
   await expect(buttonLocator).toBeDisabled();
 });
 
-test('embedded shallow components', async ({ mount, page, inPageWithNamedFunction }) => {
+test('embedded shallow components', async ({
+  inPageWithNamedFunction,
+  page,
+}) => {
   await inPageWithNamedFunction('override with embedded shallows', () => {
     @Component({
       selector: 'app-message',
@@ -57,7 +61,7 @@ test('embedded shallow components', async ({ mount, page, inPageWithNamedFunctio
     });
   });
 
-  await mount('mount2', ClickMeWithSub);
+  await inPageWithNamedFunction('mount2', () => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();
@@ -68,9 +72,8 @@ test('embedded shallow components', async ({ mount, page, inPageWithNamedFunctio
 });
 
 test('externalized shallow components', async ({
-  mount,
-  page,
   inPageWithNamedFunction,
+  page,
 }) => {
   await inPageWithNamedFunction('override with externalized shallows', () => {
     TestBed.overrideComponent(ClickMeWithSub, {
@@ -80,7 +83,7 @@ test('externalized shallow components', async ({
     });
   });
 
-  await mount('mount3', ClickMeWithSub);
+  await inPageWithNamedFunction('mount3', () => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();
