@@ -1,10 +1,9 @@
 import { workspaceRoot } from '@nx/devkit';
-import { spawn } from 'node:child_process';
 import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { $, cd } from 'zx';
 
 test('ng add @testronaut/angular (standalone)', async () => {
@@ -79,15 +78,18 @@ async function setUp() {
   /* Set this to true for debugging.*/
   $.verbose = true;
 
-  const verdaccioPort = 4873;
-  const registryUrl = `http://localhost:${verdaccioPort}`;
+  const registryHost = '127.0.0.1:4873';
+  const registryUrl = `http://${registryHost}`;
 
   /* Clean up Verdaccio local registry before starting Verdaccio
    * to avoid pollution from previously published packages. */
   cd(workspaceRoot);
   await $`rm -rf tmp/local-registry`;
 
-  _startVerdaccio(verdaccioPort);
+  await _startVerdaccio({
+    verdaccioUrl: registryUrl,
+    verdaccioHost: registryHost,
+  });
 
   $.env = {
     ...process.env,
@@ -111,23 +113,31 @@ async function setUp() {
   };
 }
 
-function _startVerdaccio(verdaccioPort: number) {
+async function _startVerdaccio({
+  verdaccioUrl,
+  verdaccioHost,
+}: {
+  verdaccioUrl: string;
+  verdaccioHost: string;
+}) {
   /* Start verdaccio server.
    * We are using the CLI instead of `runServer` because for some reason,
    * we didn't manage to silence the Verdaccio logs even when setting the log level to `silent`. */
-  const verdaccioProcess = spawn(
-    'pnpm',
-    [
-      'verdaccio',
-      '--config',
-      './.verdaccio/config.yml',
-      '--listen',
-      verdaccioPort.toString(),
-    ],
-    { stdio: 'pipe', cwd: workspaceRoot }
-  );
+  cd(workspaceRoot);
+  const verdaccioProcess = $`pnpm verdaccio --config ./.verdaccio/config.yml --listen ${verdaccioHost}`;
+
   onTestFinished(async () => {
     verdaccioProcess.kill();
+
+    /* Wait for verdaccio to be killed. */
+    await vi.waitFor(async () => {
+      try {
+        await fetch(verdaccioUrl);
+        return false;
+      } catch {
+        return true;
+      }
+    });
   });
 }
 
