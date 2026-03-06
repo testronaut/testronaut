@@ -38,7 +38,6 @@ export function _internal_withTestronaut({
   configPath,
   extractionDir,
   testServer,
-  transforms,
   fileSystem,
 }: _internal_WithTestronautParams): PlaywrightTestronautConfig {
   const projectRoot = dirname(configPath);
@@ -80,7 +79,6 @@ export function _internal_withTestronaut({
         extractionDir,
         projectRoot,
         testServer,
-        transforms,
       },
     },
     webServer: {

@@ -151,7 +151,6 @@ ${this.#generateExtractedFunctionsFile({
     fileAnalysis: FileAnalysis;
   }) {
     let importIdentifiers = [
-      ...fileAnalysis.importedIdentifiers,
       ...fileAnalysis.extractedFunctions
         .map((extractedFunction) => extractedFunction.importedIdentifiers)
         .flat(),
