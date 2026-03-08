@@ -1,4 +1,5 @@
 import { workspaceRoot } from '@nx/devkit';
+import { spawn } from 'node:child_process';
 import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -86,10 +87,7 @@ async function setUp() {
   cd(workspaceRoot);
   await $`rm -rf tmp/local-registry`;
 
-  await _startVerdaccio({
-    verdaccioUrl: registryUrl,
-    verdaccioHost: registryHost,
-  });
+  await _startVerdaccio({ registryUrl, registryHost });
 
   $.env = {
     ...process.env,
@@ -114,31 +112,44 @@ async function setUp() {
 }
 
 async function _startVerdaccio({
-  verdaccioUrl,
-  verdaccioHost,
+  registryUrl,
+  registryHost,
 }: {
-  verdaccioUrl: string;
-  verdaccioHost: string;
+  registryUrl: string;
+  registryHost: string;
 }) {
   /* Start verdaccio server.
    * We are using the CLI instead of `runServer` because for some reason,
    * we didn't manage to silence the Verdaccio logs even when setting the log level to `silent`. */
-  cd(workspaceRoot);
-  const verdaccioProcess = $`pnpm verdaccio --config ./.verdaccio/config.yml --listen ${verdaccioHost}`;
+  const verdaccioProcess = spawn(
+    'pnpm',
+    [
+      'verdaccio',
+      '--config',
+      '.verdaccio/config.yml',
+      '--listen',
+      registryHost,
+    ],
+    { stdio: 'inherit', cwd: workspaceRoot, shell: true }
+  );
+
+  await vi.waitFor(isVerdaccioUp);
 
   onTestFinished(async () => {
     verdaccioProcess.kill();
 
     /* Wait for verdaccio to be killed. */
-    await vi.waitFor(async () => {
-      try {
-        await fetch(verdaccioUrl);
-        return false;
-      } catch {
-        return true;
-      }
-    });
+    await vi.waitFor(async () => !(await isVerdaccioUp()));
   });
+
+  async function isVerdaccioUp() {
+    try {
+      await fetch(registryUrl);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 async function _publishPackages(registryUrl: string) {
