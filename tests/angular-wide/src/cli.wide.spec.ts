@@ -4,7 +4,7 @@ import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { expect, onTestFinished, test } from 'vitest';
+import { expect, onTestFinished, test, vi } from 'vitest';
 import { $, cd } from 'zx';
 
 test('ng add @testronaut/angular (standalone)', async () => {
@@ -79,15 +79,15 @@ async function setUp() {
   /* Set this to true for debugging.*/
   $.verbose = true;
 
-  const verdaccioPort = 4873;
-  const registryUrl = `http://localhost:${verdaccioPort}`;
+  const registryHost = '127.0.0.1:4873';
+  const registryUrl = `http://${registryHost}`;
 
   /* Clean up Verdaccio local registry before starting Verdaccio
    * to avoid pollution from previously published packages. */
   cd(workspaceRoot);
   await $`rm -rf tmp/local-registry`;
 
-  _startVerdaccio(verdaccioPort);
+  await _startVerdaccio({ registryUrl, registryHost });
 
   $.env = {
     ...process.env,
@@ -111,7 +111,13 @@ async function setUp() {
   };
 }
 
-function _startVerdaccio(verdaccioPort: number) {
+async function _startVerdaccio({
+  registryUrl,
+  registryHost,
+}: {
+  registryUrl: string;
+  registryHost: string;
+}) {
   /* Start verdaccio server.
    * We are using the CLI instead of `runServer` because for some reason,
    * we didn't manage to silence the Verdaccio logs even when setting the log level to `silent`. */
@@ -120,15 +126,30 @@ function _startVerdaccio(verdaccioPort: number) {
     [
       'verdaccio',
       '--config',
-      './.verdaccio/config.yml',
+      '.verdaccio/config.yml',
       '--listen',
-      verdaccioPort.toString(),
+      registryHost,
     ],
-    { stdio: 'pipe', cwd: workspaceRoot }
+    { stdio: 'inherit', cwd: workspaceRoot, shell: true }
   );
+
+  await vi.waitFor(isVerdaccioUp);
+
   onTestFinished(async () => {
     verdaccioProcess.kill();
+
+    /* Wait for verdaccio to be killed. */
+    await vi.waitFor(async () => !(await isVerdaccioUp()));
   });
+
+  async function isVerdaccioUp() {
+    try {
+      await fetch(registryUrl);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 async function _publishPackages(registryUrl: string) {
