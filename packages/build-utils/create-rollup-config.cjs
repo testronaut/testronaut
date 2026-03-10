@@ -5,6 +5,13 @@ const { withNx } = require('@nx/rollup/with-nx');
  */
 exports.createRollupConfig = ({ main, input = {}, assets = [] }) => {
   const base = withNx({
+    /* This is the executor's default behavior,
+     * and also the most straightforward way as
+     * it does not create a temporary tsconfig
+     * with paths to dist etc...
+     * This also fixes build on windows
+     * Cf. https://github.com/nrwl/nx/issues/33073.  */
+    buildLibsFromSource: true,
     generatePackageJson: false,
     outputPath: './dist',
     tsConfig: './tsconfig.lib.json',

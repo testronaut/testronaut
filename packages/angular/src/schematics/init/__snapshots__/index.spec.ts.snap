@@ -15,7 +15,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'npx ng serve maps --configuration testronaut --port {port} --live-reload false',
@@ -50,7 +50,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'npx ng serve test --configuration testronaut --port {port} --live-reload false',
@@ -85,7 +85,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'pnpm exec ng serve test --configuration testronaut --port {port} --live-reload false',
@@ -120,7 +120,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'yarn ng serve test --configuration testronaut --port {port} --live-reload false',
@@ -155,7 +155,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'npx ng serve maps --configuration testronaut --port {port} --live-reload false',
@@ -190,7 +190,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'npx ng serve test --configuration testronaut --port {port} --live-reload false',
@@ -225,7 +225,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'pnpm exec ng serve test --configuration testronaut --port {port} --live-reload false',
@@ -260,7 +260,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'yarn ng serve test --configuration testronaut --port {port} --live-reload false',
@@ -295,7 +295,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'npx nx serve maps --configuration testronaut --port {port} --live-reload false',
@@ -330,7 +330,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'npx nx serve test --configuration testronaut --port {port} --live-reload false',
@@ -365,7 +365,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'pnpm exec nx serve test --configuration testronaut --port {port} --live-reload false',
@@ -400,7 +400,7 @@ import { withTestronautAngular } from '@testronaut/angular';
  */
 const config = defineConfig(
   withTestronautAngular({
-    configPath: new URL(import.meta.url).pathname,
+    configPath: import.meta.filename,
     testServer: {
       command:
         'yarn nx serve test --configuration testronaut --port {port} --live-reload false',
