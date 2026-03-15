@@ -38,8 +38,8 @@
     <h2>👨‍🏫 Rainer Hahnekamp</h2>
     <strong>Google Developer Expert · NgRx Team · Angular Trainer</strong>
     <p>
-      Rainer Hahnekamp is a <strong>Google Developer Expert (GDE)</strong> and a trusted collaborator on the <strong>NgRx team</strong>.<br />
-      He is a <strong>trainer and consultant</strong> in the <a href="https://angulararchitects.io">Angular Architects</a> expert network, where he specializes in <strong>state management</strong>, <strong>testing</strong>, and <strong>architecture</strong> for Angular applications.<br />
+      Rainer Hahnekamp is a <strong>Google Developer Expert (GDE)</strong> and a core member of the <strong>NgRx team</strong>.<br />
+      He is a consultant for Angular and specializes in NgRx, architecture and testing.<br />
       He also runs <strong>ng-news</strong>, a weekly Angular newsletter and YouTube update covering the latest developments in the Angular ecosystem.
     </p>
   </div>
