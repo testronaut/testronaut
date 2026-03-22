@@ -21,9 +21,9 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/playwright.svg').default,
     description: (
       <>
-        Testronaut runs your components in a real browser — powered by
-        <strong>Playwright</strong> — using your framework's actual build
-        process. No guesswork. Just real UI.
+        Testronaut runs your components in a real browser — powered
+        by <strong>Playwright</strong> — using your framework's actual 
+        build process. No guesswork. Just real UI.
       </>
     ),
   },
