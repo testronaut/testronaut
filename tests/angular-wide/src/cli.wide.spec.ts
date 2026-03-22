@@ -1,21 +1,38 @@
 import { workspaceRoot } from '@nx/devkit';
-import { spawn } from 'node:child_process';
-import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
+import { Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { expect, onTestFinished, test } from 'vitest';
+import { parseConfigFile, runServer } from 'verdaccio';
+import { afterAll, expect, test } from 'vitest';
 import { $, cd } from 'zx';
 
 test('ng add @testronaut/angular (standalone)', async () => {
-  const { pnpmAndPlaywrightInstall } = await setUp();
+  const { newTestronautVersion, pnpmAndPlaywrightInstall, prepareWorkspace } =
+    await setUp();
 
-  await $`pnpm create @angular@latest my-app --defaults`;
+  await prepareWorkspace(
+    (workspaceName) =>
+      $`pnpm create @angular@latest ${workspaceName} --defaults`
+  );
 
-  cd('./my-app');
+  /* For some reason, "ng add" fails to install the package from local registry on CI,
+   * even when using `--registry` flag. It keeps using the npm registry instead.
+   * Therefore we install the package manually first. */
+  await $`pnpm add @testronaut/angular@${newTestronautVersion}`;
 
-  await $`pnpm ng add @testronaut/angular --no-interactive --skip-confirmation --with-examples`;
-  /* No clue why we need this. Install should be done automatically. */
+  /* Use strict version to avoid any pnpm caching issues when using `latest`. */
+  await $`pnpm ng add @testronaut/angular@${newTestronautVersion} \
+    --no-interactive \
+    --skip-confirmation \
+    --with-examples`;
   await pnpmAndPlaywrightInstall();
 
   const { exitCode, stdout } =
@@ -25,18 +42,33 @@ test('ng add @testronaut/angular (standalone)', async () => {
 });
 
 test('ng add @testronaut/angular (CLI Workspace)', async () => {
-  const { pnpmAndPlaywrightInstall } = await setUp();
+  const {
+    newTestronautVersion,
+    pnpmAndPlaywrightInstall,
+    pnpmInstall,
+    prepareWorkspace,
+  } = await setUp();
 
-  await $`pnpm create @angular@latest my-workspace --create-application=false --defaults`;
-
-  cd('./my-workspace');
+  await prepareWorkspace(
+    (workspaceName) =>
+      $`pnpm create @angular@latest ${workspaceName} --create-application=false --defaults`
+  );
 
   await $`pnpm ng generate application my-app --defaults --skip-install`;
   /* Install manually, otherwise the app generator fails because of pnpm frozen lockfile behavior on CI. */
-  await pnpmAndPlaywrightInstall();
+  await pnpmInstall();
 
-  await $`pnpm ng add @testronaut/angular --no-interactive --skip-confirmation --project my-app --with-examples`;
-  /* No clue why we need this. Install should be done automatically. */
+  /* For some reason, "ng add" fails to install the package from local registry on CI,
+   * even when using `--registry` flag. It keeps using the npm registry instead.
+   * Therefore we install the package manually first. */
+  await $`pnpm add @testronaut/angular@${newTestronautVersion}`;
+
+  /* Use strict version to avoid any pnpm caching issues when using `latest`. */
+  await $`pnpm ng add @testronaut/angular@${newTestronautVersion} \
+    --no-interactive \
+    --skip-confirmation \
+    --project my-app \
+    --with-examples`;
   await pnpmAndPlaywrightInstall();
 
   const { exitCode, stdout } =
@@ -46,26 +78,36 @@ test('ng add @testronaut/angular (CLI Workspace)', async () => {
 });
 
 test('nx add @testronaut/angular', async () => {
-  const { tmpDir, pnpmAndPlaywrightInstall } = await setUp();
+  const { newTestronautVersion, pnpmAndPlaywrightInstall, prepareWorkspace } =
+    await setUp();
 
-  await $`pnpm create nx-workspace@latest my-nx-workspace --preset angular-monorepo --app-name my-app --e2e-test-runner none --unit-test-runner none --no-ssr --bundler esbuild --style css --ai-agents cursor --ci skip`;
+  const { workspacePath } = await prepareWorkspace(async (workspaceName) => {
+    await $`pnpm create nx-workspace@latest ${workspaceName} \
+      --preset angular-monorepo \
+      --ai-agents cursor \
+      --app-name my-app \
+      --bundler esbuild \
+      --ci skip \
+      --e2e-test-runner none \
+      --no-ssr \
+      --style css \
+      --unit-test-runner none`;
+  });
 
-  cd('./my-nx-workspace');
-
-  /* By default, we do not install any examples, and we can't forward the --with-examples flag to nx add. */
-  await $`pnpm nx add @testronaut/angular`;
-  /* No clue why we need this. Install should be done automatically. */
+  /* Use strict version to avoid any pnpm caching issues when using `latest`.
+   * By default, we do not install any examples, and we can't forward the --with-examples flag to nx add. */
+  await $`pnpm nx add @testronaut/angular@${newTestronautVersion}`;
   await pnpmAndPlaywrightInstall();
 
   /* Let's just copy some examples manually. */
-  mkdirSync(join(tmpDir, 'my-nx-workspace/apps/my-app/src/components'));
+  mkdirSync(join(workspacePath, 'apps/my-app/src/components'));
   for (const fileName of ['1-basic.pw.ts', 'components/1-click-me.ts']) {
     copyFileSync(
       join(
         workspaceRoot,
         `packages/angular/src/schematics/init/files/source-root/testronaut-examples/${fileName}`
       ),
-      join(tmpDir, 'my-nx-workspace/apps/my-app/src/', fileName)
+      join(workspacePath, 'apps/my-app/src', fileName)
     );
   }
 
@@ -76,72 +118,125 @@ test('nx add @testronaut/angular', async () => {
 });
 
 async function setUp() {
+  /* Use a different port for each test because the port can stay stuck in TIME_WAIT state
+   * when we stop the Verdaccio server. */
+  const registryPort = 4872;
+  const registryUrl = `http://localhost:${registryPort}`;
+
   /* Set this to true for debugging.*/
-  $.verbose = true;
-
-  const verdaccioPort = 4873;
-  const registryUrl = `http://localhost:${verdaccioPort}`;
-
-  /* Clean up Verdaccio local registry before starting Verdaccio
-   * to avoid pollution from previously published packages. */
-  cd(workspaceRoot);
-  await $`rm -rf tmp/local-registry`;
-
-  _startVerdaccio(verdaccioPort);
+  $.verbose = false;
 
   $.env = {
-    ...process.env,
+    ...$.env,
     NPM_CONFIG_REGISTRY: registryUrl,
   };
 
-  /* Publish packages to verdaccio. */
-  await _publishPackages(registryUrl);
+  cd(workspaceRoot);
 
-  /* Create and dive into a temporary workspace directory. */
-  const tmpDir = await mkdtemp(join(tmpdir(), 'testronaut-angular-wide-'));
+  await _maybeStartVedaccioAndPublishPackages({ registryPort, registryUrl });
 
-  cd(tmpDir);
+  const pnpmInstall = () => $`pnpm install --no-frozen-lockfile`;
 
   return {
+    newTestronautVersion: _resolveNewTestronautVersion(),
     pnpmAndPlaywrightInstall: async () => {
-      await $`pnpm install --no-frozen-lockfile`;
+      await pnpmInstall();
       await $`pnpm exec playwright install --with-deps --only-shell`;
     },
-    tmpDir,
+    pnpmInstall,
+    prepareWorkspace: async (
+      createWorkspaceFn: (workspaceName: string) => Promise<unknown>
+    ) => {
+      /* Create and dive into a temporary workspace directory. */
+      const tmpDir = await mkdtemp(join(tmpdir(), 'testronaut-angular-wide-'));
+
+      cd(tmpDir);
+
+      const workspaceName = 'my-workspace';
+      const workspacePath = join(tmpDir, workspaceName);
+
+      await createWorkspaceFn(workspaceName);
+
+      cd(workspaceName);
+
+      return { workspacePath };
+    },
   };
 }
 
-function _startVerdaccio(verdaccioPort: number) {
-  /* Start verdaccio server.
-   * We are using the CLI instead of `runServer` because for some reason,
-   * we didn't manage to silence the Verdaccio logs even when setting the log level to `silent`. */
-  const verdaccioProcess = spawn(
-    'pnpm',
-    [
-      'verdaccio',
-      '--config',
-      './.verdaccio/config.yml',
-      '--listen',
-      verdaccioPort.toString(),
-    ],
-    { stdio: 'pipe', cwd: workspaceRoot }
-  );
-  onTestFinished(async () => {
-    verdaccioProcess.kill();
-  });
+let verdaccio: Server;
+afterAll(() => verdaccio?.close());
+
+async function _maybeStartVedaccioAndPublishPackages({
+  registryPort,
+  registryUrl,
+}: {
+  registryPort: number;
+  registryUrl: string;
+}) {
+  /* Server is already started, so we can skip starting it again. */
+  if (verdaccio) {
+    return;
+  }
+
+  /* Clean up Verdaccio local registry before starting Verdaccio
+   * to avoid pollution from previously published packages. */
+  await $`rm -rf ${join(workspaceRoot, 'tmp/local-registry')}`;
+
+  const server = await _startVerdaccio({ registryPort });
+
+  /* Publish packages to verdaccio. */
+  await _publishPackages({ registryUrl });
+
+  verdaccio = server;
 }
 
-async function _publishPackages(registryUrl: string) {
-  await $`pnpm nx release version --git-commit=false patch`;
+async function _startVerdaccio({
+  registryPort,
+}: {
+  registryPort: number;
+}): Promise<Server> {
+  const configPath = join(workspaceRoot, '.verdaccio/config.yml');
+  const config = parseConfigFile(configPath);
+  /* Verdaccio API expects config.logs for logger setup, but YAML uses config.log.
+   * See: verdaccio/build/api/index.js passes configHash.logs to logger.setup() */
+  const configWithLogs = {
+    ...config,
+    self_path: configPath,
+    logs: config.log,
+  };
 
-  /* Set up fake auth token for verdaccio in workspace root then publish packages. */
+  const verdaccio: Server = await runServer(configWithLogs);
+
+  verdaccio.listen(registryPort);
+
+  return verdaccio;
+}
+
+async function _publishPackages({ registryUrl }: { registryUrl: string }) {
   const npmrcPath = join(workspaceRoot, '.npmrc');
-  writeFileSync(
-    npmrcPath,
-    `${registryUrl.replace('http:', '')}/:_authToken="fake-token"\n`
+
+  try {
+    await $`pnpm nx release version --git-commit=false patch`;
+
+    writeFileSync(
+      npmrcPath,
+      `${registryUrl.replace('http:', '')}/:_authToken=fake-token`
+    );
+
+    await $`pnpm nx release publish`;
+  } finally {
+    /* Revert CHANGELOG.md to reduce risk of committing it. */
+    await $`git checkout HEAD CHANGELOG.md packages/*/package.json`;
+
+    unlinkSync(npmrcPath);
+  }
+}
+
+function _resolveNewTestronautVersion() {
+  const corePkgJson = JSON.parse(
+    readFileSync(join(workspaceRoot, 'packages/core/package.json'), 'utf8')
   );
-  await $`pnpm nx release publish`;
-  unlinkSync(npmrcPath);
-  /* Revert CHANGELOG.md to reduce risk of committing it. */
-  await $`git checkout HEAD CHANGELOG.md packages/*/package.json`;
+  const [major, minor, patch] = corePkgJson.version.split('.').map(Number);
+  return `${major}.${minor}.${patch + 1}`;
 }

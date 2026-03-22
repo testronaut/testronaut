@@ -43,7 +43,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
-      - run: pnpm exec nx affected -t build lint test testronaut typecheck --exclude=tag:type:demo
+      - run: pnpm exec nx affected -t build lint test typecheck --exclude=tag:type:demo
       - run: pnpm nx-cloud fix-ci
         if: always()
 
@@ -77,7 +77,10 @@ jobs:
   test-wide:
     name: Test Wide
     needs: check-playwright-version-sync
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -96,6 +99,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps
       - uses: nrwl/nx-set-shas@v4
-      - run: pnpm exec nx affected -t e2e test-wide --exclude=tag:type:demo
+      - run: pnpm exec nx affected -t e2e testronaut test-wide --exclude=tag:type:demo
       - run: pnpm nx-cloud fix-ci
-        if: always()
+        # Self-healing does not support windows yet.
+        if: always() && matrix.os != 'windows-latest'

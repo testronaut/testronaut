@@ -46,7 +46,7 @@ export default mergeConfig(
             include: wideTestFiles,
             /* These wide tests are slow as we generate apps, install packages, etc...
              * They are even slower on CI.  */
-            testTimeout: isCI ? 240_000 : 120_000,
+            testTimeout: isCI ? 300_000 : 120_000,
           },
         },
       ],
