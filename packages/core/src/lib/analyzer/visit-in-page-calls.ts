@@ -4,6 +4,7 @@ import {
   getInPageIdentifier,
   getInPageWithNamedFunctionIdentifier,
 } from '../core/in-page-identifier';
+import { isLaxHash } from '../lax-hashing/compute-hashes';
 import { AnalysisContext } from './core';
 import { getDeclaration } from './utils';
 
@@ -140,6 +141,12 @@ function parseInPageArgs(
     if (!ts.isStringLiteralLike(nameArg)) {
       throw new InvalidInPageCallError(
         `\`${identifier}\` name must be a string literal`
+      );
+    }
+
+    if (isLaxHash(nameArg.text)) {
+      throw new InvalidInPageCallError(
+        `\`${identifier}\` name must not start with \`__lax__\` (reserved for anonymous \`inPage\` callbacks)`
       );
     }
 
