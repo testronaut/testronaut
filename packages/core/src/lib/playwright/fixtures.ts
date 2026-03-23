@@ -156,7 +156,7 @@ More information on https://testronaut.dev`);
     }),
     page
   );
-  const { hash } = await runner.extract(filePath);
+  const { fileHash } = await runner.extract(filePath);
 
   const inPageWithNamedFunctionImpl: InPageWithNamedFunction = async (
     ...args: unknown[]
@@ -180,7 +180,7 @@ More information on https://testronaut.dev`);
       functionName = laxHash;
     }
 
-    return await runner.inPage(hash, functionName, data);
+    return await runner.inPage(fileHash, functionName, data);
   };
 
   return inPageWithNamedFunctionImpl;

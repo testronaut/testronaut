@@ -6,7 +6,7 @@ import {
   ExtractionWriter,
   type ExtractionWriterConfig,
 } from '../extraction-writer/extraction-writer';
-import { createFileInfo, type FileInfo } from './file-info';
+import { createFileInfo, toFileHash, type FileInfo } from './file-info';
 
 export class ExtractionPipeline {
   readonly #extractionWriter: ExtractionWriter;
@@ -25,14 +25,17 @@ export class ExtractionPipeline {
       })
     );
 
-    const fileInfo = createFileInfo({ hash: this.#computeHash(content), path });
+    const fileInfo = createFileInfo({
+      fileHash: toFileHash(this.#computeFileHash(content)),
+      path,
+    });
 
     await this.#extractionWriter.write(fileAnalysis);
 
     return fileInfo;
   }
 
-  #computeHash(content: string) {
+  #computeFileHash(content: string) {
     return h32(content, 0).toString(16).padStart(8, '0');
   }
 }
