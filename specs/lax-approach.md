@@ -1,7 +1,5 @@
 # Lax Hashing — Matching Extracted Functions Across Transpilers
 
-**Status:** Draft. Last updated: 2025-01-31. Changelog: [History](#history).
-
 ## Contents
 
 - [Overview and Context](#overview-and-context)
@@ -64,7 +62,7 @@ The following characters will be removed: `(`, `)`, `,`, `;`.
 **Example:**
 
 1. `(message: string) => console.log(message);` gets transpiled into `(message) => console.log(message);`
-2. The tokenizer produces the full tokens as an array: `['(', 'message', ')', '=>' 'console', '.', 'log', '(', 'message', ')', ';']`.
+2. The tokenizer produces the full tokens as an array: `['(', 'message', ')', '=>', 'console', '.', 'log', '(', 'message', ')', ';']`.
 3. The lax hashing would remove character like parenthesis, commas and semi-colons. So we end up with a lax token array of `['message', '=>', 'console', '.', 'log', 'message']`.
 4. Via the xxhash that laxed string array becomes the actual Lax Hash
 
@@ -102,7 +100,7 @@ For the sake of completeness, here are the full tokens for both functions:
 
 ### Key Format (Named vs Anonymous)
 
-The `extractedFunctionsRecord` stores both named and anonymous functions. Lax hashes have a prefix of Laplace. Named functions use the user-provided name as-is. To keep the key spaces disjoint, `inPageWithNamedFunction` rejects names that start with the Laplace prefix (at extract time and at runtime).
+The `extractedFunctionsRecord` stores both named and anonymous functions. Lax hashes have a prefix of `__lax__`. Named functions use the user-provided name as-is. To keep the key spaces disjoint, `inPageWithNamedFunction` rejects names that start with the `__lax__` prefix (at extract time and at runtime).
 
 ### String Quotation Handling
 
@@ -191,11 +189,11 @@ Very soon, it turned out that this is not a very user friendly approach and coul
 ## Glossary
 
 - **<a id="transpiler">Transpiler</a>** — A subtype of a compiler which compiles from one language to another. In this case from TypeScript to JavaScript.
-- **LAX hash** — Hash computed from the lax token stream (full tokens after blacklisting `(`, `)`, `,`, `;`). Lax hashes have a prefix of Laplace. Used as the stable key for an anonymous function at extract time and at runtime.
-- **LAX key** — Laplace prefix + LAX hash; the value used as the key in `extractedFunctionsRecord`. It is required to ensure that users cannot use names which are reserved for anonymous functions.
+- **LAX hash** — Hash computed from the lax token stream (full tokens after blacklisting `(`, `)`, `,`, `;`). Lax hashes have a prefix of `__lax__`. Used as the stable key for an anonymous function at extract time and at runtime.
+- **LAX key** — `__lax__` prefix + LAX hash; the value used as the key in `extractedFunctionsRecord`. It is required to ensure that users cannot use names which are reserved for anonymous functions.
 - **Full hash** — Hash of the full token stream (no blacklist). Used only for collision detection; same LAX hash + different full hash ⇒ error.
-- **Named function** — `inPage` callback with a user-supplied name; matched in the browser by that name, not by LAX hash. Names must not start with the Laplace prefix.
-- **Anonymous function** — `inPage` callback without a name; matched by LAX key (Laplace prefix + hash).
+- **Named function** — `inPage` callback with a user-supplied name; matched in the browser by that name, not by LAX hash. Names must not start with the `__lax__` prefix.
+- **Anonymous function** — `inPage` callback without a name; matched by LAX key (`__lax__` prefix + hash).
 
 ## History
 

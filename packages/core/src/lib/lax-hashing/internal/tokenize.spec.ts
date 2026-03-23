@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeStringLiteral, tokenize } from './tokenize';
+import { tokenize } from './tokenize';
 
 describe('tokenize', () => {
   it('produces full tokens', () => {
@@ -36,41 +36,54 @@ describe('tokenize', () => {
     const { laxTokens: doubleTokens } = tokenize(double);
     expect(singleTokens).toEqual(doubleTokens);
   });
-});
 
-describe('normalizeStringLiteral', () => {
+  it('matches string tokens when quote and escape styles differ for the same value', () => {
+    const escapedDouble = 'console.log("say \\"hi\\"")';
+    const singleWithDouble = "console.log('say \"hi\"')";
+    const { laxTokens: a } = tokenize(escapedDouble);
+    const { laxTokens: b } = tokenize(singleWithDouble);
+    expect(a).toEqual(b);
+  });
+
   it.each([
-    ['single-quoted', "'hello'", "'hello'"],
-    ['double-quoted', '"hello"', "'hello'"],
-    ['backtick', '`hello`', "'hello'"],
-  ])('normalizes %s to single-quoted', (_style, input, expected) => {
-    expect(normalizeStringLiteral(input)).toBe(expected);
+    ['single-quoted', "'hello'"],
+    ['double-quoted', '"hello"'],
+    ['backtick', '`hello`'],
+  ])('normalizes %s literals to the same canonical token', (_style, code) => {
+    expect(tokenize(code).fullTokens).toEqual(["'hello'"]);
   });
 
   it.each([
     ['double quotes', '"it\'s"'],
     ['backticks', "`it's`"],
-  ])('escapes single quotes when converting from %s', (_style, input) => {
-    expect(normalizeStringLiteral(input)).toBe("'it\\'s'");
+  ])('escapes single quotes in string content from %s', (_style, code) => {
+    expect(tokenize(code).fullTokens).toEqual(["'it\\'s'"]);
   });
 
-  it('doubles backslashes when wrapping in single quotes', () => {
-    expect(normalizeStringLiteral('"say \\"hi\\""')).toBe(
-      '\'say \\\\"hi\\\\"\''
-    );
+  it('maps escape-equivalent spellings to the same string token', () => {
+    const escapedDouble = tokenize('"say \\"hi\\""').fullTokens;
+    const singleWithDouble = tokenize(`'say "hi"'`).fullTokens;
+    expect(escapedDouble).toEqual(singleWithDouble);
+    expect(escapedDouble).toEqual(["'say \"hi\"'"]);
   });
 
-  it('preserves backticks in content when converting from backticks', () => {
-    expect(normalizeStringLiteral('`a`b`')).toBe("'a`b'");
+  it('preserves backticks in template literal content', () => {
+    // Valid one-token template; inner backticks escaped in source. TS getTokenValue
+    // is the span including the closing backtick (here "`a`b`").
+    const code = '`' + '\\`a\\`b\\`' + '`';
+    expect(tokenize(code).fullTokens).toEqual(["'" + '`a`b`' + "'"]);
   });
 
-  it('returns string shorter than 2 characters unchanged', () => {
-    expect(normalizeStringLiteral('')).toBe('');
-    expect(normalizeStringLiteral('a')).toBe('a');
+  it('tokenizes empty string literal', () => {
+    expect(tokenize("''").fullTokens).toEqual(["''"]);
   });
 
-  it('returns non-string-literal text unchanged', () => {
-    expect(normalizeStringLiteral('identifier')).toBe('identifier');
-    expect(normalizeStringLiteral('=>')).toBe('=>');
+  it('tokenizes single-character string literal', () => {
+    expect(tokenize("'a'").fullTokens).toEqual(["'a'"]);
+  });
+
+  it('leaves non-string tokens as scanner text', () => {
+    expect(tokenize('identifier').fullTokens).toEqual(['identifier']);
+    expect(tokenize('=>').fullTokens).toEqual(['=>']);
   });
 });
