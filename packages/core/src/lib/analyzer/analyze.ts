@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { h32 } from 'xxhashjs';
 import {
   createExtractedFunction,
   createFileAnalysis,
@@ -40,5 +40,5 @@ export function analyze({ fileData }: { fileData: FileData }): FileAnalysis {
 }
 
 function generateHash(content: string) {
-  return createHash('sha256').update(content).digest('base64').slice(0, 8);
+  return h32(content, 0).toString(16).padStart(8, '0');
 }
