@@ -10,7 +10,7 @@ test('...', async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(hash).toBe('MLZi2ARp');
+    expect(hash).toBe('b97e4f00');
   });
 
   it('extracts `inPage` sync arrow function', () => {
