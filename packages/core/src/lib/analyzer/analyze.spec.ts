@@ -262,9 +262,7 @@ inPageWithNamedFunction('duplicate name', () => console.log('Say hi!'));
 
 function analyzeFileContent(content: string): FileAnalysis {
   return analyze({
-    fileData: {
-      path: 'my-component.spec.ts',
-      content,
-    },
+    path: 'my-component.spec.ts',
+    content,
   });
 }

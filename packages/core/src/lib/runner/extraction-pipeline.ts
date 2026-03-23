@@ -18,12 +18,12 @@ export class ExtractionPipeline {
   async extract(path: string): Promise<FileInfo> {
     const content = await readFile(path, 'utf-8');
 
-    const fileAnalysis = analyze({
-      fileData: createFileData({
+    const fileAnalysis = analyze(
+      createFileData({
         path,
         content,
-      }),
-    });
+      })
+    );
 
     const fileInfo = createFileInfo({ hash: this.#computeHash(content), path });
 

@@ -13,7 +13,7 @@ import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitInPageCalls } from './visit-in-page-calls';
 import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
 
-export function analyze({ fileData }: { fileData: FileData }): FileAnalysis {
+export function analyze(fileData: FileData): FileAnalysis {
   const hash = generateHash(fileData.content);
 
   const ctx = new AnalysisContext(fileData);
