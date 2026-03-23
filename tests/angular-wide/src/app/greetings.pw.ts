@@ -1,7 +1,7 @@
 import { expect, test } from '@testronaut/angular';
 import { mount } from '@testronaut/angular/browser';
 import { TestBed } from '@angular/core/testing';
-import { Greetings, provideGreeting } from './greetings.ng';
+import { Greetings, provideGreeting } from './greetings';
 
 test(`anonymous mount`, async ({ page, inPage }) => {
   await inPage(() => mount(Greetings));

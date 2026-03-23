@@ -8,7 +8,7 @@ Better code than words, here is a simple example of an Angular Testronaut test:
 import { test, expect } from '@testronaut/angular';
 import { mount } from '@testronaut/angular/browser';
 import { TestBed } from '@angular/core/testing';
-import { Basket } from './basket.ng';
+import { Basket } from './basket';
 
 test('should render clear basket button', async ({ page, inPage }) => {
   await inPage(() => mount(Basket));
