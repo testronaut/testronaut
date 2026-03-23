@@ -19,11 +19,11 @@ import { Countdown } from './components/4-countdown';
  */
 
 test('should speed up the countdown', async ({
-  inPageWithNamedFunction,
+  inPage,
   page,
 }) => {
   await page.clock.install();
-  await inPageWithNamedFunction('mount2', () => mount(Countdown));
+  await inPage(() => mount(Countdown));
   await expect(page.getByText('3')).toBeVisible();
   await page.clock.runFor(3000);
   await expect.configure({ timeout: 500 })(page.getByText('0')).toBeVisible();

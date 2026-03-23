@@ -9,10 +9,10 @@ test('should show the click me component', async ({ inPage, page }) => {
 });
 
 test('should change the click me label', async ({
-  inPageWithNamedFunction,
+  inPage,
   page,
 }) => {
-  await inPageWithNamedFunction('mount click me with inputs', () =>
+  await inPage(() =>
     mount(ClickMe, { inputs: { clickMeLabel: 'Press me' } })
   );
   await page.getByRole('button', { name: 'Press me' }).click();

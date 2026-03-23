@@ -5,13 +5,13 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { expect, test } from '@testronaut/angular';
 import { RoutingMessage } from './components/6-click-me-with-routing';
 
-test('routing', async ({ page, inPageWithNamedFunction }) => {
-  await inPageWithNamedFunction('mount', async () => {
+test('routing', async ({ page, inPage }) => {
+  await inPage(async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter(
           [{ path: 'lift-off/:message', component: RoutingMessage }],
-          withComponentInputBinding()
+          withComponentInputBinding(),
         ),
         provideLocationMocks(),
       ],
