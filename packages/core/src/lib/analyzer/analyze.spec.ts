@@ -50,6 +50,17 @@ test('...', async ({inPage}) => {
     ).toThrow(LaxHashCollisionError);
   });
 
+  it('checks for collision on fullhash but not source code (transpiler adds semicolons)', () => {
+    expect(() =>
+      analyzeFileContent(`
+test('...', async ({inPage}) => {
+  await inPage(() => (message) => console.log(message))
+  await inPage(() => (message) => console.log(message));
+});
+    `)
+    ).not.toThrow();
+  })
+
   it('does not throw if two anonymous functions have the same code', () => {
     expect(() =>
       analyzeFileContent(`
@@ -216,6 +227,14 @@ inPageWithNamedFunction('say bye', () => {
       analyzeFileContent(`
 const name = 'say hi';
 inPageWithNamedFunction(name, () => console.log('Say hi!'));
+      `)
+    ).toThrow(InvalidInPageCallError);
+  });
+
+  it('fails if `inPageWithNamedFunction` name uses reserved `__lax__` prefix', () => {
+    expect(() =>
+      analyzeFileContent(`
+inPageWithNamedFunction('__lax__pretendingToBeAnonymous', () => console.log('Hi'));
       `)
     ).toThrow(InvalidInPageCallError);
   });
