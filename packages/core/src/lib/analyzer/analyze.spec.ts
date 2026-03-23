@@ -1,9 +1,12 @@
 import { describe } from 'vitest';
 import { FileAnalysis } from '../core/file-analysis';
+
 import { LaxHashCollisionError } from '../core/lax-hash-collision-error';
 import { analyze } from './analyze';
 import { InvalidInPageCallError } from './visit-in-page-calls';
 import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
+
+const laxAnonymousName = expect.stringMatching(/^__lax__/);
 
 describe(analyze.name, () => {
   it('generates file hash', () => {
@@ -21,12 +24,13 @@ test('...', async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toHaveLength(1);
-    expect(extractedFunctions[0]).toMatchObject({
-      code: `() => console.log('Hello!')`,
-      importedIdentifiers: [],
-    });
-    expect(extractedFunctions[0].name).toMatch('__lax__c5374cf9');
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: laxAnonymousName,
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it('extracts multiple anonymous `inPage` calls in one file', () => {
@@ -78,11 +82,13 @@ test('...', async ({inPage}) => {
   await inPage(async () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toHaveLength(1);
-    expect(extractedFunctions[0]).toMatchObject({
-      code: `async () => console.log('Hello!')`,
-      importedIdentifiers: [],
-    });
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: laxAnonymousName,
+        code: `async () => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it('extracts `inPage` function call', () => {
@@ -91,11 +97,13 @@ test('...', async ({inPage}) => {
   await inPage(function sayHello() { console.log('Hello!'); });
 });
     `);
-    expect(extractedFunctions).toHaveLength(1);
-    expect(extractedFunctions[0]).toMatchObject({
-      code: `function sayHello() { console.log('Hello!'); }`,
-      importedIdentifiers: [],
-    });
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: laxAnonymousName,
+        code: `function sayHello() { console.log('Hello!'); }`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it('extracts `inPage` outside test: in beforeEach', () => {
@@ -104,11 +112,13 @@ test.beforeEach(async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toHaveLength(1);
-    expect(extractedFunctions[0]).toMatchObject({
-      code: `() => console.log('Hello!')`,
-      importedIdentifiers: [],
-    });
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: laxAnonymousName,
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it('extracts `inPage` outside test: in a function', () => {
@@ -117,11 +127,13 @@ function somewhereElse() {
   await inPage(() => console.log('Hello!'));
 }
     `);
-    expect(extractedFunctions).toHaveLength(1);
-    expect(extractedFunctions[0]).toMatchObject({
-      code: `() => console.log('Hello!')`,
-      importedIdentifiers: [],
-    });
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: laxAnonymousName,
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it('extracts named `inPageWithNamedFunction`', () => {
@@ -130,7 +142,7 @@ test('...', async ({inPageWithNamedFunction}) => {
   await inPageWithNamedFunction('say hello', () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toEqual([
+    expect(extractedFunctions).toStrictEqual([
       {
         name: 'say hello',
         code: `() => console.log('Hello!')`,
@@ -145,11 +157,13 @@ test('...', async ({inPage: run}) => {
   await run(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toHaveLength(1);
-    expect(extractedFunctions[0]).toMatchObject({
-      code: `() => console.log('Hello!')`,
-      importedIdentifiers: [],
-    });
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: laxAnonymousName,
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it('extracts imported identifiers used in `inPageWithNamedFunction`', () => {
@@ -168,18 +182,25 @@ inPageWithNamedFunction('say bye', () => {
   console.log(somethingFromAnotherFile);
 });
     `);
-    expect(extractedFunctions).toEqual([
-      expect.objectContaining({
+    expect(extractedFunctions).toStrictEqual([
+      {
         name: 'say hi',
+        code: `() => {
+  console.log(something);
+}`,
         importedIdentifiers: [
           {
             name: 'something',
             module: './something',
           },
         ],
-      }),
-      expect.objectContaining({
+      },
+      {
         name: 'say bye',
+        code: `() => {
+  console.log(something);
+  console.log(somethingFromAnotherFile);
+}`,
         importedIdentifiers: [
           {
             name: 'something',
@@ -190,7 +211,7 @@ inPageWithNamedFunction('say bye', () => {
             module: './another-file',
           },
         ],
-      }),
+      },
     ]);
   });
 
