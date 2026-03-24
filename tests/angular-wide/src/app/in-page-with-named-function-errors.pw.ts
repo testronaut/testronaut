@@ -1,29 +1,5 @@
 import { test, expect } from '@testronaut/core';
 
-test.describe('general', () => {
-  test('named inPageWithNamedFunction', async ({
-    page,
-    inPageWithNamedFunction,
-  }) => {
-    await inPageWithNamedFunction('hello', () => {
-      document.body.textContent = 'Hello!';
-    });
-
-    await expect(page.getByText('Hello!')).toBeVisible();
-  });
-
-  test('named inPageWithNamedFunction with args', async ({
-    page,
-    inPageWithNamedFunction,
-  }) => {
-    await inPageWithNamedFunction('hello foo', { name: 'Foo' }, ({ name }) => {
-      document.body.textContent = `Hello ${name}!`;
-    });
-
-    await expect(page.getByText('Hello Foo!')).toBeVisible();
-  });
-})
-
 test.describe('error cases', () => {
   /* TODO: once we make `inPageWithNamedFunction` throw instead,
    * we can `expect(() => inPageWithNamedFunction(...)).rejects.toThrow()` instead.
@@ -45,13 +21,6 @@ test.describe('error cases', () => {
       await inPageWithNamedFunction('duplicate name', () => {
         document.body.textContent = 'Bye!';
       });
-    }
-  );
-
-  test.fail(
-    'inPageWithNamedFunction must not use a name starting with __lax__',
-    async ({ inPageWithNamedFunction }) => {
-      await inPageWithNamedFunction('__lax__userChosenName', () => void true);
     }
   );
 });

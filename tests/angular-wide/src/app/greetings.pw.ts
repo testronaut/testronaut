@@ -26,6 +26,11 @@ test(`named mount with DI`, async ({ page, inPage }) => {
     TestBed.configureTestingModule({ providers: [provideGreeting('Servus')] })
   );
 
+  await inPage({ hello: 'hello' }, ({ hello }) => {
+    console.log(hello);
+    const a: string = hello;
+  })
+
   await inPage(() => mount(Greetings));
 
   await expect(page.getByRole('heading')).toHaveText('Servus Guest!');
