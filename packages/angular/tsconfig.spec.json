@@ -7,7 +7,8 @@
       "vite/client",
       "node",
       "vitest"
-    ]
+    ],
+    "isolatedModules": true
   },
   "include": [
     "package.json",

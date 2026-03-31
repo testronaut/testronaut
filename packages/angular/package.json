@@ -12,16 +12,16 @@
     "generators.json"
   ],
   "dependencies": {
-    "@nx/devkit": "21.5.3",
+    "@nx/devkit": "22.6.3",
     "@testronaut/core": "workspace:*",
     "@types/semver": "^7.5.0",
     "semver": "^7.6.0",
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
-    "@angular/core": "^20.0.0",
-    "@angular/compiler": "^20.0.0",
-    "@angular/platform-browser": "^20.0.0",
+    "@angular/core": "^21.0.0",
+    "@angular/compiler": "^21.0.0",
+    "@angular/platform-browser": "^21.0.0",
     "@playwright/test": ">=1.36.0 <=1.56.0"
   },
   "module": "./dist/index.mjs",

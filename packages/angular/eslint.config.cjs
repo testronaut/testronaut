@@ -3,7 +3,7 @@ const baseConfig = require('../../eslint.config.cjs');
 module.exports = [
   ...baseConfig,
   {
-    ignores: ['**/schematics/**/files/**', 'package.json'],
+    ignores: ['**/schematics/**/files/**', 'package.json', 'browser.d.ts'],
   },
   {
     files: ['**/*.json'],

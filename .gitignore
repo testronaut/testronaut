@@ -50,3 +50,6 @@ vitest.config.*.timestamp*
 
 # This file is generated dynamically by tests to configure fake authentication to local registry.
 .npmrc
+
+.claude/worktrees
+.claude/settings.local.json

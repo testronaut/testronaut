@@ -16,7 +16,7 @@ import { detectPackageManager } from '../util/detect-package-manager';
 import { createDevkit } from '../util/devkit';
 import { NxAdapter } from '../util/nx-adapter';
 import * as playwrightVersionJson from './playwright-version.json';
-import { type NgAddGeneratorSchema } from './schema';
+import { NgAddGeneratorSchema } from './schema';
 import { Public } from '../util/typing';
 import * as packageJson from '../../../package.json';
 

@@ -82,7 +82,6 @@
           "watchDepsName": "watch-deps"
         }
       },
-      /* TODO re-enable this. */
       "exclude": ["demos/angular/*", "docs/**/*"]
     },
     {
@@ -97,7 +96,6 @@
       "options": {
         "targetName": "lint"
       },
-      /* TODO re-enable this. */
       "exclude": ["docs/**/*"]
     },
     {
@@ -116,7 +114,7 @@
       "e2eTestRunner": "playwright",
       "linter": "eslint",
       "style": "scss",
-      "unitTestRunner": "vitest"
+      "unitTestRunner": "vitest-analog"
     }
   },
   "release": {

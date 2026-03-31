@@ -3,8 +3,9 @@
   "compilerOptions": {
     "tsBuildInfoFile": "dist/tsconfig.lib.tsbuildinfo"
   },
-  "include": ["package.json", "src/**/*.ts", "*.d.ts"],
+  "include": ["package.json", "src/**/*.ts", "src/schematics/**/*.json"],
   "exclude": [
+    "dist",
     "vite.config.ts",
     "vite.config.mts",
     "vitest.config.ts",
@@ -17,8 +18,7 @@
     "src/**/*.spec.js",
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx",
-    "src/schematics/**/*.json",
-    "src/schematics/**/*.ts"
+    "src/schematics/**/files/**/*.ts",
   ],
   "references": [
     {
