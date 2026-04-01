@@ -3,26 +3,41 @@ import { computeHashes } from './compute-hashes';
 
 describe('computeLaxHashes', () => {
   it('returns laxHash, fullHash', () => {
-    const ts = '(message: string) => console.log(message);';
-    const { laxHash, fullHash } = computeHashes(ts);
-    expect(laxHash).toBe('__lax__c8b941f6');
-    expect(fullHash).toBe('3efddd87');
+    const code = '(message: string) => console.log(message);';
+    expect(computeHashes(code)).toEqual({
+      laxHash: '__lax__7f8a930c',
+      fullHash: '1fd125ca',
+    });
   });
 
-  it('returns same laxHash for equivalent JS variants', () => {
-    const a = '(message) => console.log(message);';
-    const b = 'message => console.log(message)';
-    const { laxHash: laxA } = computeHashes(a, true);
-    const { laxHash: laxB } = computeHashes(b, true);
-    expect(laxA).toBe(laxB);
+  it('returns same laxHash but different fullHash when slightly different code', () => {
+    const a = computeHashes('(message) => console.log(message)');
+    const b = computeHashes('(message) => console.log(message);');
+    expect(a.fullHash).not.toBe(b.fullHash);
+    expect(a.laxHash).toBe(b.laxHash);
   });
 
-  it('returns same lax but different fullHash', () => {
-    const a = '(message) => console.log(message());';
-    const b = '(message) => console.log(message);';
-    const { fullHash: fullA, laxHash: laxA } = computeHashes(a, true);
-    const { fullHash: fullB, laxHash: laxB } = computeHashes(b, true);
-    expect(fullA).not.toBe(fullB);
-    expect(laxA).toBe(laxB);
+  it('returns same laxHash for extra parens', () => {
+    const a = computeHashes('message => console.log(message)');
+    const b = computeHashes('(message) => console.log(message)');
+    expect(a.laxHash).toBe(b.laxHash);
+  });
+
+  it('returns same laxHash for extra whitespace', () => {
+    const a = computeHashes('x+1');
+    const b = computeHashes('x + 1');
+    expect(a.laxHash).toBe(b.laxHash);
+  });
+
+  it('returns same laxHash for extra semicolon', () => {
+    const a = computeHashes('(message) => console.log(message);');
+    const b = computeHashes('(message) => console.log(message)');
+    expect(a.laxHash).toBe(b.laxHash);
+  });
+
+  it('returns same laxHash for different quote styles', () => {
+    const a = computeHashes('console.log("hello")');
+    const b = computeHashes("console.log('hello')");
+    expect(a.laxHash).toBe(b.laxHash);
   });
 });
