@@ -1,6 +1,5 @@
 import { join } from 'node:path';
 import {
-  createExtractedFunction,
   createFileAnalysis,
   ExtractedFunction,
   FileAnalysis,
@@ -27,20 +26,6 @@ function createFileAnalysisInnerMother(fileAnalysis: FileAnalysis) {
     build() {
       return fileAnalysis;
     },
-    withAnonymousExtractedFunction() {
-      return createFileAnalysisInnerMother(
-        createFileAnalysis({
-          ...fileAnalysis,
-          extractedFunctions: [
-            ...fileAnalysis.extractedFunctions,
-            createExtractedFunction({
-              code: `() => { console.log('anonymous'); }`,
-              name: '__lax__',
-            }),
-          ],
-        })
-      );
-    },
     withExtractedFunction(extractedFunction: ExtractedFunction) {
       return createFileAnalysisInnerMother(
         createFileAnalysis({
@@ -48,20 +33,6 @@ function createFileAnalysisInnerMother(fileAnalysis: FileAnalysis) {
           extractedFunctions: [
             ...fileAnalysis.extractedFunctions,
             extractedFunction,
-          ],
-        })
-      );
-    },
-    withNamedExtractedFunction(name: string) {
-      return createFileAnalysisInnerMother(
-        createFileAnalysis({
-          ...fileAnalysis,
-          extractedFunctions: [
-            ...fileAnalysis.extractedFunctions,
-            createExtractedFunction({
-              name,
-              code: `() => { console.log('${name}'); }`,
-            }),
           ],
         })
       );
