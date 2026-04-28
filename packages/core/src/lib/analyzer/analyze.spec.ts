@@ -59,7 +59,7 @@ test('...', async ({inPage}) => {
       analyzeFileContent(`
 test('...', async ({inPage}) => {
   await inPage(() => (message) => console.log(message))
-  await inPage(() => (message) => console.log(message));
+  await inPage(() => (message) => console.log(message);)
 });
     `)
     ).not.toThrow();
