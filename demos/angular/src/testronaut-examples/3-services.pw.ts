@@ -18,26 +18,23 @@ import { mount } from 'packages/angular/browser';
  * The test suite overrides both the `MessageService` via `TestBed.configureTestingModule`.
  *
  * Any code, which runs in the browser, has to be imported from a separate or has
- * be declared within the `inPageWithNamedFunction` function.
- *
- * A unique `inPageWithNamedFunction` identifier is provided because this file performs multiple browser actions
- * (e.g. `mount` and `inPageWithNamedFunction`).
+ * be declared within the `inPage` function.
  */
 test('should use the real message service', async ({
-  inPageWithNamedFunction,
+  inPage,
   page,
 }) => {
-  await inPageWithNamedFunction('mount1', () => mount(ClickMe));
+  await inPage(() => mount(ClickMe));
   await page.getByRole('button', { name: 'Click me' }).click();
   await expect(page.getByText('Lift Off!')).toBeVisible();
 });
 
 test.describe('mocks', () => {
   test('should mock the message service embedded', async ({
-    inPageWithNamedFunction,
+    inPage,
     page,
   }) => {
-    await inPageWithNamedFunction('mock the message service', () => {
+    await inPage(() => {
       class EmbeddedMockedMessageService {
         getMessage() {
           return 'Mocked Lift Off!';
@@ -54,30 +51,23 @@ test.describe('mocks', () => {
       });
     });
 
-    await inPageWithNamedFunction('mount2', () =>
-      TestBed.createComponent(ClickMe)
-    );
+    await inPage(() => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Mocked Lift Off!')).toBeVisible();
   });
 
   test('should mock the message service (externalized)', async ({
-    inPageWithNamedFunction,
+    inPage,
     page,
   }) => {
-    await inPageWithNamedFunction(
-      'mock the message service externalized',
-      () => {
-        TestBed.configureTestingModule({
-          providers: [
-            { provide: MessageService, useClass: MockedMessageService },
-          ],
-        });
-      }
-    );
-    await inPageWithNamedFunction('mount3', () =>
-      TestBed.createComponent(ClickMe)
-    );
+    await inPage(() => {
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: MessageService, useClass: MockedMessageService },
+        ],
+      });
+    });
+    await inPage(() => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Mocked Lift Off!')).toBeVisible();
   });
@@ -85,10 +75,10 @@ test.describe('mocks', () => {
 
 test.describe('fakes', () => {
   test('should fake the message service embedded', async ({
-    inPageWithNamedFunction,
+    inPage,
     page,
   }) => {
-    await inPageWithNamedFunction('fake the message service embedded', () => {
+    await inPage(() => {
       @Injectable({ providedIn: 'root' })
       class MessageServiceFake implements MessageService {
         #message = '';
@@ -112,31 +102,25 @@ test.describe('fakes', () => {
       TestBed.inject(MessageServiceFake).setMessage('Fake Lift Off!');
     });
 
-    await inPageWithNamedFunction('mount4', () =>
-      TestBed.createComponent(ClickMe)
-    );
+    await inPage(() => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Fake Lift Off!')).toBeVisible();
   });
 
   test('should fake the message service externalized', async ({
-    inPageWithNamedFunction,
+    inPage,
     page,
   }) => {
-    await inPageWithNamedFunction(
-      'fake the message service externalized',
-      () => {
-        TestBed.configureTestingModule({
-          providers: [provideMessageServiceFake()],
-        });
+    await inPage(() => {
+      TestBed.configureTestingModule({
+        providers: [provideMessageServiceFake()],
+      });
 
-        injectMessageServiceFake().setMessage('Fake Lift Off!');
-      }
+      injectMessageServiceFake().setMessage('Fake Lift Off!');
+    }
     );
 
-    await inPageWithNamedFunction('mount5', () =>
-      TestBed.createComponent(ClickMe)
-    );
+    await inPage(() => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
     await expect(page.getByText('Fake Lift Off!')).toBeVisible();
   });

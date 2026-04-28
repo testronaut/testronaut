@@ -11,6 +11,7 @@ import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
 
 import type { TestronautOptions } from './options';
+import { computeHashes } from '../lax-hashing/compute-hashes';
 
 /**
  * This avoids transitive dependencies type inference errors such as:
@@ -155,7 +156,7 @@ More information on https://testronaut.dev`);
     }),
     page
   );
-  const { hash } = await runner.extract(filePath);
+  const { fileHash } = await runner.extract(filePath);
 
   const inPageWithNamedFunctionImpl: InPageWithNamedFunction = async (
     ...args: unknown[]
@@ -170,9 +171,16 @@ More information on https://testronaut.dev`);
     let data: Record<string, unknown> = {};
     if (typeof args[0] === 'object') {
       data = args[0] as Record<string, unknown>;
+      args.shift();
     }
 
-    return await runner.inPage(hash, functionName, data);
+    if (functionName === '') {
+      const fn = args[0] as () => unknown;
+      const { laxHash } = computeHashes(fn.toString(), true);
+      functionName = laxHash;
+    }
+
+    return await runner.inPage(fileHash, functionName, data);
   };
 
   return inPageWithNamedFunctionImpl;

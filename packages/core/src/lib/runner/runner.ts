@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { ExtractionPipeline } from './extraction-pipeline';
+import type { FileHash } from './file-info';
 
 export class Runner {
   #extractionPipeline: ExtractionPipeline;
@@ -15,31 +16,31 @@ export class Runner {
   }
 
   async inPage(
-    hash: string,
+    fileHash: FileHash,
     functionName: string,
     data: Record<string, unknown>
   ) {
-    await this.waitUntilHashIsAvailable(hash);
+    await this.waitUntilFileHashIsAvailable(fileHash);
 
     /* Execute the function in the browser context and return the result. */
     return await this.#page.evaluate(
-      async ({ functionName, hash, data }) => {
+      async ({ functionName, fileHash, data }) => {
         const module = await (globalThis as unknown as ExtractionUnitRecord)[
-          hash
+          fileHash
         ]();
         return module.extractedFunctionsRecord[functionName](data);
       },
-      { functionName, hash, data }
+      { functionName, fileHash, data }
     );
   }
 
-  private waitUntilHashIsAvailable(hash: string) {
+  private waitUntilFileHashIsAvailable(fileHash: FileHash) {
     let timeout = 100;
     return expect(async () => {
       try {
         await this.#page.waitForFunction(
-          ({ hash }) => hash in globalThis,
-          { hash },
+          ({ fileHash }) => fileHash in globalThis,
+          { fileHash },
           { timeout }
         );
       } catch (error) {
@@ -57,7 +58,7 @@ export class Runner {
 }
 
 type ExtractionUnitRecord = Record<
-  string,
+  FileHash,
   () => Promise<{
     extractedFunctionsRecord: Record<
       string,
