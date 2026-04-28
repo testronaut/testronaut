@@ -1,5 +1,4 @@
 import { computeHash } from './internal/hash';
-import { tokenize } from './internal/tokenize';
 import { transpileToJs } from './internal/transpile';
 
 export const LAX_HASH_PREFIX = '__lax__';
@@ -15,10 +14,17 @@ export type Hashes = {
 
 export function computeHashes(tsOrJsCode: string, isAlreadyJs = false): Hashes {
   const jsCode = isAlreadyJs ? tsOrJsCode : transpileToJs(tsOrJsCode);
-  const { fullTokens, laxTokens } = tokenize(jsCode);
-  const laxHash = `${LAX_HASH_PREFIX}${computeHash(laxTokens)}`;
+
+  const laxCode = jsCode
+    .replace(/\s/g, '')
+    .replace(/;/g, '')
+    .replace(/['"`]/g, "'")
+    .replace(/\((?!\))/g, '')
+    .replace(/(?<!\()\)/g, '');
+
+  const laxHash = `${LAX_HASH_PREFIX}${computeHash(laxCode)}`;
   return {
     laxHash,
-    fullHash: computeHash(fullTokens),
+    fullHash: computeHash(jsCode),
   };
 }

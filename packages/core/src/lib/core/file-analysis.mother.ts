@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { computeHashes } from '../lax-hashing/compute-hashes';
 import {
   createExtractedFunction,
   createFileAnalysis,
@@ -28,14 +29,16 @@ function createFileAnalysisInnerMother(fileAnalysis: FileAnalysis) {
       return fileAnalysis;
     },
     withAnonymousExtractedFunction() {
+      const code = `() => { console.log('anonymous'); }`;
+      const { laxHash } = computeHashes(code, true);
       return createFileAnalysisInnerMother(
         createFileAnalysis({
           ...fileAnalysis,
           extractedFunctions: [
             ...fileAnalysis.extractedFunctions,
             createExtractedFunction({
-              code: `() => { console.log('anonymous'); }`,
-              name: '__lax__',
+              code,
+              name: laxHash,
             }),
           ],
         })

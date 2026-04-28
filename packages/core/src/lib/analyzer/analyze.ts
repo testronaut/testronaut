@@ -19,7 +19,10 @@ export function analyze(fileData: FileData): FileAnalysis {
   const ctx = new AnalysisContext(fileData);
 
   const extractedFunctions: ExtractedFunction[] = [];
-  const laxToFull: Record<string, { fullHash: string; code: string }> = {};
+  const anonymousFunctionByLaxHash: Record<
+    string,
+    { code: string; fullHash: string }
+  > = {};
   const namedFunctionNames: string[] = [];
 
   visitInPageCalls(ctx, (inPageCall) => {
@@ -30,12 +33,21 @@ export function analyze(fileData: FileData): FileAnalysis {
 
     if (!inPageCall.name) {
       const { laxHash, fullHash } = computeHashes(inPageCall.code);
-      const existingFull = laxToFull[laxHash];
-      if (existingFull !== undefined && existingFull.fullHash !== fullHash) {
-        throw new LaxHashCollisionError(inPageCall.code, existingFull.code);
+      const existingAnonymousFunction = anonymousFunctionByLaxHash[laxHash];
+      if (
+        existingAnonymousFunction !== undefined &&
+        existingAnonymousFunction.fullHash !== fullHash
+      ) {
+        throw new LaxHashCollisionError(
+          inPageCall.code,
+          existingAnonymousFunction.code
+        );
       }
 
-      laxToFull[laxHash] = { fullHash, code: inPageCall.code };
+      anonymousFunctionByLaxHash[laxHash] = {
+        code: inPageCall.code,
+        fullHash,
+      };
       extractedFunctions.push(
         createExtractedFunction({
           code: inPageCall.code,

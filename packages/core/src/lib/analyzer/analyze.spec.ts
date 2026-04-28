@@ -43,18 +43,18 @@ test('...', async ({inPage}) => {
     expect(extractedFunctions).toHaveLength(2);
   });
 
-  it('throws LaxHashCollisionError when two anonymous functions have same lax but different full hash', () => {
+  it('throws LaxHashCollisionError when two anonymous functions share the same lax hash but transpile differently', () => {
     expect(() =>
       analyzeFileContent(`
 test('...', async ({inPage}) => {
-  await inPage(() => (message) => console.log(message()));
-  await inPage(() => (message) => console.log(message));
+  await inPage(() => console.log('a b'));
+  await inPage(() => console.log('ab'));
 });
     `)
     ).toThrow(LaxHashCollisionError);
   });
 
-  it('checks for collision on fullhash but not source code (transpiler adds semicolons)', () => {
+  it('does not throw when two anonymous functions normalize to the same lax hash but transpile identically', () => {
     expect(() =>
       analyzeFileContent(`
 test('...', async ({inPage}) => {
@@ -63,7 +63,7 @@ test('...', async ({inPage}) => {
 });
     `)
     ).not.toThrow();
-  })
+  });
 
   it('does not throw if two anonymous functions have the same code', () => {
     expect(() =>
