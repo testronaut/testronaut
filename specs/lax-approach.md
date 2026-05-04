@@ -46,41 +46,40 @@ In a nutshell, LAX adds a hash to each anonymous function, effectively making it
 
 ### Pipeline
 
-With Lax Hashing, Testronaut transpiles (third time, next to Playwright & Angular) and tokenizes the original function. It removes known tokens which a transpiler could add or remove. We therefore end up with tokens which a transpiler will always keep. Based on that subset of tokens, we generate a hash, which we call "Lax Hash" (from relaxed hash).
+With Lax Hashing, Testronaut transpiles (third time, next to Playwright & Angular) the original function. It removes characters -via simple regular expressions - which are known to be added or removed by different transpilers. Based on what's left, it computes the hash, which we call the lax hash.
+
+In that case, laxHash is a best-effort approach and can be seen as a fingerprint. We accept that semantically different functions could result in the same hash, but those will still be detected via the collision check and the hashes's scope are only for the testing file.
 
 ```mermaid
 flowchart LR
-  A[Transpile to JS] --> B[Tokenize]
-  B --> C[Full tokens]
-  B --> D[Lax tokens after blacklist]
-  C --> E[Full hash for collision check]
-  D --> F[LAX hash]
+  A[Transpile to JS] --> B[Full transpiled string]
+  B --> C[fullHash for collision check]
+  B --> D[Remove blacklist chars]
+  D --> E[Input string for laxHash]
+  E --> F[laxHash]
 ```
 
-The following characters will be removed: `(`, `)`, `,`, `;`.
+The following characters are removed for **`laxHash`**: `(`, `)`, `,`, `;`, `'`, `"`, `` ` ``.
 
 **Example:**
 
-1. `(message: string) => console.log(message);` gets transpiled into `(message) => console.log(message);`
-2. The tokenizer produces the full tokens as an array: `['(', 'message', ')', '=>', 'console', '.', 'log', '(', 'message', ')', ';']`.
-3. The lax hashing would remove character like parenthesis, commas and semi-colons. So we end up with a lax token array of `['message', '=>', 'console', '.', 'log', 'message']`.
-4. Via the xxhash that laxed string array becomes the actual Lax Hash
+1. `(message: string) => console.log(message);` gets transpiled into `(message) => console.log(message);`.
+2. After removing the blacklist characters from that string, the intermediate text used for **`laxHash`** is conceptually: `message => console.logmessage` (parentheses around arguments and call are gone; it is not meant to be readable JS).
+3. That string is passed to xxhash; the hex digest becomes **`laxHash`** (with `__lax__` prefix).
 
 ### Collision Detection
 
 If we apply the lax hashing to both Playwright's transpiled code and the original source code, we should have a guaranteed match in theory.
 
-The problem is that removed tokens have a semantic meaning and we could end up matching two functions with different meaning.
+The problem is that removed characters still have semantic meaning in the real language, and we could end up matching two functions with different meaning.
 
 Collision detection will ensure a safe match of extracted functions.
 
-Testronaut applies the lax hashing to each `inPage` with an anonymous function. With each run, it checks if the same lax hash for that file was already generated. If that's the case, then it verifies the existing hash of the full tokens with the full token hash of the current function. If both full hashes are the same, it has to be the same function and the current one is skipped.
+Testronaut applies the lax hashing to each `inPage` with an anonymous function. With each run, it checks if the same lax hash for that file was already generated. If that's the case, then it verifies the existing **`fullHash`** (hash of the full transpiled string) with the **`fullHash`** of the current function. If both **`fullHash`** values are the same, it has to be the same function and the current one is skipped.
 
-In case we have the lax hash but two different full hashes, then functions COULD be different. In that case, Testronaut plays it safe and throws an error, telling the user which functions collided and to apply a named function instead.
+In case we have the lax hash but two different **`fullHash`** values, then functions COULD be different. In that case, Testronaut plays it safe and throws an error, telling the user which functions collided and to apply a named function instead.
 
 Additionally, Testronaut also asks the user to create an issue on Testronaut's GitHub repo for further investigation.
-
-Quotes are handled by the tokenizer: string literals are normalized to a canonical form (see **String Quotation Handling** below), so `'hi'`, `"hi"`, and `` `hi` `` produce the same token value and the same LAX hash — avoiding false negatives when different transpilers use different quote styles. Different string _contents_ (e.g. `'Hello "World"'` vs `"Hello 'World'"`) still produce different token values and different lax hashes.
 
 **Example:**
 
@@ -89,14 +88,7 @@ Given the following distinct semantically different `inPage` calls:
 - `inPage(() => (message) => console.log(message()))`
 - `inPage(() => (message) => console.log(message))`
 
-Both would produce the same lax tokens: `['message', '=>', 'console', '.', 'log', 'message']`.
-
-Since the same lax hash exists multiple times, Testronaut starts the collision detection, that calculates the full token hash. Those will be different for both functions, and Testronaut will throw an error.
-
-For the sake of completeness, here are the full tokens for both functions:
-
-- `['(', 'message', ')', '=>', 'console', '.', 'log', '(', 'message', '(', ')', ')']`
-- `['(', 'message', ')', '=>', 'console', '.', 'log', '(', 'message', ')']`
+Both can produce the same **`laxHash`** input after blacklist removal on each transpiled body. Their **full** transpiled strings still differ (e.g. extra `()` around `message` in the call), so **`fullHash`** differs and Testronaut throws a collision error instead of merging them.
 
 ### Key Format (Named vs Anonymous)
 
@@ -104,11 +96,11 @@ The `extractedFunctionsRecord` stores both named and anonymous functions. Lax ha
 
 ### String Quotation Handling
 
-Since strings can contain different delimiter characters (`'`, `"`, `` ` ``), they have to be unified as well.
+Since strings can contain different delimiter characters (`'`, `"`, `` ` ``), they have to be unified for **`laxHash`** as well.
 
-The tokenizer normalizes them to a canonical form, by not keeping the delimiter character of the source code but always uses a single quote delimiter.
+Those delimiter characters are on the **same blacklist** as `(`, `)`, `,`, and `;`: they are stripped from the transpiled text before hashing **`laxHash`**, so e.g. `console.log('hi')` and `console.log("hi")` tend toward the same lax input—**higher chance** extract-time and Playwright agree when only quote style differs.
 
-We cannot put string quotes to the exclude list, because we would have a collision with string literals and variable names, i.e. `console.log('message')` and `console.log(message)`.
+We accept that global stripping can make **`laxHash`** inputs look alike for different code (e.g. `console.log('message')` vs `console.log(message)`); the **full** transpiled strings still differ, so **`fullHash`** distinguishes them **within the same file** and triggers a collision error instead of merging two different anonymous bodies. **Template literals** and escapes can still interact oddly with a text-global strip; that is a known heuristic risk.
 
 ## Visualization
 
@@ -117,27 +109,25 @@ flowchart TB
   subgraph extract [Extract time]
     A1[Test file with inPage]
     A2[Our transpiler]
-    A3[Tokenize]
-    A4[Full tokens]
-    A5[Lax tokens after blacklist]
-    A6[LAX hash]
-    A7[Full hash for collision check]
-    A8[Extracted file keyed by LAX hash]
-    A9[Angular CLI]
-    A10[Browser bundle]
-    A1 --> A2 --> A3 --> A4
-    A3 --> A5
-    A4 --> A7
-    A5 --> A6
-    A6 --> A8 --> A9 --> A10
+    A3[Transpiled JS string]
+    A4[fullHash]
+    A5[Strip blacklist for laxHash]
+    A6[laxHash]
+    A7[Extracted file keyed by laxHash]
+    A8[Angular CLI]
+    A9[Browser bundle]
+    A1 --> A2 --> A3
+    A3 --> A4
+    A3 --> A5 --> A6
+    A6 --> A7 --> A8 --> A9
   end
 
   subgraph runtime [Runtime]
     B1[Playwright runs test]
     B2[inPage callback fn]
     B3["fn.toString() = Playwright JS"]
-    B4[Tokenize]
-    B5[LAX hash]
+    B4[Transpile if needed then compute laxHash]
+    B5[laxHash]
     B6[Look up hash in page]
     B7[Run extracted function]
     B1 --> B2 --> B3 --> B4 --> B5 --> B6 --> B7
@@ -172,6 +162,14 @@ We found though, that this strategy would lead us to a catching-up game, where w
 
 Especially, since Testronaut is new, we wouldn't be aware of all potential risks and users would get the impression, that Testronaut is not working.
 
+### Tokenizer-based LAX (TypeScript scanner)
+
+An earlier implementation tokenized transpiled JS, dropped blacklist **tokens**, and hashed token arrays — plus canonical string literal forms for quoting. That improved some cross-transpiler cases but added an additional dependency.
+
+### Full-token equality only
+
+Comparing only full token streams between two transpiled bodies still diverges too often; the relaxed (LAX) layer is still required.
+
 ### AST Parsing
 
 AST parsing was the suggested approach by various AI tools, but they all highlighted the complexity of the approach, the longer implementation along maintenance costs, not even talking about the bad performance implications.
@@ -189,12 +187,12 @@ Very soon, it turned out that this is not a very user friendly approach and coul
 ## Glossary
 
 - **<a id="transpiler">Transpiler</a>** — A subtype of a compiler which compiles from one language to another. In this case from TypeScript to JavaScript.
-- **LAX hash** — Hash computed from the lax token stream (full tokens after blacklisting `(`, `)`, `,`, `;`). Lax hashes have a prefix of `__lax__`. Used as the stable key for an anonymous function at extract time and at runtime.
+- **LAX hash** — Hash computed from the transpiled JS string after removing `(`, `)`, `,`, `;`, `'`, `"`, `` ` `` everywhere (input to **`laxHash`**). Lax hashes have a prefix of `__lax__`. Used as the stable key for an anonymous function at extract time and at runtime.
 - **LAX key** — `__lax__` prefix + LAX hash; the value used as the key in `extractedFunctionsRecord`. It is required to ensure that users cannot use names which are reserved for anonymous functions.
-- **Full hash** — Hash of the full token stream (no blacklist). Used only for collision detection; same LAX hash + different full hash ⇒ error.
+- **Full hash** — Hash of the **full** transpiled JS string (no blacklist removal). Used only for collision detection; same LAX hash + different full hash ⇒ error.
 - **Named function** — `inPage` callback with a user-supplied name; matched in the browser by that name, not by LAX hash. Names must not start with the `__lax__` prefix.
 - **Anonymous function** — `inPage` callback without a name; matched by LAX key (`__lax__` prefix + hash).
 
 ## History
 
-- _Draft._ Spec created; LAX pipeline and tokenizer not yet implemented.
+- Implementation uses string blacklist + xxhash for **`laxHash`** and **`fullHash`** on full transpiled output; tokenizer-based pipeline replaced. Blacklist includes string quotes for better extract/runtime agreement; same-file **`fullHash`** handles ambiguous lax collisions.

@@ -1,8 +1,23 @@
 import { computeHash } from './internal/hash';
-import { tokenize } from './internal/tokenize';
 import { transpileToJs } from './internal/transpile';
 
 export const LAX_HASH_PREFIX = '__lax__';
+
+/**
+ * Characters removed from transpiled JS before computing laxHash: parentheses, comma,
+ * semicolon, and single quote, double quote, and backtick (so quote style often matches
+ * across transpilers). Same-file ambiguity is separated with `fullHash` on the unstripped
+ * transpiled string.
+ */
+const LAX_BLACKLIST = ['(', ')', ',', ';', "'", '"', '`'] as const;
+
+function stripLaxBlacklist(jsCode: string): string {
+  let result = jsCode;
+  for (const char of LAX_BLACKLIST) {
+    result = result.split(char).join('');
+  }
+  return result;
+}
 
 export function isLaxHash(hash: string): boolean {
   return hash.startsWith(LAX_HASH_PREFIX);
@@ -14,11 +29,11 @@ export type Hashes = {
 };
 
 export function computeHashes(tsOrJsCode: string, isAlreadyJs = false): Hashes {
-  const jsCode = isAlreadyJs ? tsOrJsCode : transpileToJs(tsOrJsCode);
-  const { fullTokens, laxTokens } = tokenize(jsCode);
-  const laxHash = `${LAX_HASH_PREFIX}${computeHash(laxTokens)}`;
+  const jsCode = isAlreadyJs ? tsOrJsCode : transpileToJs(tsOrJsCode)
+  const laxHashInput = stripLaxBlacklist(jsCode.replace(/\s+/g, ''));
+  const laxHash = `${LAX_HASH_PREFIX}${computeHash(laxHashInput)}`;
   return {
     laxHash,
-    fullHash: computeHash(fullTokens),
+    fullHash: computeHash(jsCode),
   };
 }

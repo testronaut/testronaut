@@ -3,16 +3,20 @@ import { computeHash } from './hash';
 
 describe('computeHash', () => {
   it('produces deterministic hex string', () => {
-    const tokens = ['message', '=>', 'console', '.', 'log', 'message'];
-    const h1 = computeHash(tokens);
-    const h2 = computeHash(tokens);
+    const input = 'message => console.log(message)';
+    const h1 = computeHash(input);
+    const h2 = computeHash(input);
     expect(h1).toBe(h2);
     expect(h1).toMatch(/^[a-f0-9]+$/);
   });
 
   it('produces different hashes for different inputs', () => {
-    const h1 = computeHash(['a', 'b']);
-    const h2 = computeHash(['a', 'b', 'c']);
+    const h1 = computeHash('ab');
+    const h2 = computeHash('abc');
     expect(h1).not.toBe(h2);
+  });
+
+  it('matches array join and plain string', () => {
+    expect(computeHash('ab')).toBe(computeHash('ab'));
   });
 });

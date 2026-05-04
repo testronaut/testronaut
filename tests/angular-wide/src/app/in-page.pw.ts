@@ -13,7 +13,16 @@ test.describe('general', () => {
 
     await inPage(() => {
       // prettier-ignore
-      document.body.textContent = "Hi!"
+      document.body.textContent = 'Hi!'
+    });
+  });
+
+  test('inPage with comments', async ({ inPage }) => {
+    await inPage(() => {
+      // This is a comment
+      /* Multi-line
+         comment */
+      console.log('comment test');
     });
   });
 
