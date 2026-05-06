@@ -17,15 +17,15 @@ for (const name of [
   test.describe(name, () => {
     test('respond via `HttpTestingController', async ({
       page,
-      inPageWithNamedFunction,
+      inPage,
     }) => {
-      await inPageWithNamedFunction('config1', () => {
+      await inPage(() => {
         TestBed.configureTestingModule({
           providers: [provideHttpClient(), provideHttpClientTesting()],
         });
       });
 
-      await inPageWithNamedFunction('mount1', { name }, ({ name }) => {
+      await inPage(() => {
         return mount(
           (name.endsWith('httpResource')
             ? ClickMeWithResource
@@ -34,7 +34,7 @@ for (const name of [
       });
       await page.getByRole('button', { name: 'Click me' }).click();
 
-      await inPageWithNamedFunction('respond1', () => {
+      await inPage(() => {
         const httpTestingController = TestBed.inject(HttpTestingController);
         httpTestingController
           .expectOne('https://testronaut.dev/lift-off')
@@ -45,15 +45,15 @@ for (const name of [
 
     test('respond via page.route', async ({
       page,
-      inPageWithNamedFunction,
+      inPage,
     }) => {
-      await inPageWithNamedFunction('config2', () => {
+      await inPage(() => {
         TestBed.configureTestingModule({
           providers: [provideHttpClient()],
         });
       });
 
-      await inPageWithNamedFunction('mount2', { name }, ({ name }) => {
+      await inPage(() => {
         TestBed.createComponent(
           (name.endsWith('httpResource')
             ? ClickMeWithResource

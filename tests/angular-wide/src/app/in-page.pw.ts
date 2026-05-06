@@ -1,31 +1,37 @@
-import { expect, test } from '@testronaut/core';
+import { test } from '@testronaut/core';
 
-test('anonymous inPage', async ({ page, inPage }) => {
-  await inPage(() => {
-    document.body.textContent = 'Hi!';
+test.describe('general', () => {
+  test('no collision for semicolon differences (implementation detail)', async ({
+    inPage,
+  }) => {
+    // collision based on transpiler, which adds a semicolon
+
+    await inPage(() => {
+      // prettier-ignore
+      document.body.textContent = 'Hi!';
+    });
+
+    await inPage(() => {
+      // prettier-ignore
+      document.body.textContent = 'Hi!'
+    });
   });
 
-  await expect(page.getByText('Hi!')).toBeVisible();
-});
-
-test('named inPageWithNamedFunction', async ({
-  page,
-  inPageWithNamedFunction,
-}) => {
-  await inPageWithNamedFunction('hello', () => {
-    document.body.textContent = 'Hello!';
+  test('inPage with comments', async ({ inPage }) => {
+    await inPage(() => {
+      // This is a comment
+      /* Multi-line
+         comment */
+      console.log('comment test');
+    });
   });
 
-  await expect(page.getByText('Hello!')).toBeVisible();
-});
-
-test('named inPageWithNamedFunction with args', async ({
-  page,
-  inPageWithNamedFunction,
-}) => {
-  await inPageWithNamedFunction('hello foo', { name: 'Foo' }, ({ name }) => {
-    document.body.textContent = `Hello ${name}!`;
+  test('multiple in page calls', async ({ inPage }) => {
+    await inPage(() => console.log(0));
+    await inPage(() => console.log(0));
+    await inPage(() => console.log(1));
+    await inPage(() => console.log(2));
+    await inPage(() => console.log(3));
+    await inPage(() => console.log(4));
   });
-
-  await expect(page.getByText('Hello Foo!')).toBeVisible();
 });

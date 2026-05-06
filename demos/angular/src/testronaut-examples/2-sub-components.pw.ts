@@ -19,11 +19,9 @@ import { ShallowMessageComponent } from './test-helpers/shallow-message.componen
  * This test shows both ways for shallowing the `MessageComponent` and the `ClickDirective`, via
  * `ShallowMessageComponent` and `ShallowClickDirective`.
  *
- * A unique `inPageWithNamedFunction` identifier is provided because this file performs multiple browser actions
- * (e.g. `mount` and `inPageWithNamedFunction`).
  */
-test('no test doubles', async ({ inPageWithNamedFunction, page }) => {
-  await inPageWithNamedFunction('mount1', () => mount(ClickMeWithSub));
+test('no test doubles', async ({ inPage, page }) => {
+  await inPage(() => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toHaveClass('unclicked');
@@ -36,15 +34,15 @@ test('no test doubles', async ({ inPageWithNamedFunction, page }) => {
 });
 
 test('embedded shallow components', async ({
-  inPageWithNamedFunction,
+  inPage,
   page,
 }) => {
-  await inPageWithNamedFunction('override with embedded shallows', () => {
+  await inPage(() => {
     @Component({
       selector: 'app-message',
       template: `<p data-testid="shallowed-message">Shallowed</p>`,
     })
-    class ShallowMessageComponent {}
+    class ShallowMessageComponent { }
 
     @Directive({
       selector: 'button[appClick]',
@@ -52,7 +50,7 @@ test('embedded shallow components', async ({
         class: 'shallowed',
       },
     })
-    class ShallowClickDirective {}
+    class ShallowClickDirective { }
 
     TestBed.overrideComponent(ClickMeWithSub, {
       set: {
@@ -61,7 +59,7 @@ test('embedded shallow components', async ({
     });
   });
 
-  await inPageWithNamedFunction('mount2', () => mount(ClickMeWithSub));
+  await inPage(() => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();
@@ -72,10 +70,10 @@ test('embedded shallow components', async ({
 });
 
 test('externalized shallow components', async ({
-  inPageWithNamedFunction,
+  inPage,
   page,
 }) => {
-  await inPageWithNamedFunction('override with externalized shallows', () => {
+  await inPage(() => {
     TestBed.overrideComponent(ClickMeWithSub, {
       set: {
         imports: [ShallowMessageComponent, ShallowClickDirective],
@@ -83,7 +81,7 @@ test('externalized shallow components', async ({
     });
   });
 
-  await inPageWithNamedFunction('mount3', () => mount(ClickMeWithSub));
+  await inPage(() => mount(ClickMeWithSub));
   const buttonLocator = page.getByRole('button', { name: 'Click me' });
 
   await expect(buttonLocator).toBeEnabled();
