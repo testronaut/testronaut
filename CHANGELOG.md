@@ -1,3 +1,24 @@
+## 0.0.13 (2026-05-06)
+
+### 🚀 Features
+
+- **core:** allow multiple workers ([#96](https://github.com/testronaut/testronaut/pull/96))
+- ⚠️ **core:** split `inPage` into `inPage` and `inPageWithFunctionName` ([#116](https://github.com/testronaut/testronaut/pull/116), [#105](https://github.com/testronaut/testronaut/issues/105))
+- **core:** allow concurrent projects ([#97](https://github.com/testronaut/testronaut/pull/97))
+
+### 🩹 Fixes
+
+- **angular:** make generated testronaut config windows compatible ([#80](https://github.com/testronaut/testronaut/pull/80))
+
+### ⚠️ Breaking Changes
+
+- **core:** The named overloads of `inPage` have been moved to a new
+
+### ❤️ Thank You
+
+- Rainer Hahnekamp @rainerhahnekamp
+- Younes Jaaidi @yjaaidi
+
 ## 0.0.12 (2026-01-23)
 
 ### 🚀 Features
@@ -52,7 +73,7 @@
 
 ### 🩹 Fixes
 
-- disable `prebundle` in  demo ([b2654a8](https://github.com/testronaut/testronaut/commit/b2654a8))
+- disable `prebundle` in demo ([b2654a8](https://github.com/testronaut/testronaut/commit/b2654a8))
 - **angular:** fix errors where Playwright is running uncompiled Angular code ([#72](https://github.com/testronaut/testronaut/pull/72))
 
 ### ❤️ Thank You
