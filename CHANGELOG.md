@@ -1,3 +1,13 @@
+## 0.0.14 (2026-05-06)
+
+### 🚀 Features
+
+- **core:** allow multiple `inPage` calls in the same file ([7cc129d](https://github.com/testronaut/testronaut/commit/7cc129d))
+
+### ❤️ Thank You
+
+- Rainer Hahnekamp @rainerhahnekamp
+
 ## 0.0.13 (2026-05-06)
 
 ### 🚀 Features
