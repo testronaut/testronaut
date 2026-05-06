@@ -176,7 +176,9 @@ More information on https://testronaut.dev`);
 
     if (functionName === '') {
       const fn = args[0] as () => unknown;
-      const { laxHash } = computeHashes(fn.toString(), true);
+      const { laxHash } = computeHashes(fn.toString(), {
+        skipTranspilation: true,
+      });
       functionName = laxHash;
     }
 

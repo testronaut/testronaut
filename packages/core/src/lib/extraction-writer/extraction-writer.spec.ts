@@ -6,7 +6,7 @@ import { FileSystemFake } from '../infra/file-system.fake';
 import { computeHashes } from '../lax-hashing/compute-hashes';
 
 const code = '() => void true';
-const { laxHash } = computeHashes(code, true);
+const { laxHash } = computeHashes(code);
 
 describe(ExtractionWriter.name, () => {
   it('creates "index.ts" file on init', async () => {
@@ -207,7 +207,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
     const code = '() => { console.log(MyComponent); }';
-    const { laxHash } = computeHashes(code, true);
+    const { laxHash } = computeHashes(code);
 
     await writer.write(
       createFileContentWithExtractedFunction({
@@ -234,7 +234,7 @@ export const extractedFunctionsRecord = {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
     const code = '() => { console.log(MyComponent); }';
-    const { laxHash } = computeHashes(code, true);
+    const { laxHash } = computeHashes(code);
 
     await writer.write(
       createFileContentWithExtractedFunction({
@@ -262,7 +262,7 @@ export const extractedFunctionsRecord = {
       await setUpInitializedWriter();
 
     const initialCode = '() => { console.log(MyComponent); }';
-    const { laxHash: initialLaxHash } = computeHashes(initialCode, true);
+    const { laxHash: initialLaxHash } = computeHashes(initialCode);
 
     await writer.write(
       createFileContentWithExtractedFunction({
@@ -275,7 +275,7 @@ export const extractedFunctionsRecord = {
     );
 
     const code = '() => { console.log(MyService, MyServiceError); }';
-    const { laxHash } = computeHashes(code, true);
+    const { laxHash } = computeHashes(code);
 
     await writer.write(
       createFileContentWithExtractedFunction({

@@ -28,8 +28,11 @@ export type Hashes = {
   fullHash: string;
 };
 
-export function computeHashes(tsOrJsCode: string, isAlreadyJs = false): Hashes {
-  const jsCode = isAlreadyJs ? tsOrJsCode : transpileToJs(tsOrJsCode)
+export function computeHashes(
+  code: string,
+  { skipTranspilation = false }: { skipTranspilation?: boolean } = {}
+): Hashes {
+  const jsCode = skipTranspilation ? code : transpileToJs(code);
   const laxHashInput = stripLaxBlacklist(jsCode.replace(/\s+/g, ''));
   const laxHash = `${LAX_HASH_PREFIX}${computeHash(laxHashInput)}`;
   return {
