@@ -15,17 +15,14 @@ for (const name of [
   'Component using httpResource',
 ]) {
   test.describe(name, () => {
-    test('respond via `HttpTestingController', async ({
-      page,
-      inPage,
-    }) => {
+    test('respond via `HttpTestingController', async ({ page, inPage }) => {
       await inPage(() => {
         TestBed.configureTestingModule({
           providers: [provideHttpClient(), provideHttpClientTesting()],
         });
       });
 
-      await inPage(() => {
+      await inPage({ name }, ({ name }) => {
         return mount(
           (name.endsWith('httpResource')
             ? ClickMeWithResource
@@ -43,17 +40,14 @@ for (const name of [
       await expect(page.getByText('Lift Off!')).toBeVisible();
     });
 
-    test('respond via page.route', async ({
-      page,
-      inPage,
-    }) => {
+    test('respond via page.route', async ({ page, inPage }) => {
       await inPage(() => {
         TestBed.configureTestingModule({
           providers: [provideHttpClient()],
         });
       });
 
-      await inPage(() => {
+      await inPage({ name }, ({ name }) => {
         TestBed.createComponent(
           (name.endsWith('httpResource')
             ? ClickMeWithResource
