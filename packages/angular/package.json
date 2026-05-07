@@ -1,6 +1,6 @@
 {
   "name": "@testronaut/angular",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "type": "module",
   "sideEffects": true,
   "files": [
