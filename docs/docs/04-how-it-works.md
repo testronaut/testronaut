@@ -74,7 +74,7 @@ test('take off', async ({ inPage, page }) => {
 });
 ```
 
-The extracted code is then written into a generated folder that is server by the Test Server.
+The extracted code is then written into a generated folder that is served by the Test Server.
 
 ```ts title="testronaut/generated/src/app/spaceship-launcher.pw.ts"
 import { mount } from '@testronaut/angular/browser';
