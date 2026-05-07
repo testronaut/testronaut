@@ -8,6 +8,7 @@ import {
 } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { Server } from 'node:http';
+import { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseConfigFile, runServer } from 'verdaccio';
@@ -118,22 +119,12 @@ test('nx add @testronaut/angular', async () => {
 });
 
 async function setUp() {
-  /* Use a different port for each test because the port can stay stuck in TIME_WAIT state
-   * when we stop the Verdaccio server. */
-  const registryPort = 4872;
-  const registryUrl = `http://localhost:${registryPort}`;
-
   /* Set this to true for debugging.*/
   $.verbose = false;
 
-  $.env = {
-    ...$.env,
-    NPM_CONFIG_REGISTRY: registryUrl,
-  };
-
   cd(workspaceRoot);
 
-  await _maybeStartVedaccioAndPublishPackages({ registryPort, registryUrl });
+  await _maybeStartVerdaccioAndPublishPackages();
 
   const pnpmInstall = () => $`pnpm install --no-frozen-lockfile`;
 
@@ -167,35 +158,34 @@ async function setUp() {
 let verdaccio: Server;
 afterAll(() => verdaccio?.close());
 
-async function _maybeStartVedaccioAndPublishPackages({
-  registryPort,
-  registryUrl,
-}: {
-  registryPort: number;
-  registryUrl: string;
-}) {
+async function _maybeStartVerdaccioAndPublishPackages() {
   /* Server is already started, so we can skip starting it again. */
-  if (verdaccio) {
-    return;
+  if (!verdaccio) {
+    /* Clean up Verdaccio local registry before starting Verdaccio
+     * to avoid pollution from previously published packages. */
+    await $`rm -rf ${join(workspaceRoot, 'tmp/local-registry')}`;
+
+    const server = await _startVerdaccio();
+
+    const registryUrl = `http://localhost:${
+      (server.address() as AddressInfo).port
+    }`;
+
+    $.env = {
+      ...$.env,
+      NPM_CONFIG_REGISTRY: registryUrl,
+    };
+
+    /* Publish packages to verdaccio. */
+    await _publishPackages({ registryUrl });
+
+    verdaccio = server;
   }
 
-  /* Clean up Verdaccio local registry before starting Verdaccio
-   * to avoid pollution from previously published packages. */
-  await $`rm -rf ${join(workspaceRoot, 'tmp/local-registry')}`;
-
-  const server = await _startVerdaccio({ registryPort });
-
-  /* Publish packages to verdaccio. */
-  await _publishPackages({ registryUrl });
-
-  verdaccio = server;
+  return `http://localhost:${(verdaccio.address() as AddressInfo).port}`;
 }
 
-async function _startVerdaccio({
-  registryPort,
-}: {
-  registryPort: number;
-}): Promise<Server> {
+async function _startVerdaccio(): Promise<Server> {
   const configPath = join(workspaceRoot, '.verdaccio/config.yml');
   const config = parseConfigFile(configPath);
   /* Verdaccio API expects config.logs for logger setup, but YAML uses config.log.
@@ -208,7 +198,7 @@ async function _startVerdaccio({
 
   const verdaccio: Server = await runServer(configWithLogs);
 
-  verdaccio.listen(registryPort);
+  verdaccio.listen(0);
 
   return verdaccio;
 }
