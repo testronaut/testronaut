@@ -1,4 +1,5 @@
 import { h32 } from 'xxhashjs';
+import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
 import {
   createExtractedFunction,
   createFileAnalysis,
@@ -6,12 +7,9 @@ import {
   type FileAnalysis,
   type ImportedIdentifier,
 } from '../core/file-analysis';
-import { LaxHashCollisionError } from '../core/lax-hash-collision-error';
-import { computeHashes } from '../lax-hashing/compute-hashes';
 import { AnalysisContext, type FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitInPageCalls } from './visit-in-page-calls';
-import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
 
 export function analyze(fileData: FileData): FileAnalysis {
   const hash = generateHash(fileData.content);
@@ -19,7 +17,6 @@ export function analyze(fileData: FileData): FileAnalysis {
   const ctx = new AnalysisContext(fileData);
 
   const extractedFunctions: ExtractedFunction[] = [];
-  const laxToFull: Record<string, { fullHash: string; code: string }> = {};
   const namedFunctionNames: string[] = [];
 
   visitInPageCalls(ctx, (inPageCall) => {
@@ -29,17 +26,13 @@ export function analyze(fileData: FileData): FileAnalysis {
     );
 
     if (!inPageCall.name) {
-      const { laxHash, fullHash } = computeHashes(inPageCall.code);
-      const existingFull = laxToFull[laxHash];
-      if (existingFull !== undefined && existingFull.fullHash !== fullHash) {
-        throw new LaxHashCollisionError(inPageCall.code, existingFull.code);
-      }
-
-      laxToFull[laxHash] = { fullHash, code: inPageCall.code };
+      const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
+        inPageCall.node.getStart(ctx.sourceFile)
+      );
       extractedFunctions.push(
         createExtractedFunction({
           code: inPageCall.code,
-          name: laxHash,
+          name: `__line__${line + 1}`,
           importedIdentifiers,
         })
       );

@@ -161,7 +161,12 @@ More information on https://testronaut.dev`);
   const inPageWithNamedFunctionImpl: InPageWithNamedFunction = async (
     ...args: unknown[]
   ) => {
-    let functionName = '';
+    const inPageCallLocation = _maybeCaptureParentCallLocation();
+    if (!inPageCallLocation || inPageCallLocation.filePath !== filePath) {
+      throw new Error('Failed to capture `inPage` call location');
+    }
+
+    let functionName = `__line__${inPageCallLocation.line}`;
 
     if (typeof args[0] === 'string') {
       functionName = args[0];
@@ -174,16 +179,35 @@ More information on https://testronaut.dev`);
       args.shift();
     }
 
-    if (functionName === '') {
-      const fn = args[0] as () => unknown;
-      const { laxHash } = computeHashes(fn.toString(), {
-        skipTranspilation: true,
-      });
-      functionName = laxHash;
-    }
-
     return await runner.inPage(fileHash, functionName, data);
   };
 
   return inPageWithNamedFunctionImpl;
+}
+
+function _maybeCaptureParentCallLocation(): {
+  filePath: string;
+  line: number;
+} | null {
+  const error = new Error();
+  /**
+   * The stack trace is like this:
+   * Error
+   *     at _captureParentCallLocation
+   *     at inPageWithNamedFunctionImpl
+   *     at file:///Users/y/Desktop/demo.ts:1:1 <--- this is the line we want to capture
+   */
+  const stack = error.stack?.split('\n')[3];
+  if (!stack) {
+    return null;
+  }
+  const [filePath, lineStr] = stack
+    .replace(/ +at file:\/\//, '')
+    .trim()
+    .split(':');
+  const line = parseInt(lineStr);
+  if (isNaN(line)) {
+    return null;
+  }
+  return { filePath, line };
 }
