@@ -75,8 +75,8 @@ const config: Config = {
           title: 'Docs',
           items: [
             {
-              label: 'Welcome',
-              to: '/docs/welcome',
+              label: 'Why Testronaut',
+              to: '/docs/why-testronaut',
             },
           ],
         },
