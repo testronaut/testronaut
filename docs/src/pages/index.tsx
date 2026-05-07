@@ -39,7 +39,7 @@ function HomepageHeader() {
             <div className={styles.buttons} style={{ marginTop: '1rem' }}>
               <Link
                 className="button button--secondary button--lg"
-                to="/docs/welcome"
+                to="/docs/why-testronaut"
               >
                 🚀 Lift Off 🚀
               </Link>
