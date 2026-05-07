@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["@playwright/test"],
+      "postUpgradeTasks": {
+        "commands": [
+          "node scripts/set-playwright-max-version.mts {{{newVersion}}}",
+          "pnpm install --update-lockfile"
+        ],
+        "fileFilters": [
+          "packages/angular/src/schematics/init/playwright-version.json",
+          "packages/core/package.json",
+          "packages/angular/package.json",
+          "pnpm-lock.yaml"
+        ],
+        "installTools": {
+          "pnpm": {}
+        }
+      }
+    }
+  ]
+}
