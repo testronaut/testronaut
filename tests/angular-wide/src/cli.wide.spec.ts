@@ -196,11 +196,11 @@ async function _startVerdaccio(): Promise<Server> {
     logs: config.log,
   };
 
-  const verdaccio: Server = await runServer(configWithLogs);
+  const server: Server = await runServer(configWithLogs);
 
-  verdaccio.listen(0);
-
-  return verdaccio;
+  return await new Promise((resolve) =>
+    server.listen(0, () => resolve(server))
+  );
 }
 
 async function _publishPackages({ registryUrl }: { registryUrl: string }) {
