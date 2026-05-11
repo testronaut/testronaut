@@ -8,13 +8,8 @@ test('should show the click me component', async ({ inPage, page }) => {
   await expect(page.getByText('Lift Off!')).toBeVisible();
 });
 
-test('should change the click me label', async ({
-  inPage,
-  page,
-}) => {
-  await inPage(() =>
-    mount(ClickMe, { inputs: { clickMeLabel: 'Press me' } })
-  );
+test('should change the click me label', async ({ inPage, page }) => {
+  await inPage(() => mount(ClickMe, { inputs: { clickMeLabel: 'Press me' } }));
   await page.getByRole('button', { name: 'Press me' }).click();
   await expect(page.getByText('Lift Off!')).toBeVisible();
 });
