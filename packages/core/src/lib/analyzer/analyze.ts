@@ -6,12 +6,11 @@ import {
   type FileAnalysis,
   type ImportedIdentifier,
 } from '../core/file-analysis';
-import { LaxHashCollisionError } from '../core/lax-hash-collision-error';
-import { computeHashes } from '../lax-hashing/compute-hashes';
+import { lineBasedName } from '../core/in-page-line-prefix';
+import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
 import { AnalysisContext, type FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitInPageCalls } from './visit-in-page-calls';
-import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
 
 export function analyze(fileData: FileData): FileAnalysis {
   const hash = generateHash(fileData.content);
@@ -19,8 +18,7 @@ export function analyze(fileData: FileData): FileAnalysis {
   const ctx = new AnalysisContext(fileData);
 
   const extractedFunctions: ExtractedFunction[] = [];
-  const laxToFull: Record<string, { fullHash: string; code: string }> = {};
-  const namedFunctionNames: string[] = [];
+  const functionNames: string[] = [];
 
   visitInPageCalls(ctx, (inPageCall) => {
     const importedIdentifiers: ImportedIdentifier[] = [];
@@ -28,35 +26,23 @@ export function analyze(fileData: FileData): FileAnalysis {
       importedIdentifiers.push(importedIdentifier)
     );
 
-    if (!inPageCall.name) {
-      const { laxHash, fullHash } = computeHashes(inPageCall.code);
-      const existingFull = laxToFull[laxHash];
-      if (existingFull !== undefined && existingFull.fullHash !== fullHash) {
-        throw new LaxHashCollisionError(inPageCall.code, existingFull.code);
-      }
+    const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
+      inPageCall.node.getStart(ctx.sourceFile)
+    );
+    const name = lineBasedName(line + 1);
 
-      laxToFull[laxHash] = { fullHash, code: inPageCall.code };
-      extractedFunctions.push(
-        createExtractedFunction({
-          code: inPageCall.code,
-          name: laxHash,
-          importedIdentifiers,
-        })
-      );
-    } else {
-      if (namedFunctionNames.includes(inPageCall.name)) {
-        throw new DuplicatedNamedFunctionsError(fileData.path, inPageCall.name);
-      }
-      namedFunctionNames.push(inPageCall.name);
-
-      extractedFunctions.push(
-        createExtractedFunction({
-          code: inPageCall.code,
-          name: inPageCall.name,
-          importedIdentifiers,
-        })
-      );
+    if (functionNames.includes(name)) {
+      throw new DuplicatedNamedFunctionsError(fileData.path, name);
     }
+    functionNames.push(name);
+
+    extractedFunctions.push(
+      createExtractedFunction({
+        code: inPageCall.code,
+        name,
+        importedIdentifiers,
+      })
+    );
   });
 
   return createFileAnalysis({

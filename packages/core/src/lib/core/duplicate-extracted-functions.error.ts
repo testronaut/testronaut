@@ -3,9 +3,9 @@ export class DuplicatedNamedFunctionsError extends Error {
 
   constructor(filePath: string, name: string) {
     super(
-      `inPageWithNamedFunction have to use unique names.
+      `\`inPage\` calls must be on unique lines — each call gets its identifier from its source line number.
 
-The name "${name}" in the file ${filePath} is used multiple times.`
+The identifier "${name}" in the file ${filePath} is used by more than one call. Move the conflicting calls to separate lines.`
     );
   }
 }

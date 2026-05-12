@@ -3,10 +3,9 @@ import { ExtractionWriter } from './extraction-writer';
 import { createExtractedFunction } from '../core/file-analysis';
 import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
-import { computeHashes } from '../lax-hashing/compute-hashes';
 
+const functionName = '__line__3';
 const code = '() => void true';
-const { laxHash } = computeHashes(code);
 
 describe(ExtractionWriter.name, () => {
   it('creates "index.ts" file on init', async () => {
@@ -62,7 +61,7 @@ describe(ExtractionWriter.name, () => {
 
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
+        name: functionName,
         code,
       })
     );
@@ -74,7 +73,7 @@ describe(ExtractionWriter.name, () => {
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => void true
+    "${functionName}": () => void true
 };
 `),
     });
@@ -86,7 +85,7 @@ export const extractedFunctionsRecord = {
 
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
+        name: functionName,
         code,
       })
     );
@@ -101,7 +100,7 @@ export const extractedFunctionsRecord = {
     });
   });
 
-  it('writes named `inPage` calls (inPageWithNamedFunction)', async () => {
+  it('writes named `inPage` calls', async () => {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
 
@@ -136,7 +135,7 @@ export const extractedFunctionsRecord = {
 
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
+        name: functionName,
         code,
       })
     );
@@ -145,7 +144,7 @@ export const extractedFunctionsRecord = {
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => void true
+    "${functionName}": () => void true
 };
 `),
     });
@@ -163,7 +162,7 @@ export const extractedFunctionsRecord = {
 
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
+        name: functionName,
         code,
       })
     );
@@ -174,7 +173,7 @@ export const extractedFunctionsRecord = {
       ),
       '/my-project/generated/src/my-component.spec.ts': expect.stringContaining(
         `export const extractedFunctionsRecord = {
-    "${laxHash}": () => void true
+    "${functionName}": () => void true
 };`
       ),
     });
@@ -192,7 +191,7 @@ export const extractedFunctionsRecord = {
 
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
+        name: functionName,
         code,
       })
     );
@@ -206,13 +205,12 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
   it('writes imports', async () => {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
-    const code = '() => { console.log(MyComponent); }';
-    const { laxHash } = computeHashes(code);
+    const codeWithImport = '() => { console.log(MyComponent); }';
 
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
+        name: '__line__3',
+        code: codeWithImport,
         importedIdentifiers: [
           { name: 'MyComponent', module: '@my-lib/my-component' },
         ],
@@ -224,7 +222,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
         expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => { console.log(MyComponent); }
+    "__line__3": () => { console.log(MyComponent); }
 };
 `),
     });
@@ -233,13 +231,12 @@ export const extractedFunctionsRecord = {
   it('relativizes imports', async () => {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
-    const code = '() => { console.log(MyComponent); }';
-    const { laxHash } = computeHashes(code);
+    const codeWithImport = '() => { console.log(MyComponent); }';
 
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
+        name: '__line__3',
+        code: codeWithImport,
         importedIdentifiers: [
           { name: 'MyComponent', module: './my-component' },
         ],
@@ -251,7 +248,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => { console.log(MyComponent); }
+    "__line__3": () => { console.log(MyComponent); }
 };
 `),
     });
@@ -261,26 +258,20 @@ export const extractedFunctionsRecord = {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
 
-    const initialCode = '() => { console.log(MyComponent); }';
-    const { laxHash: initialLaxHash } = computeHashes(initialCode);
-
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: initialLaxHash,
-        code: initialCode,
+        name: '__line__3',
+        code: '() => { console.log(MyComponent); }',
         importedIdentifiers: [
           { name: 'MyComponent', module: '@my-lib/my-component' },
         ],
       })
     );
 
-    const code = '() => { console.log(MyService, MyServiceError); }';
-    const { laxHash } = computeHashes(code);
-
     await writer.write(
       createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
+        name: '__line__7',
+        code: '() => { console.log(MyService, MyServiceError); }',
         importedIdentifiers: [
           { name: 'MyService', module: '@my-lib/my-service' },
           { name: 'MyServiceError', module: '@my-lib/my-service' },
@@ -293,7 +284,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => { console.log(MyService, MyServiceError); }
+    "__line__7": () => { console.log(MyService, MyServiceError); }
 };
 `),
     });
