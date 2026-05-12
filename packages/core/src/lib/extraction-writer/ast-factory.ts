@@ -36,11 +36,11 @@ export function generateExportedConstObjectLiteral({
   value,
 }: {
   variableName: string;
-  value: Record<string, string>;
+  value: Record<number, string>;
 }): ts.VariableStatement {
   const propertyAssignments = Object.entries(value).map(([key, value]) =>
     ts.factory.createPropertyAssignment(
-      ts.factory.createStringLiteral(key),
+      ts.factory.createNumericLiteral(key),
       ts.factory.createIdentifier(value)
     )
   );

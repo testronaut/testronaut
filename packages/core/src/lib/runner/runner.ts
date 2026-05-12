@@ -17,20 +17,20 @@ export class Runner {
 
   async inPage(
     fileHash: FileHash,
-    functionName: string,
+    line: number,
     data: Record<string, unknown>
   ) {
     await this.waitUntilFileHashIsAvailable(fileHash);
 
     /* Execute the function in the browser context and return the result. */
     return await this.#page.evaluate(
-      async ({ functionName, fileHash, data }) => {
+      async ({ line, fileHash, data }) => {
         const module = await (globalThis as unknown as ExtractionUnitRecord)[
           fileHash
         ]();
-        return module.extractedFunctionsRecord[functionName](data);
+        return module.extractedFunctionsRecord[line](data);
       },
-      { functionName, fileHash, data }
+      { line, fileHash, data }
     );
   }
 
@@ -61,7 +61,7 @@ type ExtractionUnitRecord = Record<
   FileHash,
   () => Promise<{
     extractedFunctionsRecord: Record<
-      string,
+      number,
       (data?: Record<string, unknown>) => void
     >;
   }>

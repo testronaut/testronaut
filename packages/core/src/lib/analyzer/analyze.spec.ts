@@ -1,12 +1,9 @@
 import { describe } from 'vitest';
 import { FileAnalysis } from '../core/file-analysis';
 
-import { LaxHashCollisionError } from '../core/lax-hash-collision-error';
 import { analyze } from './analyze';
 import { InvalidInPageCallError } from './visit-in-page-calls';
-import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
-
-const laxAnonymousName = expect.stringMatching(/^__lax__/);
+import { MultiInPageOnSameLineError } from '../core/duplicate-extracted-functions.error';
 
 describe(analyze.name, () => {
   it('generates file hash', () => {
@@ -24,56 +21,34 @@ test('...', async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: laxAnonymousName,
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
-  it('extracts multiple anonymous `inPage` calls in one file', () => {
+  it('extracts multiple anonymous `inPage` calls in one file with distinct line numbers', () => {
     const { extractedFunctions } = analyzeFileContent(`
 test('...', async ({inPage}) => {
   await inPage(() => console.log('a'));
   await inPage(() => console.log('b'));
 });
     `);
-    expect(extractedFunctions).toHaveLength(2);
+    expect(extractedFunctions).toStrictEqual({
+      3: { code: `() => console.log('a')`, importedIdentifiers: [] },
+      4: { code: `() => console.log('b')`, importedIdentifiers: [] },
+    });
   });
 
-  it('throws LaxHashCollisionError when two anonymous functions have same lax but different full hash', () => {
+  it('throws MultiInPageOnSameLineError when two anonymous inPage calls share a line', () => {
     expect(() =>
-      analyzeFileContent(`
-test('...', async ({inPage}) => {
-  await inPage(() => (message) => console.log(message()));
-  await inPage(() => (message) => console.log(message));
-});
-    `)
-    ).toThrow(LaxHashCollisionError);
-  });
-
-  it('checks for collision on fullhash but not source code (transpiler adds semicolons)', () => {
-    expect(() =>
-      analyzeFileContent(`
-test('...', async ({inPage}) => {
-  await inPage(() => (message) => console.log(message))
-  await inPage(() => (message) => console.log(message);)
-});
-    `)
-    ).not.toThrow();
-  })
-
-  it('does not throw if two anonymous functions have the same code', () => {
-    expect(() =>
-      analyzeFileContent(`
-test('...', async ({inPage}) => {
-  await inPage(() => (message) => console.log(message()));
-  await inPage(() => (message) => console.log(message()));
-});
-    `)
-    ).not.toThrow();
+      analyzeFileContent(
+        // prettier-ignore
+        `test('...', async ({inPage}) => { await inPage(() => 'a'); await inPage(() => 'b'); });`
+      )
+    ).toThrow(MultiInPageOnSameLineError);
   });
 
   it('extracts `inPage` async arrow function', () => {
@@ -82,13 +57,12 @@ test('...', async ({inPage}) => {
   await inPage(async () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: laxAnonymousName,
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `async () => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts `inPage` function call', () => {
@@ -97,13 +71,12 @@ test('...', async ({inPage}) => {
   await inPage(function sayHello() { console.log('Hello!'); });
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: laxAnonymousName,
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `function sayHello() { console.log('Hello!'); }`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts `inPage` outside test: in beforeEach', () => {
@@ -112,13 +85,12 @@ test.beforeEach(async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: laxAnonymousName,
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts `inPage` outside test: in a function', () => {
@@ -127,28 +99,12 @@ function somewhereElse() {
   await inPage(() => console.log('Hello!'));
 }
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: laxAnonymousName,
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
-  });
-
-  it('extracts named `inPageWithNamedFunction`', () => {
-    const { extractedFunctions } = analyzeFileContent(`
-test('...', async ({inPageWithNamedFunction}) => {
-  await inPageWithNamedFunction('say hello', () => console.log('Hello!'));
-});
-    `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: 'say hello',
-        code: `() => console.log('Hello!')`,
-        importedIdentifiers: [],
-      },
-    ]);
+    });
   });
 
   it('extracts aliased `inPage`', () => {
@@ -157,37 +113,33 @@ test('...', async ({inPage: run}) => {
   await run(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: laxAnonymousName,
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
-  it('extracts imported identifiers used in `inPageWithNamedFunction`', () => {
+  it('extracts imported identifiers used in `inPage`', () => {
     const { extractedFunctions } = analyzeFileContent(`
 import { something, somethingElse, somethingUsedOutside } from './something';
 import { somethingFromAnotherFile } from './another-file';
 
 console.log(somethingUsedOutside);
 
-inPageWithNamedFunction('say hi', () => {
+inPage(() => {
   console.log(something);
 });
 
-inPageWithNamedFunction('say bye', () => {
+inPage(() => {
   console.log(something);
   console.log(somethingFromAnotherFile);
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: 'say hi',
-        code: `() => {
-  console.log(something);
-}`,
+    expect(extractedFunctions).toStrictEqual({
+      7: {
+        code: `() => {\n  console.log(something);\n}`,
         importedIdentifiers: [
           {
             name: 'something',
@@ -195,12 +147,8 @@ inPageWithNamedFunction('say bye', () => {
           },
         ],
       },
-      {
-        name: 'say bye',
-        code: `() => {
-  console.log(something);
-  console.log(somethingFromAnotherFile);
-}`,
+      11: {
+        code: `() => {\n  console.log(something);\n  console.log(somethingFromAnotherFile);\n}`,
         importedIdentifiers: [
           {
             name: 'something',
@@ -212,7 +160,7 @@ inPageWithNamedFunction('say bye', () => {
           },
         ],
       },
-    ]);
+    });
   });
 
   it.todo('extracts imported identifiers with alias used in `inPage`');
@@ -235,31 +183,6 @@ inPageWithNamedFunction('say bye', () => {
     ).toThrow(InvalidInPageCallError);
   });
 
-  it('fails if `inPageWithNamedFunction` is called with too many args', () => {
-    expect(() =>
-      analyzeFileContent(
-        `inPageWithNamedFunction('say hi', {}, () => console.log('Say hi!'), 'superfluous');`
-      )
-    ).toThrow(InvalidInPageCallError);
-  });
-
-  it('fails if `inPageWithNamedFunction` name is not a string literal', () => {
-    expect(() =>
-      analyzeFileContent(`
-const name = 'say hi';
-inPageWithNamedFunction(name, () => console.log('Say hi!'));
-      `)
-    ).toThrow(InvalidInPageCallError);
-  });
-
-  it('fails if `inPageWithNamedFunction` name uses reserved `__lax__` prefix', () => {
-    expect(() =>
-      analyzeFileContent(`
-inPageWithNamedFunction('__lax__pretendingToBeAnonymous', () => console.log('Hi'));
-      `)
-    ).toThrow(InvalidInPageCallError);
-  });
-
   it('fails if `inPage` function is not an inline function', () => {
     expect(() =>
       analyzeFileContent(`
@@ -267,17 +190,6 @@ const fn = () => console.log('Say hi!');
 inPage(fn);
       `)
     ).toThrow(InvalidInPageCallError);
-  });
-
-  describe('duplicated named functions', () => {
-    it('fails if `inPageWithNamedFunction` is called with a duplicated name', () => {
-      expect(() =>
-        analyzeFileContent(`
-inPageWithNamedFunction('duplicate name', () => console.log('Say hi!'));
-inPageWithNamedFunction('duplicate name', () => console.log('Say hi!'));
-        `)
-      ).toThrow(DuplicatedNamedFunctionsError);
-    });
   });
 });
 

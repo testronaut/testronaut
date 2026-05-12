@@ -1,7 +1,4 @@
-export {
-  getInPageIdentifier,
-  getInPageWithNamedFunctionIdentifier,
-} from './lib/core/in-page-identifier';
+export { getInPageIdentifier } from './lib/core/in-page-identifier';
 export {
   AnalysisContext,
   createFileData,

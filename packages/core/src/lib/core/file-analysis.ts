@@ -3,14 +3,14 @@ import type { Optional } from '../utils/optional';
 export interface FileAnalysis {
   path: string;
   hash: string;
-  extractedFunctions: ExtractedFunction[];
+  extractedFunctions: Record<number, ExtractedFunction>;
 }
 
 export function createFileAnalysis(
   fileAnalysis: Optional<FileAnalysis, 'extractedFunctions'>
 ): FileAnalysis {
   return {
-    extractedFunctions: [],
+    extractedFunctions: {},
     ...fileAnalysis,
   };
 }
@@ -18,7 +18,6 @@ export function createFileAnalysis(
 export interface ExtractedFunction {
   code: string;
   importedIdentifiers: ImportedIdentifier[];
-  name: string;
 }
 
 export interface ImportedIdentifier {

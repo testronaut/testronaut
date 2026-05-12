@@ -3,10 +3,9 @@ import { ExtractionWriter } from './extraction-writer';
 import { createExtractedFunction } from '../core/file-analysis';
 import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
-import { computeHashes } from '../lax-hashing/compute-hashes';
 
+const line = 3;
 const code = '() => void true';
-const { laxHash } = computeHashes(code);
 
 describe(ExtractionWriter.name, () => {
   it('creates "index.ts" file on init', async () => {
@@ -61,10 +60,7 @@ describe(ExtractionWriter.name, () => {
       await setUpInitializedWriter();
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
@@ -74,7 +70,7 @@ describe(ExtractionWriter.name, () => {
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => void true
+    ${line}: () => void true
 };
 `),
     });
@@ -85,10 +81,7 @@ export const extractedFunctionsRecord = {
       await setUpInitializedWriter();
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
@@ -97,30 +90,6 @@ export const extractedFunctionsRecord = {
 // prettier-ignore
 // eslint-disable-next-line
 // @ts-nocheck
-`),
-    });
-  });
-
-  it('writes named `inPage` calls (inPageWithNamedFunction)', async () => {
-    const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
-      await setUpInitializedWriter();
-
-    await writer.write(
-      createFileContentWithExtractedFunction({
-        name: 'sayHello',
-        code: `() => { console.log('Hi!'); }`,
-      })
-    );
-
-    expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/generated/index.ts': expect.stringContaining(
-        `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
-      ),
-      '/my-project/generated/src/my-component.spec.ts':
-        expect.stringContaining(`\
-export const extractedFunctionsRecord = {
-    "sayHello": () => { console.log('Hi!'); }
-};
 `),
     });
   });
@@ -135,17 +104,14 @@ export const extractedFunctionsRecord = {
     );
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => void true
+    ${line}: () => void true
 };
 `),
     });
@@ -162,10 +128,7 @@ export const extractedFunctionsRecord = {
     );
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
@@ -173,9 +136,7 @@ export const extractedFunctionsRecord = {
         `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`
       ),
       '/my-project/generated/src/my-component.spec.ts': expect.stringContaining(
-        `export const extractedFunctionsRecord = {
-    "${laxHash}": () => void true
-};`
+        `export const extractedFunctionsRecord = {\n    ${line}: () => void true\n};`
       ),
     });
   });
@@ -191,10 +152,7 @@ export const extractedFunctionsRecord = {
     );
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
@@ -206,13 +164,11 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
   it('writes imports', async () => {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
-    const code = '() => { console.log(MyComponent); }';
-    const { laxHash } = computeHashes(code);
+    const codeWithImport = '() => { console.log(MyComponent); }';
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
+      createFileContentWithExtractedFunction(3, {
+        code: codeWithImport,
         importedIdentifiers: [
           { name: 'MyComponent', module: '@my-lib/my-component' },
         ],
@@ -224,7 +180,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
         expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => { console.log(MyComponent); }
+    3: () => { console.log(MyComponent); }
 };
 `),
     });
@@ -233,13 +189,11 @@ export const extractedFunctionsRecord = {
   it('relativizes imports', async () => {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
-    const code = '() => { console.log(MyComponent); }';
-    const { laxHash } = computeHashes(code);
+    const codeWithImport = '() => { console.log(MyComponent); }';
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
+      createFileContentWithExtractedFunction(3, {
+        code: codeWithImport,
         importedIdentifiers: [
           { name: 'MyComponent', module: './my-component' },
         ],
@@ -251,7 +205,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => { console.log(MyComponent); }
+    3: () => { console.log(MyComponent); }
 };
 `),
     });
@@ -261,26 +215,18 @@ export const extractedFunctionsRecord = {
     const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
       await setUpInitializedWriter();
 
-    const initialCode = '() => { console.log(MyComponent); }';
-    const { laxHash: initialLaxHash } = computeHashes(initialCode);
-
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: initialLaxHash,
-        code: initialCode,
+      createFileContentWithExtractedFunction(3, {
+        code: '() => { console.log(MyComponent); }',
         importedIdentifiers: [
           { name: 'MyComponent', module: '@my-lib/my-component' },
         ],
       })
     );
 
-    const code = '() => { console.log(MyService, MyServiceError); }';
-    const { laxHash } = computeHashes(code);
-
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: laxHash,
-        code,
+      createFileContentWithExtractedFunction(7, {
+        code: '() => { console.log(MyService, MyServiceError); }',
         importedIdentifiers: [
           { name: 'MyService', module: '@my-lib/my-service' },
           { name: 'MyServiceError', module: '@my-lib/my-service' },
@@ -293,7 +239,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
-    "${laxHash}": () => { console.log(MyService, MyServiceError); }
+    7: () => { console.log(MyService, MyServiceError); }
 };
 `),
     });
@@ -325,11 +271,12 @@ async function setUpWriter() {
     writer,
     projectFileAnalysisMother,
     createFileContentWithExtractedFunction: (
+      line: number,
       extractedFunction: Parameters<typeof createExtractedFunction>[0]
     ) =>
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(createExtractedFunction(extractedFunction))
+        .withExtractedFunction(line, createExtractedFunction(extractedFunction))
         .build(),
   };
 }
