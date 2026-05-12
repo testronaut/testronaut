@@ -4,7 +4,7 @@ import { createExtractedFunction } from '../core/file-analysis';
 import { fileAnalysisMother } from '../core/file-analysis.mother';
 import { FileSystemFake } from '../infra/file-system.fake';
 
-const functionName = '__line__3';
+const line = 3;
 const code = '() => void true';
 
 describe(ExtractionWriter.name, () => {
@@ -60,10 +60,7 @@ describe(ExtractionWriter.name, () => {
       await setUpInitializedWriter();
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: functionName,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toEqual({
@@ -73,7 +70,7 @@ describe(ExtractionWriter.name, () => {
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "${functionName}": () => void true
+    ${line}: () => void true
 };
 `),
     });
@@ -84,10 +81,7 @@ export const extractedFunctionsRecord = {
       await setUpInitializedWriter();
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: functionName,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
@@ -96,30 +90,6 @@ export const extractedFunctionsRecord = {
 // prettier-ignore
 // eslint-disable-next-line
 // @ts-nocheck
-`),
-    });
-  });
-
-  it('writes named `inPage` calls', async () => {
-    const { fileSystemFake, createFileContentWithExtractedFunction, writer } =
-      await setUpInitializedWriter();
-
-    await writer.write(
-      createFileContentWithExtractedFunction({
-        name: 'sayHello',
-        code: `() => { console.log('Hi!'); }`,
-      })
-    );
-
-    expect(fileSystemFake.getFiles()).toEqual({
-      '/my-project/generated/index.ts': expect.stringContaining(
-        `globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.spec.ts');`
-      ),
-      '/my-project/generated/src/my-component.spec.ts':
-        expect.stringContaining(`\
-export const extractedFunctionsRecord = {
-    "sayHello": () => { console.log('Hi!'); }
-};
 `),
     });
   });
@@ -134,17 +104,14 @@ export const extractedFunctionsRecord = {
     );
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: functionName,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
       '/my-project/generated/src/my-component.spec.ts':
         expect.stringContaining(`\
 export const extractedFunctionsRecord = {
-    "${functionName}": () => void true
+    ${line}: () => void true
 };
 `),
     });
@@ -161,10 +128,7 @@ export const extractedFunctionsRecord = {
     );
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: functionName,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
@@ -172,9 +136,7 @@ export const extractedFunctionsRecord = {
         `globalThis['hash|another-component.spec.ts'] = () => import('./another-component.spec.ts');`
       ),
       '/my-project/generated/src/my-component.spec.ts': expect.stringContaining(
-        `export const extractedFunctionsRecord = {
-    "${functionName}": () => void true
-};`
+        `export const extractedFunctionsRecord = {\n    ${line}: () => void true\n};`
       ),
     });
   });
@@ -190,10 +152,7 @@ export const extractedFunctionsRecord = {
     );
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: functionName,
-        code,
-      })
+      createFileContentWithExtractedFunction(line, { code })
     );
 
     expect(fileSystemFake.getFiles()).toMatchObject({
@@ -208,8 +167,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
     const codeWithImport = '() => { console.log(MyComponent); }';
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: '__line__3',
+      createFileContentWithExtractedFunction(3, {
         code: codeWithImport,
         importedIdentifiers: [
           { name: 'MyComponent', module: '@my-lib/my-component' },
@@ -222,7 +180,7 @@ globalThis['hash|src/my-component.spec.ts'] = () => import('./src/my-component.s
         expect.stringContaining(`\
 import { MyComponent } from "@my-lib/my-component";
 export const extractedFunctionsRecord = {
-    "__line__3": () => { console.log(MyComponent); }
+    3: () => { console.log(MyComponent); }
 };
 `),
     });
@@ -234,8 +192,7 @@ export const extractedFunctionsRecord = {
     const codeWithImport = '() => { console.log(MyComponent); }';
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: '__line__3',
+      createFileContentWithExtractedFunction(3, {
         code: codeWithImport,
         importedIdentifiers: [
           { name: 'MyComponent', module: './my-component' },
@@ -248,7 +205,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyComponent } from "../../src/my-component";
 export const extractedFunctionsRecord = {
-    "__line__3": () => { console.log(MyComponent); }
+    3: () => { console.log(MyComponent); }
 };
 `),
     });
@@ -259,8 +216,7 @@ export const extractedFunctionsRecord = {
       await setUpInitializedWriter();
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: '__line__3',
+      createFileContentWithExtractedFunction(3, {
         code: '() => { console.log(MyComponent); }',
         importedIdentifiers: [
           { name: 'MyComponent', module: '@my-lib/my-component' },
@@ -269,8 +225,7 @@ export const extractedFunctionsRecord = {
     );
 
     await writer.write(
-      createFileContentWithExtractedFunction({
-        name: '__line__7',
+      createFileContentWithExtractedFunction(7, {
         code: '() => { console.log(MyService, MyServiceError); }',
         importedIdentifiers: [
           { name: 'MyService', module: '@my-lib/my-service' },
@@ -284,7 +239,7 @@ export const extractedFunctionsRecord = {
         expect.stringContaining(`\
 import { MyService, MyServiceError } from "@my-lib/my-service";
 export const extractedFunctionsRecord = {
-    "__line__7": () => { console.log(MyService, MyServiceError); }
+    7: () => { console.log(MyService, MyServiceError); }
 };
 `),
     });
@@ -316,11 +271,12 @@ async function setUpWriter() {
     writer,
     projectFileAnalysisMother,
     createFileContentWithExtractedFunction: (
+      line: number,
       extractedFunction: Parameters<typeof createExtractedFunction>[0]
     ) =>
       projectFileAnalysisMother
         .withBasicInfo()
-        .withExtractedFunction(createExtractedFunction(extractedFunction))
+        .withExtractedFunction(line, createExtractedFunction(extractedFunction))
         .build(),
   };
 }

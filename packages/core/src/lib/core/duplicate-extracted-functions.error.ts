@@ -1,11 +1,11 @@
-export class DuplicatedNamedFunctionsError extends Error {
-  override name = 'DuplicatedNamedFunctionsError';
+export class MultiInPageOnSameLineError extends Error {
+  override name = 'MultiInPageOnSameLineError';
 
-  constructor(filePath: string, name: string) {
+  constructor(filePath: string, line: number) {
     super(
-      `\`inPage\` calls must be on unique lines — each call gets its identifier from its source line number.
+      `\`inPage\` calls must be on unique lines.
 
-The identifier "${name}" in the file ${filePath} is used by more than one call. Move the conflicting calls to separate lines.`
+Line ${line} in ${filePath} has more than one \`inPage\` call. Move the conflicting calls to separate lines.`
     );
   }
 }

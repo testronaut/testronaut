@@ -6,8 +6,7 @@ import {
   type FileAnalysis,
   type ImportedIdentifier,
 } from '../core/file-analysis';
-import { lineBasedName } from '../core/in-page-line-prefix';
-import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
+import { MultiInPageOnSameLineError } from '../core/duplicate-extracted-functions.error';
 import { AnalysisContext, type FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitInPageCalls } from './visit-in-page-calls';
@@ -17,8 +16,7 @@ export function analyze(fileData: FileData): FileAnalysis {
 
   const ctx = new AnalysisContext(fileData);
 
-  const extractedFunctions: ExtractedFunction[] = [];
-  const functionNames: string[] = [];
+  const extractedFunctions: Record<number, ExtractedFunction> = {};
 
   visitInPageCalls(ctx, (inPageCall) => {
     const importedIdentifiers: ImportedIdentifier[] = [];
@@ -29,20 +27,16 @@ export function analyze(fileData: FileData): FileAnalysis {
     const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
       inPageCall.node.getStart(ctx.sourceFile)
     );
-    const name = lineBasedName(line + 1);
+    const lineNr = line + 1;
 
-    if (functionNames.includes(name)) {
-      throw new DuplicatedNamedFunctionsError(fileData.path, name);
+    if (lineNr in extractedFunctions) {
+      throw new MultiInPageOnSameLineError(fileData.path, lineNr);
     }
-    functionNames.push(name);
 
-    extractedFunctions.push(
-      createExtractedFunction({
-        code: inPageCall.code,
-        name,
-        importedIdentifiers,
-      })
-    );
+    extractedFunctions[lineNr] = createExtractedFunction({
+      code: inPageCall.code,
+      importedIdentifiers,
+    });
   });
 
   return createFileAnalysis({

@@ -26,14 +26,14 @@ function createFileAnalysisInnerMother(fileAnalysis: FileAnalysis) {
     build() {
       return fileAnalysis;
     },
-    withExtractedFunction(extractedFunction: ExtractedFunction) {
+    withExtractedFunction(line: number, extractedFunction: ExtractedFunction) {
       return createFileAnalysisInnerMother(
         createFileAnalysis({
           ...fileAnalysis,
-          extractedFunctions: [
+          extractedFunctions: {
             ...fileAnalysis.extractedFunctions,
-            extractedFunction,
-          ],
+            [line]: extractedFunction,
+          },
         })
       );
     },

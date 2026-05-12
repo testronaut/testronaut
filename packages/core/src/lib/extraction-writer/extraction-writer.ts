@@ -1,10 +1,7 @@
 import { join, relative } from 'node:path';
 import * as ts from 'typescript';
 
-import {
-  type ExtractedFunction,
-  type FileAnalysis,
-} from '../core/file-analysis';
+import { type FileAnalysis } from '../core/file-analysis';
 import { type FileSystem } from '../infra/file-system';
 import { FileSystemImpl } from '../infra/file-system.impl';
 import {
@@ -150,11 +147,9 @@ ${this.#generateExtractedFunctionsFile({
     destFilePath: string;
     fileAnalysis: FileAnalysis;
   }) {
-    let importIdentifiers = [
-      ...fileAnalysis.extractedFunctions
-        .map((extractedFunction) => extractedFunction.importedIdentifiers)
-        .flat(),
-    ];
+    let importIdentifiers = Object.values(fileAnalysis.extractedFunctions).flatMap(
+      (extractedFunction) => extractedFunction.importedIdentifiers
+    );
 
     importIdentifiers = importIdentifiers.map((importIdentifier) => ({
       ...importIdentifier,
@@ -179,17 +174,14 @@ ${this.#generateExtractedFunctionsFile({
 
   /**
    * Generates the variable statement for the extracted functions.
-   * e.g., `export const extractedFunctionsRecord = {'': () => {...}}`
+   * e.g., `export const extractedFunctionsRecord = {3: () => {...}}`
    */
   #generateExtractedFunctionsVariableStatement(
-    extractedFunctions: ExtractedFunction[]
+    extractedFunctions: FileAnalysis['extractedFunctions']
   ) {
-    const extractedFunctionsRecord = extractedFunctions.reduce<
-      Record<string, string>
-    >((acc, extractedFunction) => {
-      acc[extractedFunction.name ?? ''] = extractedFunction.code;
-      return acc;
-    }, {});
+    const extractedFunctionsRecord: Record<number, string> = Object.fromEntries(
+      Object.entries(extractedFunctions).map(([line, fn]) => [Number(line), fn.code])
+    );
 
     return generateExportedConstObjectLiteral({
       variableName: 'extractedFunctionsRecord',

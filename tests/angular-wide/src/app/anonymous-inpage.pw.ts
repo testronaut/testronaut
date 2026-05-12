@@ -25,3 +25,15 @@ test('anonymous inPage with block body and local const resolves correctly', asyn
   });
   await expect(page.getByText('block const marker')).toBeVisible();
 });
+
+for (const marker of ['alpha', 'beta']) {
+  test(`parameterized inPage resolves correctly: ${marker}`, async ({
+    page,
+    inPage,
+  }) => {
+    await inPage(() => {
+      document.body.textContent = marker;
+    });
+    await expect(page.getByText(marker)).toBeVisible();
+  });
+}

@@ -11,7 +11,6 @@ import { Runner } from '../runner/runner';
 
 import type { TestronautOptions } from './options';
 import { captureInPageCallLocation } from './capture-in-page-call-location';
-import { lineBasedName } from '../core/in-page-line-prefix';
 
 /**
  * This avoids transitive dependencies type inference errors such as:
@@ -89,9 +88,7 @@ More information on https://testronaut.dev`);
           `This is likely a Testronaut bug. Please report it at https://github.com/testronaut/testronaut/issues`
         );
       }
-      const functionName = lineBasedName(location.line);
-
-      return await runner.inPage(fileHash, functionName, data);
+      return await runner.inPage(fileHash, location.line, data);
     };
 
     await use(inPageImpl);

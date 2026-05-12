@@ -3,7 +3,7 @@ import { FileAnalysis } from '../core/file-analysis';
 
 import { analyze } from './analyze';
 import { InvalidInPageCallError } from './visit-in-page-calls';
-import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
+import { MultiInPageOnSameLineError } from '../core/duplicate-extracted-functions.error';
 
 describe(analyze.name, () => {
   it('generates file hash', () => {
@@ -21,34 +21,34 @@ test('...', async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: '__line__3',
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
-  it('extracts multiple anonymous `inPage` calls in one file with distinct line-based names', () => {
+  it('extracts multiple anonymous `inPage` calls in one file with distinct line numbers', () => {
     const { extractedFunctions } = analyzeFileContent(`
 test('...', async ({inPage}) => {
   await inPage(() => console.log('a'));
   await inPage(() => console.log('b'));
 });
     `);
-    expect(extractedFunctions).toHaveLength(2);
-    expect(extractedFunctions[0].name).toBe('__line__3');
-    expect(extractedFunctions[1].name).toBe('__line__4');
+    expect(extractedFunctions).toStrictEqual({
+      3: { code: `() => console.log('a')`, importedIdentifiers: [] },
+      4: { code: `() => console.log('b')`, importedIdentifiers: [] },
+    });
   });
 
-  it('throws DuplicatedNamedFunctionsError when two anonymous inPage calls share a line', () => {
+  it('throws MultiInPageOnSameLineError when two anonymous inPage calls share a line', () => {
     expect(() =>
       analyzeFileContent(
         // prettier-ignore
         `test('...', async ({inPage}) => { await inPage(() => 'a'); await inPage(() => 'b'); });`
       )
-    ).toThrow(DuplicatedNamedFunctionsError);
+    ).toThrow(MultiInPageOnSameLineError);
   });
 
   it('extracts `inPage` async arrow function', () => {
@@ -57,13 +57,12 @@ test('...', async ({inPage}) => {
   await inPage(async () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: '__line__3',
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `async () => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts `inPage` function call', () => {
@@ -72,13 +71,12 @@ test('...', async ({inPage}) => {
   await inPage(function sayHello() { console.log('Hello!'); });
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: '__line__3',
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `function sayHello() { console.log('Hello!'); }`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts `inPage` outside test: in beforeEach', () => {
@@ -87,13 +85,12 @@ test.beforeEach(async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: '__line__3',
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts `inPage` outside test: in a function', () => {
@@ -102,13 +99,12 @@ function somewhereElse() {
   await inPage(() => console.log('Hello!'));
 }
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: '__line__3',
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts aliased `inPage`', () => {
@@ -117,13 +113,12 @@ test('...', async ({inPage: run}) => {
   await run(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: '__line__3',
+    expect(extractedFunctions).toStrictEqual({
+      3: {
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
-    ]);
+    });
   });
 
   it('extracts imported identifiers used in `inPage`', () => {
@@ -142,12 +137,9 @@ inPage(() => {
   console.log(somethingFromAnotherFile);
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
-      {
-        name: '__line__7',
-        code: `() => {
-  console.log(something);
-}`,
+    expect(extractedFunctions).toStrictEqual({
+      7: {
+        code: `() => {\n  console.log(something);\n}`,
         importedIdentifiers: [
           {
             name: 'something',
@@ -155,12 +147,8 @@ inPage(() => {
           },
         ],
       },
-      {
-        name: '__line__11',
-        code: `() => {
-  console.log(something);
-  console.log(somethingFromAnotherFile);
-}`,
+      11: {
+        code: `() => {\n  console.log(something);\n  console.log(somethingFromAnotherFile);\n}`,
         importedIdentifiers: [
           {
             name: 'something',
@@ -172,7 +160,7 @@ inPage(() => {
           },
         ],
       },
-    ]);
+    });
   });
 
   it.todo('extracts imported identifiers with alias used in `inPage`');
