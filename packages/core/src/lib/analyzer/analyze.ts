@@ -44,7 +44,7 @@ export function analyze(fileData: FileData): FileAnalysis {
       extractedFunctions.push(
         createExtractedFunction({
           code: inPageCall.code,
-          name: toExtractedFunctionSyntheticKey({ line }),
+          name: toExtractedFunctionSyntheticKey({ line: line + 1 }),
           importedIdentifiers,
         })
       );

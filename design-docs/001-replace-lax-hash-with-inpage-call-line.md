@@ -24,7 +24,7 @@ const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(inPageCall.node.ge
 ```
 
 - [x] PR#1 — Use `line:${line + 1}` as extracted function name. (`line:` is more readable and we will remove `inPageWithNamedFunction` so no collisions).
-- [ ] PR#1 — In `fixtures.ts`, instead of computing hashes, analyze the call stack and collect the `inPage` call line number:
+- [x] PR#1 — In `fixtures.ts`, instead of computing hashes, analyze the call stack and collect the `inPage` call line number:
 
 ```ts
 import { parse } from 'stack-trace';
@@ -117,7 +117,7 @@ test('...', async ({ inPage }) => {
 
 ## Playwright `fixtures.ts` + runner integration
 
-### [ ] PR#1 — Allow decorators
+### [x] PR#1 — Allow decorators
 
 - Act: mount an inline component
 

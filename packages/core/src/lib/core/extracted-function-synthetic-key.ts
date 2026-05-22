@@ -9,5 +9,5 @@ export function toExtractedFunctionSyntheticKey({
 }: {
   line: number;
 }): ExtractedFunctionSyntheticKey {
-  return `line:${line + 1}` as ExtractedFunctionSyntheticKey;
+  return `line:${line}` as ExtractedFunctionSyntheticKey;
 }

@@ -1,4 +1,6 @@
-import { test } from '@testronaut/core';
+import { Component } from '@angular/core';
+import { expect, test } from '@testronaut/angular';
+import { mount } from '@testronaut/angular/browser';
 
 test.describe('general', () => {
   test('no collision for semicolon differences (implementation detail)', async ({
@@ -35,14 +37,14 @@ test.describe('general', () => {
     await inPage(() => console.log(4));
   });
 
-  test.fixme('allow decorators', async ({ inPage, page }) => {
-    // Act: mount an inline component
-    // await inPage(() => {
-    //   @Component({ template: '<h1>Hello!</h1>' })
-    //   class Greetings {}
-    //   return mount(Greetings);
-    // });
-    // Assert: Heading is "Hello!"
+  test('allow decorators', async ({ inPage, page }) => {
+    await inPage(() => {
+      @Component({ template: '<h1>Hello!</h1>' })
+      class Greetings {}
+
+      return mount(Greetings);
+    });
+
+    await expect(page.getByRole('heading')).toHaveText('Hello!');
   });
-  
 });
