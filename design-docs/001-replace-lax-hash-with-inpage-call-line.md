@@ -169,7 +169,7 @@ flowchart TD
   PR1["PR1 Line-based `inPage`"]
   PR2["PR2 MultiInPageCallsOnSameLineError"]
   PR3["PR3 Remove lax hashing remains"]
-  PR4["PR4 Remove `inPageWithNamedFunction`]
+  PR4["PR4 Remove `inPageWithNamedFunction`"]
 
   PR1 --> PR2
   PR1 --> PR3
