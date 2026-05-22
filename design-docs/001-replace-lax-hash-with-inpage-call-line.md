@@ -113,7 +113,7 @@ test('...', async ({ inPage }) => {
 
 ## `extraction-writer.ts`
 
-### [ ] PR#1 — Update all tests to use `line:${line}` in the testing data.
+### [x] PR#1 — Update all tests to use `line:${line}` in the testing data.
 
 ## Playwright `fixtures.ts` + runner integration
 
