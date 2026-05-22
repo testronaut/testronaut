@@ -23,7 +23,7 @@ const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
   inPageCall.node.getStart(ctx.sourceFile)
 );
 ```
-- [ ] PR#1 — Use `line:${line}` as extracted function name. (`line:` is more readable and we will remove `inPageWithNamedFunction` so no collisions).
+- [ ] PR#1 — Use `line:${line + 1}` as extracted function name. (`line:` is more readable and we will remove `inPageWithNamedFunction` so no collisions).
 - [ ] PR#1 — In `fixtures.ts`, instead of computing hashes, analyze the call stack and collect the `inPage` call line number:
 
 <details>
@@ -60,7 +60,7 @@ function _maybeCaptureParentCallLocation(): {
 
 </details>
 
-- [ ] PR#2 — If multiple extracted functions point to same file, throw `MultiInPageCallsOnSameLineError`. (In other words, rename `DuplicatedNamedFunctionsError` and rephrase error.)
+- [ ] PR#2 — If multiple extracted functions point to same line, throw `MultiInPageCallsOnSameLineError`. (In other words, rename `DuplicatedNamedFunctionsError` and rephrase error.)
 - [ ] PR#3 — Remove anything related to lax hashing.
 - [ ] PR#4 — Remove `inPageWithNamedFunction`.
 
