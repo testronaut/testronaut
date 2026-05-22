@@ -17,13 +17,13 @@
 
 ## Implementation Details
 
-- [ ] PR#1 — In `analyze.ts`, collect the line number:
+- [x] PR#1 — In `analyze.ts`, collect the line number:
 
 ```ts
 const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(inPageCall.node.getStart(ctx.sourceFile));
 ```
 
-- [ ] PR#1 — Use `line:${line + 1}` as extracted function name. (`line:` is more readable and we will remove `inPageWithNamedFunction` so no collisions).
+- [x] PR#1 — Use `line:${line + 1}` as extracted function name. (`line:` is more readable and we will remove `inPageWithNamedFunction` so no collisions).
 - [ ] PR#1 — In `fixtures.ts`, instead of computing hashes, analyze the call stack and collect the `inPage` call line number:
 
 ```ts
@@ -43,7 +43,7 @@ function _maybeCaptureParentCallLocation() {
 
 ## `analyze`
 
-### [ ] PR#1 — Extract line number
+### [x] PR#1 — Extract line number
 
 - Act: call `analyze` with
 
@@ -55,7 +55,7 @@ test('...', async ({ inPage }) => {
 
 - Assert: extracted function's name is `line:2`
 
-### [ ] PR#1 — Extract different `inPage` calls
+### [x] PR#1 — Extract different `inPage` calls
 
 - Act: call `analyze` with
 
@@ -70,7 +70,7 @@ test('...', async ({ inPage }) => {
   - `{name: 'line:2', code: "() => console.log('Hello!')"}`
   - `{name: 'line:3', code: "() => console.log('Goodbye!')"}`
 
-### [ ] PR#1 — Extract identical `inPage` calls
+### [x] PR#1 — Extract identical `inPage` calls
 
 - Act: call `analyze` with
 
@@ -85,7 +85,7 @@ test('...', async ({ inPage }) => {
   - `{name: 'line:2', code: "() => console.log('Hello!')"}`
   - `{name: 'line:3', code: "() => console.log('Hello!')"}`
 
-### [ ] PR#1 — Use partial matching for all other tests
+### [x] PR#1 — Use partial matching for all other tests
 
 In all other tests, use partial matching to only match `code` and `importedIdentifiers`. Do not check the `name` field in all tests.
 
