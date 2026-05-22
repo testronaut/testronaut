@@ -29,6 +29,11 @@ export function analyze(fileData: FileData): FileAnalysis {
     );
 
     if (!inPageCall.name) {
+      const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
+        inPageCall.node.getStart(ctx.sourceFile)
+      );
+      const lineBasedName = `line:${line + 1}`;
+
       const { laxHash, fullHash } = computeHashes(inPageCall.code);
       const existingFull = laxToFull[laxHash];
       if (existingFull !== undefined && existingFull.fullHash !== fullHash) {
@@ -39,7 +44,7 @@ export function analyze(fileData: FileData): FileAnalysis {
       extractedFunctions.push(
         createExtractedFunction({
           code: inPageCall.code,
-          name: laxHash,
+          name: lineBasedName,
           importedIdentifiers,
         })
       );
