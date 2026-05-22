@@ -12,6 +12,7 @@ import { AnalysisContext, type FileData } from './core';
 import { visitImportedIdentifiers } from './visit-imported-identifiers';
 import { visitInPageCalls } from './visit-in-page-calls';
 import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
+import { toExtractedFunctionSyntheticKey } from '../core/extracted-function-synthetic-key';
 
 export function analyze(fileData: FileData): FileAnalysis {
   const hash = generateHash(fileData.content);
@@ -32,7 +33,6 @@ export function analyze(fileData: FileData): FileAnalysis {
       const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
         inPageCall.node.getStart(ctx.sourceFile)
       );
-      const lineBasedName = `line:${line + 1}`;
 
       const { laxHash, fullHash } = computeHashes(inPageCall.code);
       const existingFull = laxToFull[laxHash];
@@ -44,7 +44,7 @@ export function analyze(fileData: FileData): FileAnalysis {
       extractedFunctions.push(
         createExtractedFunction({
           code: inPageCall.code,
-          name: lineBasedName,
+          name: toExtractedFunctionSyntheticKey({ line }),
           importedIdentifiers,
         })
       );
