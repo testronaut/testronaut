@@ -7,11 +7,10 @@ import type {
   TestType,
 } from '@playwright/test';
 import { test as base } from '@playwright/test';
+import { computeHashes } from '../lax-hashing/compute-hashes';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
-
 import type { TestronautOptions } from './options';
-import { computeHashes } from '../lax-hashing/compute-hashes';
 
 /**
  * This avoids transitive dependencies type inference errors such as:
@@ -24,7 +23,7 @@ export type {
   PlaywrightTestOptions,
   PlaywrightWorkerArgs,
   PlaywrightWorkerOptions,
-  TestType,
+  TestType
 };
 
 /**

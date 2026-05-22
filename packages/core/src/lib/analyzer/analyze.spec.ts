@@ -18,6 +18,36 @@ test('...', async ({inPage}) => {
     expect(hash).toBe('b97e4f00');
   });
 
+  it.todo('extract line number', () => {
+    // Act: call `analyze` with
+    // test('...', async ({inPage}) => {
+    //   await inPage(() => console.log('Hello!'));
+    // });
+    // Assert: extracted function's name is `line:2`
+  });
+
+  it.todo('extract different `inPage` calls', () => {
+    // Act: call `analyze` with
+    // test('...', async ({inPage}) => {
+    //   await inPage(() => console.log('Hello!'));
+    //   await inPage(() => console.log('Goodbye!'));
+    // });
+    // Assert: extracted functions are:
+    // - `{name: 'line:2', code: "() => console.log('Hello!')"}`
+    // - `{name: 'line:3', code: "() => console.log('Goodbye!')"}`
+  });
+
+  it.todo('extract identical `inPage` calls', () => {
+    // Act: call `analyze` with
+    // test('...', async ({inPage}) => {
+    //   await inPage(() => console.log('Hello!'));
+    //   await inPage(() => console.log('Hello!'));
+    // });
+    // Assert: extracted functions are:
+    // - `{name: 'line:2', code: "() => console.log('Hello!')"}`
+    // - `{name: 'line:3', code: "() => console.log('Hello!')"}`
+  });
+
   it('extracts `inPage` sync arrow function', () => {
     const { extractedFunctions } = analyzeFileContent(`
 test('...', async ({inPage}) => {

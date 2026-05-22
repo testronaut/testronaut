@@ -34,4 +34,15 @@ test.describe('general', () => {
     await inPage(() => console.log(3));
     await inPage(() => console.log(4));
   });
+
+  test.fixme('allow decorators', async ({ inPage, page }) => {
+    // Act: mount an inline component
+    // await inPage(() => {
+    //   @Component({ template: '<h1>Hello!</h1>' })
+    //   class Greetings {}
+    //   return mount(Greetings);
+    // });
+    // Assert: Heading is "Hello!"
+  });
+  
 });
