@@ -10,7 +10,7 @@
 
 # Desired Behavior
 
-- Use line number as the synthetic key for each extracted function. 
+- Use line number as the synthetic key for each extracted function.
 - Throw an `MultiInPageCallsOnSameLineError` error when multiple `inPage` calls in one line. Advise authors to separate calls onto distinct lines.
 
 # Design
@@ -18,11 +18,11 @@
 ## Implementation Details
 
 - [ ] PR#1 — In `analyze.ts`, collect the line number:
+
 ```ts
-const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
-  inPageCall.node.getStart(ctx.sourceFile)
-);
+const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(inPageCall.node.getStart(ctx.sourceFile));
 ```
+
 - [ ] PR#1 — Use `line:${line + 1}` as extracted function name. (`line:` is more readable and we will remove `inPageWithNamedFunction` so no collisions).
 - [ ] PR#1 — In `fixtures.ts`, instead of computing hashes, analyze the call stack and collect the `inPage` call line number:
 
@@ -48,7 +48,7 @@ function _maybeCaptureParentCallLocation() {
 - Act: call `analyze` with
 
 ```ts
-test('...', async ({inPage}) => {
+test('...', async ({ inPage }) => {
   await inPage(() => console.log('Hello!'));
 });
 ```
@@ -60,8 +60,7 @@ test('...', async ({inPage}) => {
 - Act: call `analyze` with
 
 ```ts
-
-test('...', async ({inPage}) => {
+test('...', async ({ inPage }) => {
   await inPage(() => console.log('Hello!'));
   await inPage(() => console.log('Goodbye!'));
 });
@@ -76,7 +75,7 @@ test('...', async ({inPage}) => {
 - Act: call `analyze` with
 
 ```ts
-test('...', async ({inPage}) => {
+test('...', async ({ inPage }) => {
   await inPage(() => console.log('Hello!'));
   await inPage(() => console.log('Hello!'));
 });
@@ -85,7 +84,6 @@ test('...', async ({inPage}) => {
 - Assert: extracted function are:
   - `{name: 'line:2', code: "() => console.log('Hello!')"}`
   - `{name: 'line:3', code: "() => console.log('Hello!')"}`
-
 
 ### [ ] PR#1 — Use partial matching for all other tests
 
@@ -102,13 +100,16 @@ In all other tests, use partial matching to only match `code` and `importedIdent
 - [ ] PR#4 — ALL TESTS STARTING WITH: fails if `inPageWithNamedFunction`
 
 ### [ ] PR#2 — Same-line duplicate anonymous `inPage`
+
 - Act: call `analyze` with
+
 ```ts
-test('...', async ({inPage}) => {
-  const result = await inPage(() => null) ?? await inPage(() => 42);
+test('...', async ({ inPage }) => {
+  const result = (await inPage(() => null)) ?? (await inPage(() => 42));
 });
 ```
-- Assert: throws `MultiInPageCallsOnSameLineError` with message "Multiple `inPage` calls on the same line are not allowed. Please split them onto separate lines."  
+
+- Assert: throws `MultiInPageCallsOnSameLineError` with message "Multiple `inPage` calls on the same line are not allowed. Please split them onto separate lines."
 
 ## `extraction-writer.ts`
 
@@ -119,15 +120,17 @@ test('...', async ({inPage}) => {
 ### [ ] PR#1 — Allow decorators
 
 - Act: mount an inline component
+
 ```ts
-test('...', async ({inPage}) => {
+test('...', async ({ inPage }) => {
   await inPage(() => {
-    @Component({template: '<h1>Hello!</h1>'})
+    @Component({ template: '<h1>Hello!</h1>' })
     class Greetings {}
     return mount(Greetings);
   });
 });
 ```
+
 - Assert: Heading is "Hello!"
 
 ### [ ] PR#3 — Remove the following tests
@@ -153,7 +156,6 @@ flowchart TD
 ## PR1 — Line-based `inPage`
 
 - Replace lax hashing with line-based `inPage`, but do not remove code related to lax hashing.
-
 
 ## PR2 — `MultiInPageCallsOnSameLineError`
 
