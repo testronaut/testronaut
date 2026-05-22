@@ -26,39 +26,14 @@ const { line } = ctx.sourceFile.getLineAndCharacterOfPosition(
 - [ ] PR#1 — Use `line:${line + 1}` as extracted function name. (`line:` is more readable and we will remove `inPageWithNamedFunction` so no collisions).
 - [ ] PR#1 — In `fixtures.ts`, instead of computing hashes, analyze the call stack and collect the `inPage` call line number:
 
-<details>
-<summary>Example</summary>
-
 ```ts
-function _maybeCaptureParentCallLocation(): {
-  filePath: string;
-  line: number;
-} | null {
-  const error = new Error();
-  /**
-   * The stack trace is like this:
-   * Error
-   *     at _captureParentCallLocation
-   *     at inPageWithNamedFunctionImpl
-   *     at file:///Users/y/Desktop/demo.ts:1:1 <--- this is the line we want to capture
-   */
-  const stack = error.stack?.split('\n')[3];
-  if (!stack) {
-    return null;
-  }
-  const [filePath, lineStr] = stack
-    .replace(/ +at file:\/\//, '')
-    .trim()
-    .split(':');
-  const line = parseInt(lineStr);
-  if (isNaN(line)) {
-    return null;
-  }
-  return { filePath, line };
+import { parse } from 'stack-trace';
+
+function _maybeCaptureParentCallLocation() {
+  const frame = parse(new Error())[1];
+  return frame.getLineNumber();
 }
 ```
-
-</details>
 
 - [ ] PR#2 — If multiple extracted functions point to same line, throw `MultiInPageCallsOnSameLineError`. (In other words, rename `DuplicatedNamedFunctionsError` and rephrase error.)
 - [ ] PR#3 — Remove anything related to lax hashing.
@@ -192,7 +167,10 @@ Remove `inPageWithNamedFunction` and all related code.
 
 # Alternatives Considered
 
--
+## Use `node:util`'s `getCallSites` to collect the call site.
+
+This doesn't work because it does not detect the right line. It misses the stack trace as fixed by Playwright.
+The only reliable way is through the stack trace.
 
 # Kitchen Sink
 
