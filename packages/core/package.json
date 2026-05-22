@@ -15,7 +15,7 @@
     "xxhashjs": "^0.2.2"
   },
   "peerDependencies": {
-    "@playwright/test": ">=1.36.0 <=1.60.0"
+    "@playwright/test": ">=1.36.0 <=1.56.0"
   },
   "devDependencies": {
     "@types/stack-trace": "0.0.33",
