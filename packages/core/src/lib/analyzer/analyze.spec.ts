@@ -19,33 +19,57 @@ test('...', async ({inPage}) => {
   });
 
   it.todo('extract line number', () => {
-    // Act: call `analyze` with
-    // test('...', async ({inPage}) => {
-    //   await inPage(() => console.log('Hello!'));
-    // });
-    // Assert: extracted function's name is `line:2`
+    const { extractedFunctions } = analyzeFileContent(`test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
+});
+`);
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: 'line:2',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it.todo('extract different `inPage` calls', () => {
-    // Act: call `analyze` with
-    // test('...', async ({inPage}) => {
-    //   await inPage(() => console.log('Hello!'));
-    //   await inPage(() => console.log('Goodbye!'));
-    // });
-    // Assert: extracted functions are:
-    // - `{name: 'line:2', code: "() => console.log('Hello!')"}`
-    // - `{name: 'line:3', code: "() => console.log('Goodbye!')"}`
+    const { extractedFunctions } = analyzeFileContent(`test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
+  await inPage(() => console.log('Goodbye!'));
+});
+`);
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: 'line:2',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+      {
+        name: 'line:3',
+        code: `() => console.log('Goodbye!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it.todo('extract identical `inPage` calls', () => {
-    // Act: call `analyze` with
-    // test('...', async ({inPage}) => {
-    //   await inPage(() => console.log('Hello!'));
-    //   await inPage(() => console.log('Hello!'));
-    // });
-    // Assert: extracted functions are:
-    // - `{name: 'line:2', code: "() => console.log('Hello!')"}`
-    // - `{name: 'line:3', code: "() => console.log('Hello!')"}`
+    const { extractedFunctions } = analyzeFileContent(`test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
+  await inPage(() => console.log('Hello!'));
+});
+`);
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: 'line:2',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+      {
+        name: 'line:3',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
   });
 
   it('extracts `inPage` sync arrow function', () => {
