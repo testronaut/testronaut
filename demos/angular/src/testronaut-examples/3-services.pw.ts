@@ -1,16 +1,16 @@
-import { test, expect } from '@testronaut/angular';
+import { Injectable } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { expect, test } from '@testronaut/angular';
+import { mount } from '@testronaut/angular/browser';
 import {
   ClickMe,
   MessageService,
 } from './components/3-click-me-message-via-service';
-import { TestBed } from '@angular/core/testing';
-import { MockedMessageService } from './test-helpers/mocked-message-service';
-import { Injectable } from '@angular/core';
 import {
   injectMessageServiceFake,
   provideMessageServiceFake,
 } from './test-helpers/message-service-fake';
-import { mount } from 'packages/angular/browser';
+import { MockedMessageService } from './test-helpers/mocked-message-service';
 
 /**
  * Demonstrates mocking and faking services.
@@ -20,20 +20,14 @@ import { mount } from 'packages/angular/browser';
  * Any code, which runs in the browser, has to be imported from a separate or has
  * be declared within the `inPage` function.
  */
-test('should use the real message service', async ({
-  inPage,
-  page,
-}) => {
+test('should use the real message service', async ({ inPage, page }) => {
   await inPage(() => mount(ClickMe));
   await page.getByRole('button', { name: 'Click me' }).click();
   await expect(page.getByText('Lift Off!')).toBeVisible();
 });
 
 test.describe('mocks', () => {
-  test('should mock the message service embedded', async ({
-    inPage,
-    page,
-  }) => {
+  test('should mock the message service embedded', async ({ inPage, page }) => {
     await inPage(() => {
       class EmbeddedMockedMessageService {
         getMessage() {
@@ -76,9 +70,10 @@ test.describe('mocks', () => {
 test.describe('fakes', () => {
   test('should fake the message service embedded', async ({
     inPage,
+    inPageWithNamedFunction,
     page,
   }) => {
-    await inPage(() => {
+    await inPageWithNamedFunction('fake the message service', () => {
       @Injectable({ providedIn: 'root' })
       class MessageServiceFake implements MessageService {
         #message = '';
@@ -117,8 +112,7 @@ test.describe('fakes', () => {
       });
 
       injectMessageServiceFake().setMessage('Fake Lift Off!');
-    }
-    );
+    });
 
     await inPage(() => TestBed.createComponent(ClickMe));
     await page.getByRole('button', { name: 'Click me' }).click();
