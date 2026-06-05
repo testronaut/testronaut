@@ -91,7 +91,7 @@
         "spa": true
       }
     },
-    "e2e": {
+    "testronaut": {
       "command": "playwright test",
       "options": {
         "cwd": "{projectRoot}"

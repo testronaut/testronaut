@@ -1,7 +1,7 @@
 import { Component, Directive } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { expect, test } from '@testronaut/angular';
-import { mount } from 'packages/angular/browser';
+import { mount } from '@testronaut/angular/browser';
 import { ClickMeWithSub } from './components/2-click-me-with-sub-components';
 import { ShallowClickDirective } from './test-helpers/shallow-click.directive';
 import { ShallowMessageComponent } from './test-helpers/shallow-message.component';
@@ -35,14 +35,15 @@ test('no test doubles', async ({ inPage, page }) => {
 
 test('embedded shallow components', async ({
   inPage,
+  inPageWithNamedFunction,
   page,
 }) => {
-  await inPage(() => {
+  await inPageWithNamedFunction('override child component', () => {
     @Component({
       selector: 'app-message',
       template: `<p data-testid="shallowed-message">Shallowed</p>`,
     })
-    class ShallowMessageComponent { }
+    class ShallowMessageComponent {}
 
     @Directive({
       selector: 'button[appClick]',
@@ -50,7 +51,7 @@ test('embedded shallow components', async ({
         class: 'shallowed',
       },
     })
-    class ShallowClickDirective { }
+    class ShallowClickDirective {}
 
     TestBed.overrideComponent(ClickMeWithSub, {
       set: {
@@ -69,10 +70,7 @@ test('embedded shallow components', async ({
   await expect(page.getByTestId('shallowed-message')).toHaveText('Shallowed');
 });
 
-test('externalized shallow components', async ({
-  inPage,
-  page,
-}) => {
+test('externalized shallow components', async ({ inPage, page }) => {
   await inPage(() => {
     TestBed.overrideComponent(ClickMeWithSub, {
       set: {
