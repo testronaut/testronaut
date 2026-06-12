@@ -76,6 +76,9 @@ export async function initGenerator(
       sourceMap: true,
       optimization: false,
       extractLicenses: false,
+      outputMode: 'static',
+      server: false,
+      ssr: false,
     };
     testronautConfig[`${'main' in testronautConfig ? 'main' : 'browser'}`] = `${
       root ? `${root}/` : ''
