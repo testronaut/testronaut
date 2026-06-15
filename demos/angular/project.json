@@ -49,6 +49,9 @@
         "testronaut": {
           "optimization": false,
           "extractLicenses": false,
+          "outputMode": "static",
+          "server": false,
+          "ssr": false,
           "sourceMap": true,
           "browser": "demos/angular/testronaut/main.ts",
           "index": "demos/angular/testronaut/index.html",

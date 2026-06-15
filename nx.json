@@ -55,6 +55,7 @@
     },
     "@nx/eslint:lint": {
       "cache": true,
+      "dependsOn": ["^build"],
       "inputs": [
         "default",
         "{workspaceRoot}/.eslintrc.json",
