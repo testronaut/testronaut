@@ -12,6 +12,7 @@ import {
   ExtractedFunctionSyntheticKey,
   toExtractedFunctionSyntheticKey,
 } from '../core/extracted-function-synthetic-key';
+import { ImpossibleError } from '../core/impossible.error';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
 import type { TestronautOptions } from './options';
@@ -191,7 +192,9 @@ function _computeExtractedFunctionSyntheticKeyFromCallStack(): ExtractedFunction
   const frame = parse(new Error())[2];
   const line = frame?.getLineNumber();
   if (line == null) {
-    throw new Error('Could not determine `inPage` call line from stack trace');
+    throw new ImpossibleError(
+      'Could not determine `inPage` call line from stack trace'
+    );
   }
 
   return toExtractedFunctionSyntheticKey({ line });
