@@ -18,10 +18,7 @@ import { Countdown } from './components/4-countdown';
  * This example shows how to speed up the test by using the `page.clock` API.
  */
 
-test('should speed up the countdown', async ({
-  inPage,
-  page,
-}) => {
+test('should speed up the countdown', async ({ inPage, page }) => {
   await page.clock.install();
   await inPage(() => mount(Countdown));
   await expect(page.getByText('3')).toBeVisible();

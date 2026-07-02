@@ -174,6 +174,12 @@ Remove `inPageWithNamedFunction` and all related code.
 This doesn't work because it does not detect the right line. It misses the stack trace as fixed by Playwright.
 The only reliable way is through the stack trace.
 
-# Kitchen Sink
+## Use the column number too, to disambiguate calls on the same line.
 
--
+While this would be possible, it's not clear when the column number will be available in the stack trace and when it's not.
+So it might be brittle.
+
+Also, it's probably better to just force users to make one call per line to avoid confusion. It's easier to reason about errors and problems
+by line than by line + column.
+
+# Kitchen Sink
