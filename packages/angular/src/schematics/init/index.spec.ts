@@ -54,6 +54,9 @@ describe('ng-add generator', () => {
         ).toMatchObject({
           optimization: false,
           extractLicenses: false,
+          outputMode: 'static',
+          server: false,
+          ssr: false,
           sourceMap: true,
           browser: `${folder}testronaut/main.ts`,
           index: `${folder}testronaut/index.html`,
@@ -163,6 +166,9 @@ describe('ng-add generator', () => {
       expect(targets?.['build']?.configurations?.['testronaut']).toMatchObject({
         optimization: false,
         extractLicenses: false,
+        outputMode: 'static',
+        server: false,
+        ssr: false,
         sourceMap: true,
         browser: `${folder}testronaut/main.ts`,
         index: `${folder}testronaut/index.html`,
