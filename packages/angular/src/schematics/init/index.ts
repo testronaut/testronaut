@@ -15,7 +15,6 @@ import { assertNotNullish } from '../util/assert-not-nullish';
 import { detectPackageManager } from '../util/detect-package-manager';
 import { createDevkit } from '../util/devkit';
 import { NxAdapter } from '../util/nx-adapter';
-import * as playwrightVersionJson from './playwright-version.json';
 import { type NgAddGeneratorSchema } from './schema';
 import { Public } from '../util/typing';
 import * as packageJson from '../../../package.json';
@@ -23,10 +22,6 @@ import * as packageJson from '../../../package.json';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const PLAYWRIGHT_VERSION_RANGE = playwrightVersionJson as {
-  lower: string;
-  upper: string;
-};
 // Angular CLI specific configurtion
 export type ArchitectConfiguration = ProjectConfiguration['targets'];
 
@@ -202,7 +197,16 @@ export function installPlaywrightAndTestronaut(
  * Provides the required Playwright version range for Testronaut.
  */
 function getRequiredPlaywrightRange() {
-  return PLAYWRIGHT_VERSION_RANGE;
+  const playwrightPeerRange =
+    packageJson.peerDependencies?.['@playwright/test'];
+
+  if (!playwrightPeerRange) {
+    throw new Error(
+      'Missing @playwright/test peer dependency in @testronaut/angular package.json.'
+    );
+  }
+
+  return parseMaxSupportedVersion(playwrightPeerRange);
 }
 
 export function parseMaxSupportedVersion(versionRange: string) {

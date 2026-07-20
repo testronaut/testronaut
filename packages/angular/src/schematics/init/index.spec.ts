@@ -1,16 +1,20 @@
 import { logger, Tree } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { EOL } from 'os';
-import { throwIfNullish } from '../util/throw-if-nullish';
-import { initGenerator, PLAYWRIGHT_VERSION_RANGE } from './index';
-import { NxTestDevkit } from './test/nx-test-devkit';
-import { AngularCliTestDevkit } from './test/angular-cli-test-devkit';
-import { NxAdapterFake } from '../util/nx-adapter.fake';
 import * as packageJson from '../../../package.json' with { type: 'json' };
+import { NxAdapterFake } from '../util/nx-adapter.fake';
+import { throwIfNullish } from '../util/throw-if-nullish';
+import { initGenerator, parseMaxSupportedVersion } from './index';
+import { AngularCliTestDevkit } from './test/angular-cli-test-devkit';
+import { NxTestDevkit } from './test/nx-test-devkit';
+
+const playwrightVersionRange = parseMaxSupportedVersion(
+  packageJson.peerDependencies['@playwright/test']
+);
 
 function fakeInstalledPlaywright(
   tree: Tree,
-  version = PLAYWRIGHT_VERSION_RANGE.upper
+  version = playwrightVersionRange.upper
 ) {
   tree.write(
     'node_modules/@playwright/test/package.json',
@@ -302,7 +306,7 @@ describe('ng-add generator', () => {
         initGenerator(tree, { project: 'test', nxAdapter });
 
         expect(nxAdapter.intalledDevDependencies).toEqual({
-          '@playwright/test': PLAYWRIGHT_VERSION_RANGE.upper,
+          '@playwright/test': playwrightVersionRange.upper,
           '@testronaut/angular': packageJson.version,
         });
       });
@@ -311,7 +315,7 @@ describe('ng-add generator', () => {
         const tree = await devkit.setup('test');
         const nxAdapter = new NxAdapterFake();
 
-        fakeInstalledPlaywright(tree, PLAYWRIGHT_VERSION_RANGE.lower);
+        fakeInstalledPlaywright(tree, playwrightVersionRange.lower);
         initGenerator(tree, { project: 'test', nxAdapter });
         expect(nxAdapter.intalledDevDependencies).toEqual({
           '@testronaut/angular': packageJson.version,
@@ -328,7 +332,7 @@ describe('ng-add generator', () => {
           '@testronaut/angular': packageJson.version,
         });
         expect(warnLogger).toHaveBeenCalledWith(
-          `Installed Playwright version (1.35) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`
+          `Installed Playwright version (1.35) may not be compatible with Testronaut. Recommended version: ${playwrightVersionRange.upper}. Consider changing your Playwright version to avoid issues.`
         );
       });
 
@@ -342,7 +346,7 @@ describe('ng-add generator', () => {
           '@testronaut/angular': packageJson.version,
         });
         expect(warnLogger).toHaveBeenCalledWith(
-          `Installed Playwright version (1.70.0) may not be compatible with Testronaut. Recommended version: ${PLAYWRIGHT_VERSION_RANGE.upper}. Consider changing your Playwright version to avoid issues.`
+          `Installed Playwright version (1.70.0) may not be compatible with Testronaut. Recommended version: ${playwrightVersionRange.upper}. Consider changing your Playwright version to avoid issues.`
         );
       });
     });
