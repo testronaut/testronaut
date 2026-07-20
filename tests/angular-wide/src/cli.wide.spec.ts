@@ -205,9 +205,12 @@ async function _startVerdaccio(): Promise<Server> {
 
 async function _publishPackages({ registryUrl }: { registryUrl: string }) {
   const npmrcPath = join(workspaceRoot, '.npmrc');
+  const versionToPublish = _resolveNewTestronautVersion();
 
   try {
-    await $`pnpm nx release version --git-commit=false patch`;
+    /* Use an explicit version instead of `patch` because nx release resolves the
+     * current version from git tags, which can be behind package.json. */
+    await $`pnpm nx release version --git-commit=false ${versionToPublish}`;
 
     writeFileSync(
       npmrcPath,
