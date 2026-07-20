@@ -1,0 +1,16 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["npm", "regex"],
+  "regexManagers": [
+    {
+      "description": "Playwright schematic upper bound",
+      "fileMatch": [
+        "^packages/angular/src/schematics/init/playwright-version\\.json$"
+      ],
+      "matchStrings": ["\"upper\": \"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""],
+      "depNameTemplate": "@playwright/test",
+      "datasourceTemplate": "npm"
+    }
+  ]
+}
