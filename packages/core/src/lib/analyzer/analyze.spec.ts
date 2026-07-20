@@ -1,12 +1,9 @@
 import { describe } from 'vitest';
+import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
 import { FileAnalysis } from '../core/file-analysis';
-
 import { LaxHashCollisionError } from '../core/lax-hash-collision-error';
 import { analyze } from './analyze';
 import { InvalidInPageCallError } from './visit-in-page-calls';
-import { DuplicatedNamedFunctionsError } from '../core/duplicate-extracted-functions.error';
-
-const laxAnonymousName = expect.stringMatching(/^__lax__/);
 
 describe(analyze.name, () => {
   it('generates file hash', () => {
@@ -18,15 +15,71 @@ test('...', async ({inPage}) => {
     expect(hash).toBe('b97e4f00');
   });
 
+  it('extract line number', () => {
+    const { extractedFunctions } = analyzeFileContent(`\
+test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
+});
+`);
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: 'line:2',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extract different `inPage` calls', () => {
+    const { extractedFunctions } = analyzeFileContent(`\
+test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
+  await inPage(() => console.log('Goodbye!'));
+});
+`);
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: 'line:2',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+      {
+        name: 'line:3',
+        code: `() => console.log('Goodbye!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
+  it('extract identical `inPage` calls', () => {
+    const { extractedFunctions } = analyzeFileContent(`\
+test('...', async ({inPage}) => {
+  await inPage(() => console.log('Hello!'));
+  await inPage(() => console.log('Hello!'));
+});
+`);
+    expect(extractedFunctions).toStrictEqual([
+      {
+        name: 'line:2',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+      {
+        name: 'line:3',
+        code: `() => console.log('Hello!')`,
+        importedIdentifiers: [],
+      },
+    ]);
+  });
+
   it('extracts `inPage` sync arrow function', () => {
     const { extractedFunctions } = analyzeFileContent(`
 test('...', async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
+    expect(extractedFunctions).toMatchObject([
       {
-        name: laxAnonymousName,
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
@@ -63,7 +116,7 @@ test('...', async ({inPage}) => {
 });
     `)
     ).not.toThrow();
-  })
+  });
 
   it('does not throw if two anonymous functions have the same code', () => {
     expect(() =>
@@ -82,9 +135,8 @@ test('...', async ({inPage}) => {
   await inPage(async () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
+    expect(extractedFunctions).toMatchObject([
       {
-        name: laxAnonymousName,
         code: `async () => console.log('Hello!')`,
         importedIdentifiers: [],
       },
@@ -97,9 +149,8 @@ test('...', async ({inPage}) => {
   await inPage(function sayHello() { console.log('Hello!'); });
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
+    expect(extractedFunctions).toMatchObject([
       {
-        name: laxAnonymousName,
         code: `function sayHello() { console.log('Hello!'); }`,
         importedIdentifiers: [],
       },
@@ -112,9 +163,8 @@ test.beforeEach(async ({inPage}) => {
   await inPage(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
+    expect(extractedFunctions).toMatchObject([
       {
-        name: laxAnonymousName,
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
@@ -127,9 +177,8 @@ function somewhereElse() {
   await inPage(() => console.log('Hello!'));
 }
     `);
-    expect(extractedFunctions).toStrictEqual([
+    expect(extractedFunctions).toMatchObject([
       {
-        name: laxAnonymousName,
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },
@@ -142,7 +191,7 @@ test('...', async ({inPageWithNamedFunction}) => {
   await inPageWithNamedFunction('say hello', () => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
+    expect(extractedFunctions).toMatchObject([
       {
         name: 'say hello',
         code: `() => console.log('Hello!')`,
@@ -157,9 +206,8 @@ test('...', async ({inPage: run}) => {
   await run(() => console.log('Hello!'));
 });
     `);
-    expect(extractedFunctions).toStrictEqual([
+    expect(extractedFunctions).toMatchObject([
       {
-        name: laxAnonymousName,
         code: `() => console.log('Hello!')`,
         importedIdentifiers: [],
       },

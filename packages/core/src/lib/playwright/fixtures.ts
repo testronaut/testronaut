@@ -7,11 +7,15 @@ import type {
   TestType,
 } from '@playwright/test';
 import { test as base } from '@playwright/test';
+import { parse } from 'stack-trace';
+import {
+  ExtractedFunctionSyntheticKey,
+  toExtractedFunctionSyntheticKey,
+} from '../core/extracted-function-synthetic-key';
+import { ImpossibleError } from '../core/impossible.error';
 import { ExtractionPipeline } from '../runner/extraction-pipeline';
 import { Runner } from '../runner/runner';
-
 import type { TestronautOptions } from './options';
-import { computeHashes } from '../lax-hashing/compute-hashes';
 
 /**
  * This avoids transitive dependencies type inference errors such as:
@@ -175,15 +179,23 @@ More information on https://testronaut.dev`);
     }
 
     if (functionName === '') {
-      const fn = args[0] as () => unknown;
-      const { laxHash } = computeHashes(fn.toString(), {
-        skipTranspilation: true,
-      });
-      functionName = laxHash;
+      functionName = _computeExtractedFunctionSyntheticKeyFromCallStack();
     }
 
     return await runner.inPage(fileHash, functionName, data);
   };
 
   return inPageWithNamedFunctionImpl;
+}
+
+function _computeExtractedFunctionSyntheticKeyFromCallStack(): ExtractedFunctionSyntheticKey {
+  const frame = parse(new Error())[2];
+  const line = frame?.getLineNumber();
+  if (line == null) {
+    throw new ImpossibleError(
+      'Could not determine `inPage` call line from stack trace'
+    );
+  }
+
+  return toExtractedFunctionSyntheticKey({ line });
 }
