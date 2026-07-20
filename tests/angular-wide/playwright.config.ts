@@ -8,6 +8,9 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 
+const isCI = process.env['CI'];
+const isWindows = process.platform === 'win32';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -21,10 +24,14 @@ export default defineConfig(
     },
   }),
   {
-    timeout: process.env['CI'] ? 10_000 : 3_000,
+    timeout: isCI ? 10_000 : 3_000,
     use: {
       trace: 'on-first-retry',
     },
+    /* Maybe reduce flakiness on Windows CI.
+     * Error example: 1 error was not a part of any test, see above for details
+     * https://github.com/testronaut/testronaut/actions/runs/28581437508/job/84742463215 */
+    workers: isCI && isWindows ? 1 : undefined,
   },
   {
     /* Configure projects for major browsers */
