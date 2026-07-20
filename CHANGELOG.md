@@ -1,3 +1,11 @@
+## 0.1.1 (2026-07-20)
+
+This was a version bump only, there were no code changes.
+
+### 🚀 Features
+
+- update @playwright/test max version to 1.60.0 ([#143](https://github.com/testronaut/testronaut/pull/143))
+
 ## 0.1.0 (2026-05-07)
 
 This was a version bump only, there were no code changes.
