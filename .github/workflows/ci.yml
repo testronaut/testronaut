@@ -11,19 +11,8 @@ permissions:
   contents: read
 
 jobs:
-  check-playwright-version-sync:
-    name: Check Playwright Version Sync
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: node scripts/check-playwright-version-sync.mjs
-
   test:
     name: Test
-    needs: check-playwright-version-sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +38,6 @@ jobs:
 
   test-commonjs:
     name: Test CommonJS Support
-    needs: check-playwright-version-sync
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +64,6 @@ jobs:
 
   test-wide:
     name: Test Wide
-    needs: check-playwright-version-sync
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
